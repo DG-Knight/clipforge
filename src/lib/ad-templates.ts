@@ -29,12 +29,12 @@ import { checkAdCompliance } from "@/lib/ad-compliance";
  * script style.
  */
 export const AD_TEMPLATE_GROUPS = [
-  { id: "product_show", name: { zh: "商品展示", en: "Product showcase" } },
-  { id: "presenter", name: { zh: "真人讲解", en: "Presenter" } },
-  { id: "story", name: { zh: "剧情叙事", en: "Story" } },
-  { id: "lifestyle", name: { zh: "生活种草", en: "Lifestyle" } },
-  { id: "promo", name: { zh: "促销转化", en: "Promo" } },
-  { id: "creative", name: { zh: "创意视觉", en: "Creative" } },
+  { id: "product_show", name: { zh: "商品展示", en: "Product showcase", th: "โชว์สินค้าเด่น" } },
+  { id: "presenter", name: { zh: "真人讲解", en: "Presenter", th: "ผู้ดำเนินรายการ" } },
+  { id: "story", name: { zh: "剧情叙事", en: "Story", th: "เล่าเรื่องราว" } },
+  { id: "lifestyle", name: { zh: "生活种草", en: "Lifestyle", th: "ไลฟ์สไตล์ป้ายยา" } },
+  { id: "promo", name: { zh: "促销转化", en: "Promo", th: "โปรโมชันเร่งปิดการขาย" } },
+  { id: "creative", name: { zh: "创意视觉", en: "Creative", th: "ภาพสร้างสรรค์" } },
 ] as const;
 export type AdTemplateGroupId = (typeof AD_TEMPLATE_GROUPS)[number]["id"];
 

@@ -13,22 +13,32 @@ export function uploadLocalMaterial(
   projectId: string,
   file: File,
   options: {
-    locale: "zh" | "en";
+    locale?: "zh" | "en" | "th" | string;
     signal?: AbortSignal;
     onProgress?: (progress: MaterialUploadProgress) => void;
   },
 ): Promise<{ material: PublicLocalMaterial; duplicate: boolean }> {
-  const en = options.locale === "en";
+  const isTh = options.locale === "th";
+  const isZh = options.locale === "zh";
+
   if (!classifyMaterial(file.name))
     return Promise.reject(
-      new Error(en ? "Unsupported file type" : "不支持的素材类型"),
+      new Error(
+        isTh
+          ? "ประเภทไฟล์ไม่รองรับ"
+          : isZh
+            ? "不支持的素材类型"
+            : "Unsupported file type",
+      ),
     );
   if (!file.size || file.size > MATERIAL_MAX_BYTES)
     return Promise.reject(
       new Error(
-        en
-          ? "Choose a nonempty file up to 80 MB"
-          : "请选择非空且不超过 80MB 的素材",
+        isTh
+          ? "กรุณาเลือกไฟล์ที่ไม่ว่างเปล่าและขนาดไม่เกิน 80MB"
+          : isZh
+            ? "请选择非空且不超过 80MB 的素材"
+            : "Choose a nonempty file up to 80 MB",
       ),
     );
   return new Promise((resolve, reject) => {
@@ -49,7 +59,7 @@ export function uploadLocalMaterial(
     xhr.open("POST", `/api/project/${encodeURIComponent(projectId)}/materials`);
     xhr.setRequestHeader("Content-Type", "application/octet-stream");
     xhr.setRequestHeader("X-File-Name", encodeURIComponent(file.name));
-    xhr.setRequestHeader("Accept-Language", options.locale);
+    xhr.setRequestHeader("Accept-Language", options.locale || "th");
     xhr.timeout = 300_000;
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable)
@@ -63,7 +73,10 @@ export function uploadLocalMaterial(
         try {
           const data = JSON.parse(xhr.responseText);
           if (xhr.status < 200 || xhr.status >= 300 || !data.materials?.[0])
-            throw new Error(data.error || (en ? "Upload failed" : "上传失败"));
+            throw new Error(
+              data.error ||
+                (isTh ? "อัปโหลดไม่สำเร็จ" : isZh ? "上传失败" : "Upload failed"),
+            );
           resolve({
             material: data.materials[0],
             duplicate: data.duplicate === true,
@@ -72,7 +85,9 @@ export function uploadLocalMaterial(
           reject(
             error instanceof Error
               ? error
-              : new Error(en ? "Upload failed" : "上传失败"),
+              : new Error(
+                  isTh ? "อัปโหลดไม่สำเร็จ" : isZh ? "上传失败" : "Upload failed",
+                ),
           );
         }
       });
@@ -80,16 +95,24 @@ export function uploadLocalMaterial(
       finish(() =>
         reject(
           new Error(
-            en
-              ? "Connection interrupted; retry the upload"
-              : "连接中断，可重试上传",
+            isTh
+              ? "การเชื่อมต่อขัดข้อง สามารถลองอัปโหลดใหม่อีกครั้ง"
+              : isZh
+                ? "连接中断，可重试上传"
+                : "Connection interrupted; retry the upload",
           ),
         ),
       );
     xhr.ontimeout = () =>
       finish(() =>
         reject(
-          new Error(en ? "Upload timed out; please retry" : "上传超时，请重试"),
+          new Error(
+            isTh
+              ? "การอัปโหลดหมดเวลา กรุณาลองใหม่อีกครั้ง"
+              : isZh
+                ? "上传超时，请重试"
+                : "Upload timed out; please retry",
+          ),
         ),
       );
     xhr.onabort = () => finish(() => reject(cancelled()));

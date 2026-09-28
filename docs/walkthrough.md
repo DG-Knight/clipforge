@@ -32,6 +32,10 @@ ClipForge ได้รับการอัปเกรดเพื่อรอ�
    - สระบน-ล่าง (เช่น สระอิ สระอู ไม้หันอากาศ) และวรรณยุกต์ (ไม้เอก ไม้โท ไม้ตรี ไม้จัตวา การันต์) ได้รับการประมวลผลอย่างแม่นยำ ไม่ตกหล่นหรือลอยขึ้นต้นบรรทัดใหม่อย่างผิดธรรมชาติ
    - รองรับฟอนต์ภาษาไทยมาตรฐานของระบบปฏิบัติการ (เช่น Leelawadee UI, Tahoma) ช่วยให้การแสดงผลคมชัดทุกอุปกรณ์
 
+5. **กำจัดข้อความภาษาจีนตกค้างตามรายงาน Audit (chinese-text-audit-report.md)**:
+   - ปรับค่าเริ่มต้นของระบบ (`DEFAULT_LOCALE`) เป็นภาษาไทย (`th`) โดยตรง
+   - แปลงข้อความและสถานะที่เคยฝังอยู่ในคอมโพเนนต์และเพจหลัก เช่น การตั้งค่า Provider, สถิติและสไตล์คลิปวิดีโอ 39 แบบ, เมนูสร้างโปรเจกต์ใหม่, และระบบอัปโหลดไฟล์ในเครื่อง ให้แสดงผลเป็นภาษาไทยทั้งหมด
+
 ---
 
 ## 3. หลักฐานยืนยันความถูกต้อง (Proof of Work)
@@ -39,12 +43,14 @@ ClipForge ได้รับการอัปเกรดเพื่อรอ�
 ชุดทดสอบอัตโนมัติ (Automated Tests) ได้รับการรันและผ่านการทดสอบ 100%:
 
 ```
- ✓ src/lib/__tests__/i18n-settings.test.ts (3 tests passed)
- ✓ src/lib/__tests__/i18n-thai.test.ts     (6 tests passed)
- ✓ src/lib/__tests__/backend.test.ts       (89 tests passed)
+ ✓ src/lib/__tests__/i18n-settings.test.ts             (3 tests passed)
+ ✓ src/lib/__tests__/friendly-error.test.ts            (7 tests passed)
+ ✓ src/lib/__tests__/variation-antihomogeneity.test.ts (10 tests passed)
+ ✓ src/lib/__tests__/i18n-thai.test.ts                 (6 tests passed)
+ ✓ src/lib/__tests__/backend.test.ts                   (89 tests passed)
 
- Test Files  3 passed (3)
-      Tests  98 passed (98)
+ Test Files  5 passed (5)
+      Tests  115 passed (115)
 ```
 
 ### การตรวจสอบที่ครอบคลุม:
@@ -52,6 +58,8 @@ ClipForge ได้รับการอัปเกรดเพื่อรอ�
 - [x] ตรวจสอบตัวแปรแทรก `{...}` ในข้อความตรงตามต้นฉบับ ไม่ทำให้ระบบแสดงผลผิดเพี้ยน
 - [x] ตรวจสอบการตัดคำและตัดบรรทัดคำบรรยายภาษาไทยว่าอยู่ในกรอบหน้าจอและไม่ล้นขอบ
 - [x] ตรวจสอบลิงก์สลับภาษาในเอกสาร README ทั้ง 3 ภาษาว่าเชื่อมโยงถึงกันถูกต้อง
+- [x] กำจัดข้อความภาษาจีน Hardcoded ทั้ง 12 ไฟล์ตาม Audit Report
+- [x] รันการทดสอบ 115 tests ผ่านครบทั้งหมดโดยไม่มีข้อผิดพลาด
 
 ---
 
@@ -59,8 +67,19 @@ ClipForge ได้รับการอัปเกรดเพื่อรอ�
 - `README.md`: แปลงเป็นฉบับภาษาไทยสมบูรณ์
 - `README.zh.md`: จัดเก็บเอกสารฉบับภาษาจีนเดิม พร้อมลิงก์สลับภาษา
 - `README.en.md`: เพิ่มลิงก์สลับมายังภาษาไทยและภาษาจีน
-- `src/lib/i18n/config.ts`: เพิ่มการรองรับ `th` และระบบตรวจจับภาษาเบราว์เซอร์
+- `src/lib/i18n/config.ts`: ปรับ `DEFAULT_LOCALE = "th"`, สลับลำดับ `LOCALES`, และระบบตรวจจับภาษาเบราว์เซอร์
 - `src/lib/i18n/messages/`: เพิ่มไฟล์คำแปลภาษาไทย 21 ไฟล์
 - `src/lib/tts-voices.ts`: เพิ่มตัวเลือกเสียงพากย์ภาษาไทย
 - `src/lib/video-composer/composer.ts`: เพิ่มการจัดการฟอนต์และการตัดคำบรรยายภาษาไทย
+- `src/app/layout.tsx`: เพิ่ม Metadata ภาษาไทย และกำหนด `<html lang="th">`
+- `src/components/language-toggle.tsx`: ปรับ tooltip ให้รองรับการสลับ 3 ภาษา
+- `src/components/model-catalog-status.tsx`: แปลงสถานะโมเดลเป็นภาษาไทยครบทุกเงื่อนไข
+- `src/components/performance-feedback.tsx`: แปลงป้ายกำกับ สไตล์ 39 สไตล์ และตัวเลขสถิติเป็นภาษาไทย
+- `src/components/generation-settings.tsx`: ใช้ชื่อสากลสำหรับ Provider คลาวด์จีน
+- `src/app/project/new/page.tsx`: เพิ่มคำแปล BGM, คุณภาพ, รูปแบบคำบรรยาย และปุ่มตัวกรองเทมเพลต
+- `src/lib/ad-templates.ts`: เพิ่มฟิลด์ภาษาไทยในกลุ่มเทมเพลตโฆษณา
+- `src/lib/variation-plan.ts` & `src/app/batch/page.tsx`: รองรับคำบรรยาย Variation Slot ภาษาไทย
+- `src/lib/upload-local-material.ts`: รองรับข้อความแจ้งเตือนอัปโหลดไฟล์ภาษาไทย
+- `src/lib/llm-error.ts`: เพิ่มข้อความผิดพลาดภาษาไทยพร้อมรักษาความเข้ากันได้ของเทสต์เดิม
 - `src/lib/__tests__/i18n-thai.test.ts`: ชุดทดสอบระบบภาษาไทยอัตโนมัติ
+

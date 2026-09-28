@@ -53,10 +53,27 @@
 ### ส่วนที่ 4: การเรนเดอร์คำบรรยาย (Subtitles & Font Support)
 - ตรวจสอบการเลือกฟอนต์และการเรนเดอร์ฟอนต์ภาษาไทย เพื่อไม่ให้ตัวหนังสือภาษาไทยแสดงเป็นกล่องสี่เหลี่ยม (Tofu)
 
-### ส่วนที่ 5: การทดสอบอัตโนมัติและการยืนยันผล (Automated Testing & Verification)
+### ส่วนที่ 6: การกำจัดข้อความภาษาจีนที่ฝังในโค้ด (Elimination of Hardcoded Chinese Strings)
+- อิงตามรายงานตรวจสอบ `chinese-text-audit-report.md`
+- ปรับปรุงคอมโพเนนต์และเพจที่ยังมีข้อความภาษาจีนฝังอยู่โดยตรง:
+  - `src/lib/i18n/config.ts`: ปรับ `DEFAULT_LOCALE = "th"` และสลับลำดับภาษาเริ่มต้นเป็น `["th", "en", "zh"]`
+  - `src/app/layout.tsx`: เพิ่มภาษาไทยใน Metadata (title, description, keywords) และตั้งค่า `html lang="th"`
+  - `src/components/language-toggle.tsx`: ปรับ tooltip ให้หมุนเวียน 3 ภาษาอย่างถูกต้อง
+  - `src/components/model-catalog-status.tsx`: เพิ่มการรองรับสถานะโมเดลเป็นภาษาไทยครบทุกเงื่อนไข
+  - `src/components/performance-feedback.tsx`: แปลงป้ายกำกับและคำแนะนำสไตล์ 39 สไตล์, การแปลงตัวเลขยอดวิว, ตัวชี้วัดประสิทธิภาพ
+  - `src/components/generation-settings.tsx`: ใช้ชื่อสากลสำหรับ Provider จีนเพื่อป้องกันข้อความหลุด
+  - `src/app/project/new/page.tsx`: เพิ่มคำแปล BGM, คุณภาพ, รูปแบบคำบรรยาย และปุ่มตัวกรองเทมเพลต
+  - `src/lib/ad-templates.ts`: เพิ่มฟิลด์คำแปลภาษาไทยในกลุ่มเทมเพลตโฆษณา
+  - `src/lib/variation-plan.ts` และ `src/app/batch/page.tsx`: รองรับคำบรรยายลักษณะของ Variation Slot เป็นภาษาไทย
+  - `src/lib/upload-local-material.ts`: รองรับข้อความแจ้งเตือนข้อผิดพลาดในการอัปโหลดไฟล์เป็นภาษาไทย
+  - `src/lib/llm-error.ts`: เพิ่มฟิลด์ `th` และฟังก์ชัน `getMessage()` สำหรับข้อความผิดพลาดภาษาไทย
+
+### ส่วนที่ 7: การทดสอบอัตโนมัติและการยืนยันผล (Automated Testing & Verification)
 - สร้างและปรับปรุงชุดทดสอบ Vitest ใน `src/lib/__tests__/i18n-thai.test.ts`
 - ตรวจสอบว่าคีย์ทั้งหมดในภาษาจีนและภาษาอังกฤษ มีในภาษาไทยครบ 100%
 - ตรวจสอบว่าไม่มีค่าว่าง และการแทนที่ตัวแปร `{var}` ใช้งานได้ถูกต้อง
+- ทดสอบความเข้ากันได้ย้อนหลัง (Backward Compatibility) กับชุดทดสอบเดิมทั้งหมด
 
 ---
 พิมพ์เขียวนี้จัดทำขึ้นเพื่อให้การพัฒนาเป็นไปตามมาตรฐานวิศวกรรมซอฟต์แวร์ระดับสากลและคำแนะนำของระบบ
+

@@ -1,15 +1,15 @@
-/** การกำหนดค่าภาษา (Locale configuration): ภาษาจีนเป็นภาษาเริ่มต้นเดิม, ภาษาอังกฤษและภาษาไทยเป็นภาษาที่สามารถสลับใช้งานได้ */
-export const LOCALES = ["zh", "en", "th"] as const;
+/** การกำหนดค่าภาษา (Locale configuration): ภาษาไทยเป็นค่าเริ่มต้น พร้อมรองรับภาษาอังกฤษและภาษาจีน */
+export const LOCALES = ["th", "en", "zh"] as const;
 export type Locale = (typeof LOCALES)[number];
 
-/** ภาษาเริ่มต้น: ภาษาจีน */
-export const DEFAULT_LOCALE: Locale = "zh";
+/** ภาษาเริ่มต้น: ภาษาไทย */
+export const DEFAULT_LOCALE: Locale = "th";
 
 /** ป้ายกำกับที่แสดงในตัวสลับภาษา (Language Switcher) */
 export const LOCALE_LABELS: Record<Locale, string> = {
-  zh: "中文",
-  en: "English",
   th: "ไทย",
+  en: "English",
+  zh: "中文",
 };
 
 /** โครงสร้างข้อความในแต่ละ Namespace รองรับ 3 ภาษา (zh, en, th) */

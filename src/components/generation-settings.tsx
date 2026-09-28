@@ -28,9 +28,9 @@ const PROVIDER_OPTIONS: { value: string; label: string }[] = [
   { value: "atlas-cloud", label: "Atlas Cloud" },
   { value: "fal-ai", label: "fal.ai" },
   { value: "replicate", label: "Replicate" },
-  { value: "volcengine", label: "火山引擎" },
-  { value: "alibaba", label: "阿里百炼" },
-  { value: "siliconflow", label: "硅基流动" },
+  { value: "volcengine", label: "Volcengine" },
+  { value: "alibaba", label: "Alibaba Bailian" },
+  { value: "siliconflow", label: "SiliconFlow" },
 ];
 
 const labelOf = (opts: { value: string; label: string }[], v: string) =>

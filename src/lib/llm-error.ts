@@ -33,17 +33,26 @@ export interface LLMClientConfig extends LLMTarget {
   apiKey?: string;
 }
 
-/** Error carrying both locales, so API routes can answer English clients without re-parsing text. */
+/** Error carrying multilingual messages, so API routes can answer clients without re-parsing text. */
 export class LLMRequestError extends Error {
   readonly zh: string;
   readonly en: string;
+  readonly th?: string;
   readonly status?: number;
-  constructor(zh: string, en: string, status?: number, options?: { cause?: unknown }) {
+  constructor(zh: string, en: string, status?: number, options?: { cause?: unknown; th?: string }) {
     super(zh, options);
     this.name = "LLMRequestError";
     this.zh = zh;
     this.en = en;
+    this.th = options?.th;
     this.status = status;
+  }
+
+  /** ดึงข้อความตามภาษาที่ต้องการ */
+  getMessage(locale: string = "th"): string {
+    if (locale === "th") return this.th || this.en || this.zh;
+    if (locale === "en") return this.en || this.zh;
+    return this.zh;
   }
 }
 

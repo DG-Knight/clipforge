@@ -78,11 +78,11 @@ const styleTypeMap: Record<string, string> = {
 };
 
 // Backend styleType → short display name (for variation-slot summaries; kept local to avoid pulling the prompt engine into the client bundle)
-const styleDisplayNames: Record<string, string> = {
-  pain_point: "痛点式",
-  scene: "场景种草",
-  comparison: "对比实测",
-  story: "剧情带货",
+const styleDisplayNames: Record<string, { zh: string; en: string; th: string }> = {
+  pain_point: { zh: "痛点式", en: "Pain-point", th: "ชี้จุดเจ็บปวด" },
+  scene: { zh: "场景种草", en: "Scene", th: "จำลองสถานการณ์" },
+  comparison: { zh: "对比实测", en: "Comparison", th: "เปรียบเทียบข้อดี" },
+  story: { zh: "剧情带货", en: "Story", th: "เล่าเรื่องน่าติดตาม" },
 };
 
 // Batch task status (generating=writing script; composing=matching visuals+compositing; done=all finished)
@@ -477,9 +477,20 @@ export default function BatchPage() {
     setHomogeneity(null);
     const tasks: BatchTask[] = selected.map((p, i) => ({
       id: p.id,
-      productName: p.name,
-      status: "pending" as TaskStatus,
-      ...(plan[i] ? { variation: describeSlot(plan[i], styleDisplayNames, locale === "en" ? "en" : "zh") } : {}),
+      ...(plan[i]
+        ? {
+            variation: describeSlot(
+              plan[i],
+              Object.fromEntries(
+                Object.entries(styleDisplayNames).map(([k, v]) => [
+                  k,
+                  locale === "th" ? v.th : locale === "zh" ? v.zh : v.en,
+                ])
+              ),
+              locale as "zh" | "en" | "th"
+            ),
+          }
+        : {}),
     }));
     setBatchTasks(tasks);
 

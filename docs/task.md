@@ -45,7 +45,23 @@
   - [x] 6.2 แปลงไฟล์หลัก `README.md` เป็นภาษาไทยฉบับสมบูรณ์ พร้อมภาพรวม ฟีเจอร์เด่น และขั้นตอนติดตั้ง
   - [x] 6.3 อัปเดตแถบสลับภาษาเชื่อมโยงกันระหว่าง `README.md` (ไทย), `README.en.md` (อังกฤษ), และ `README.zh.md` (จีน)
 
-- [x] **7. บันทึกและสรุปเอกสาร (Documentation & Changelog)**
-  - [x] 7.1 อัปเดต `docs/walkthrough.md`
-  - [x] 7.2 อัปเดต `docs/changelog.md`
-  - [x] 7.3 Commit งานเข้าสู่ Git
+- [x] **8. กำจัดข้อความภาษาจีนที่ฝังในโค้ดตามรายงาน Audit (chinese-text-audit-report.md)**
+  - [x] 8.1 ปรับ `DEFAULT_LOCALE = "th"` และลำดับภาษา `["th", "en", "zh"]` ใน `src/lib/i18n/config.ts`
+  - [x] 8.2 เพิ่ม Metadata ภาษาไทยและตั้งค่า `<html lang="th">` ใน `src/app/layout.tsx`
+  - [x] 8.3 ปรับปุ่มสลับภาษา `src/components/language-toggle.tsx` รองรับ 3 ภาษาอย่างสมบูรณ์
+  - [x] 8.4 แปลงสถานะโมเดลใน `src/components/model-catalog-status.tsx` ให้มีภาษาไทยครบถ้วน
+  - [x] 8.5 แปลงป้ายกำกับสไตล์ 39 สไตล์, ยอดวิว, ตัวชี้วัดประสิทธิภาพใน `src/components/performance-feedback.tsx`
+  - [x] 8.6 เปลี่ยนชื่อคลาวด์จีนเป็นชื่อสากลใน `src/components/generation-settings.tsx`
+  - [x] 8.7 เพิ่มคำแปล BGM, คุณภาพ, รูปแบบคำบรรยาย และตัวกรองใน `src/app/project/new/page.tsx`
+  - [x] 8.8 เพิ่มคำแปลภาษาไทยใน `AD_TEMPLATE_GROUPS` ของ `src/lib/ad-templates.ts`
+  - [x] 8.9 รองรับการแสดงผลรายละเอียด Variation Slot ภาษาไทยใน `src/lib/variation-plan.ts` และ `src/app/batch/page.tsx`
+  - [x] 8.10 ปรับแต่งข้อความแจ้งเตือนการอัปโหลดไฟล์ใน `src/lib/upload-local-material.ts`
+  - [x] 8.11 เพิ่มฟิลด์ `th` และ `getMessage()` ใน `src/lib/llm-error.ts` พร้อมรักษาความเข้ากันได้ของเทสต์เดิม
+  - [x] 8.12 รันการทดสอบอัตโนมัติ 115 tests ผ่าน 100%
+
+- [x] **9. บันทึกและสรุปเอกสาร (Documentation & Commit)**
+  - [x] 9.1 อัปเดต `docs/implementation-plan.md`
+  - [x] 9.2 อัปเดต `docs/task.md`
+  - [x] 9.3 อัปเดต `docs/walkthrough.md`
+  - [x] 9.4 อัปเดต `docs/changelog.md`
+  - [x] 9.5 Commit & Push งานเข้าสู่ Git Repository

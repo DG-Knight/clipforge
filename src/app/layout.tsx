@@ -11,21 +11,21 @@ const geistSans = GeistSans;
 const geistMono = GeistMono;
 
 export const metadata: Metadata = {
-  // Title/description are bilingual (Chinese first): prioritize domestic traffic while covering overseas search indexing
-  title: "ClipForge — AI 短视频带货创作工具 | AI Short Video Creator",
+  // Title/description รองรับภาษาไทยและภาษาอังกฤษเป็นหลัก
+  title: "ClipForge — เครื่องมือสร้างวิดีโอสั้นขายของด้วย AI | AI Short Video Creator",
   description:
-    "一句话主题或一张商品图，一键产出抖音 / 快手 / 小红书 / TikTok 竖屏带货短视频：AI 写脚本、自动配画面、免费配音、烧字幕。Turn one sentence or a product photo into a vertical short video — AI script, free stock footage, voiceover & subtitles in one click.",
+    "เปลี่ยนภาพสินค้าหรือหัวข้อประโยคเดียว ให้เป็นวิดีโอสั้นพร้อมโพสต์สำหรับ TikTok Shop / Reels / Shorts: AI เขียนสคริปต์, จัดหาฟุตเทจฟรี, เสียงพากย์, และคำบรรยายอัตโนมัติ | Turn one sentence or a product photo into a vertical short video — AI script, free stock footage, voiceover & subtitles in one click.",
   keywords: [
-    "AI 短视频",
-    "带货短视频",
-    "AI 视频生成",
-    "抖音",
-    "快手",
-    "小红书",
-    "TikTok",
+    "AI สร้างวิดีโอ",
+    "วิดีโอสั้นขายของ",
+    "TikTok Shop",
+    "Reels",
+    "Shorts",
+    "AI video generator",
     "text to video",
     "faceless video",
-    "AI video generator",
+    "AI 短视频",
+    "带货短视频",
   ],
 };
 
@@ -37,7 +37,7 @@ export default function RootLayout({
   // Site-wide default dark studio theme: pin the dark class on <html>
   return (
     <html
-      lang="zh-CN"
+      lang="th"
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">

@@ -103,13 +103,14 @@ export function buildVariationPlan(opts: VariationPlanOpts): VariationSlot[] {
 }
 
 /** Human-readable one-liner for a slot (shown next to each batch task so the rotation is visible). */
-export function describeSlot(slot: VariationSlot, styleNames: Record<string, string> = {}, locale: "zh" | "en" = "zh"): string {
+export function describeSlot(slot: VariationSlot, styleNames: Record<string, string> = {}, locale: "zh" | "en" | "th" = "zh"): string {
+  const isTh = locale === "th";
   const zh = locale === "zh";
-  const bits = [`${zh ? "钩子" : "Hook"}:${slot.hookName}`];
-  if (slot.styleType) bits.push(`${zh ? "风格" : "Style"}:${styleNames[slot.styleType] ?? slot.styleType}`);
-  if (slot.voiceLabel) bits.push(`${zh ? "音色" : "Voice"}:${slot.voiceLabel.split(" ·")[0]}`);
-  bits.push(slot.bgm ? `BGM:${slot.bgmMood}` : zh ? "无BGM" : "no BGM");
-  bits.push(slot.karaoke ? (zh ? "卡拉OK字幕" : "karaoke captions") : zh ? "短句卡字幕" : "card captions");
-  if (slot.durationOffset !== 0) bits.push(`${zh ? "时长" : "len"}${slot.durationOffset > 0 ? "+" : ""}${slot.durationOffset}s`);
+  const bits = [`${isTh ? "ท่อนฮุก" : zh ? "钩子" : "Hook"}:${slot.hookName}`];
+  if (slot.styleType) bits.push(`${isTh ? "สไตล์" : zh ? "风格" : "Style"}:${styleNames[slot.styleType] ?? slot.styleType}`);
+  if (slot.voiceLabel) bits.push(`${isTh ? "เสียงพากย์" : zh ? "音色" : "Voice"}:${slot.voiceLabel.split(" ·")[0]}`);
+  bits.push(slot.bgm ? `BGM:${slot.bgmMood}` : isTh ? "ไม่ใส่ BGM" : zh ? "无BGM" : "no BGM");
+  bits.push(slot.karaoke ? (isTh ? "ซับไตเติลคาราโอเกะ" : zh ? "卡拉OK字幕" : "karaoke captions") : isTh ? "ซับไตเติลแบบการ์ด" : zh ? "短句卡字幕" : "card captions");
+  if (slot.durationOffset !== 0) bits.push(`${isTh ? "ความยาว" : zh ? "时长" : "len"}${slot.durationOffset > 0 ? "+" : ""}${slot.durationOffset}s`);
   return bits.join(" · ");
 }

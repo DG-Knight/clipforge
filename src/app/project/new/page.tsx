@@ -55,23 +55,23 @@ const videoModeOptions = [
 ];
 
 // recipe-editor display labels for compose enums (bilingual data like the preset libraries, not i18n keys)
-const BGM_LABELS: Record<string, { zh: string; en: string }> = {
-  none: { zh: "无", en: "None" },
-  upbeat: { zh: "轻快", en: "Upbeat" },
-  chill: { zh: "舒缓", en: "Chill" },
-  energetic: { zh: "动感", en: "Energetic" },
-  emotional: { zh: "情感", en: "Emotional" },
+const BGM_LABELS: Record<string, { zh: string; en: string; th: string }> = {
+  none: { zh: "无", en: "None", th: "ไม่ใส่" },
+  upbeat: { zh: "轻快", en: "Upbeat", th: "สดใส สนุกสนาน" },
+  chill: { zh: "舒缓", en: "Chill", th: "สบายๆ ผ่อนคลาย" },
+  energetic: { zh: "动感", en: "Energetic", th: "ทรงพลัง กระฉับกระเฉง" },
+  emotional: { zh: "情感", en: "Emotional", th: "ซาบซึ้ง อารมณ์ร่วม" },
 };
-const QUALITY_LABELS: Record<string, { zh: string; en: string }> = {
-  fast: { zh: "快速", en: "Fast" },
-  standard: { zh: "标准", en: "Standard" },
-  hd: { zh: "高清", en: "HD" },
+const QUALITY_LABELS: Record<string, { zh: string; en: string; th: string }> = {
+  fast: { zh: "快速", en: "Fast", th: "เร็ว" },
+  standard: { zh: "标准", en: "Standard", th: "มาตรฐาน" },
+  hd: { zh: "高清", en: "HD", th: "ความคมชัดสูง (HD)" },
 };
-const CAPTION_LABELS: Record<CaptionPresetId, { zh: string; en: string }> = {
-  standard: { zh: "标准", en: "Standard" },
-  bold: { zh: "大字冲击", en: "Bold" },
-  minimal: { zh: "极简", en: "Minimal" },
-  karaoke: { zh: "卡拉OK", en: "Karaoke" },
+const CAPTION_LABELS: Record<CaptionPresetId, { zh: string; en: string; th: string }> = {
+  standard: { zh: "标准", en: "Standard", th: "มาตรฐาน" },
+  bold: { zh: "大字冲击", en: "Bold", th: "ตัวหนาเน้นข้อความ" },
+  minimal: { zh: "极简", en: "Minimal", th: "มินิมอล เรียบง่าย" },
+  karaoke: { zh: "卡拉OK", en: "Karaoke", th: "คาราโอเกะ" },
 };
 // shot-type → i18n key for the camera-plan selects
 const SHOT_LABEL_KEYS: Record<string, string> = {
@@ -521,11 +521,12 @@ export default function NewProjectPage() {
     try {
       // step 1: create the project (get projectId first)
       setProgress({ step: "creating", percent: 15, message: t("progressCreating") });
+      const defaultSuffix = locale === "th" ? " โปรโมต" : locale === "zh" ? " 推广" : " Promo";
       const projectRes = await fetch("/api/project", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: `${productName} 推广`,
+          name: `${productName}${defaultSuffix}`,
           productName,
           productCategory: category,
           productDescription: sellingPoints,
@@ -1245,7 +1246,7 @@ export default function NewProjectPage() {
               })()}
               {/* group filter chips — a large library needs a browse taxonomy, not one endless scroll row */}
               <div className="flex flex-wrap items-center gap-1.5 mb-3">
-                {[{ id: "all" as const, name: { zh: "全部", en: "All" } }, ...AD_TEMPLATE_GROUPS].map((g) => (
+                {[{ id: "all" as const, name: { zh: "全部", en: "All", th: "ทั้งหมด" } }, ...AD_TEMPLATE_GROUPS].map((g) => (
                   <button
                     key={g.id}
                     onClick={() => setAdTemplateGroup(g.id)}
@@ -1255,7 +1256,7 @@ export default function NewProjectPage() {
                         : "border-border/50 bg-muted/20 text-muted-foreground hover:border-primary/40"
                     }`}
                   >
-                    {locale === "zh" ? g.name.zh : g.name.en}
+                    {locale === "th" ? (g.name as { th?: string; en: string }).th ?? g.name.en : locale === "zh" ? g.name.zh : g.name.en}
                     {g.id !== "all" && (
                       <span className="ml-1 opacity-60">{listAdTemplates({ group: g.id }).length}</span>
                     )}

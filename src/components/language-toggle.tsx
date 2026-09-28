@@ -21,7 +21,13 @@ export function LanguageToggle({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={toggle}
-      title={locale === "zh" ? "Switch to English" : "切换到中文"}
+      title={
+        locale === "th"
+          ? "Switch to English"
+          : locale === "en"
+            ? "切换到中文"
+            : "เปลี่ยนเป็นภาษาไทย"
+      }
       className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors ${className}`}
     >
       <LuLanguages className="w-3.5 h-3.5" />
