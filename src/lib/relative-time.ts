@@ -21,16 +21,17 @@ const UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
  * ("in 2 days"), though callers here mostly pass past times.
  *
  * @param iso - ISO date string, Date instance, or null.
- * @param locale - UI locale, "zh" or "en".
+ * @param locale - UI locale, "zh", "en", or "th".
  * @returns The localized relative time, or an empty string for null/invalid input.
  */
-export function formatRelativeTime(iso: string | Date | null, locale: "zh" | "en"): string {
+export function formatRelativeTime(iso: string | Date | null, locale: "zh" | "en" | "th"): string {
   if (!iso) return "";
   const time = (iso instanceof Date ? iso : new Date(iso)).getTime();
   if (!Number.isFinite(time)) return "";
 
   const diffSec = Math.round((time - Date.now()) / 1000);
-  const rtf = new Intl.RelativeTimeFormat(locale === "zh" ? "zh-CN" : "en", { numeric: "auto" });
+  const tag = locale === "zh" ? "zh-CN" : locale === "th" ? "th-TH" : "en";
+  const rtf = new Intl.RelativeTimeFormat(tag, { numeric: "auto" });
   const abs = Math.abs(diffSec);
   for (const [unit, seconds] of UNITS) {
     if (abs >= seconds) return rtf.format(Math.trunc(diffSec / seconds), unit);

@@ -69,6 +69,32 @@ const exampleProductsByLocale: Record<Locale, ExampleProduct[]> = {
       image: "/examples/tissue.png",
     },
   ],
+  th: [
+    {
+      id: "ex-juicer",
+      name: "แก้วปั่นผลไม้พกพา",
+      category: "tech",
+      sellingPoints: "ชาร์จผ่าน USB ปั่นสดได้ทุกที่ ได้น้ำผลไม้สดใน 30 วินาที ใบมีด 6 แฉกปั่นน้ำแข็งและผลไม้เนียนละเอียด พกไปออฟฟิศ ฟิตเนส หรือท่องเที่ยวได้สะดวก ล้างทำความสะอาดง่าย ไม่ยุ่งยาก",
+      price: "690",
+      image: "/examples/juicer.png",
+    },
+    {
+      id: "ex-coffee",
+      name: "กาแฟสกัดเย็นเข้มข้น Cold Brew",
+      category: "food",
+      sellingPoints: "สูตร 0 น้ำตาล 0 ไขมัน ชงดื่มได้ใน 3 วินาที ดื่มได้ทั้งร้อนและเย็น ผสมน้ำหรือนมก็อร่อย ซองขนาดพกพาสะดวก เหมาะสำหรับคนทำงานและสายสุขภาพคุมน้ำตาล",
+      price: "290",
+      image: "/examples/coffee.png",
+    },
+    {
+      id: "ex-tissue",
+      name: "ทิชชู่เนื้อนุ่มหนาพิเศษ",
+      category: "home",
+      sellingPoints: "หนาพิเศษ 3 ชั้น โดนน้ำไม่เปื่อยยุ่ย ไม่เป็นขุย เยื่อไม้บริสุทธิ์สัมผัสอ่อนโยน ไม่ระคายเคือง ปลอดภัยสำหรับเด็กและคุณแม่ ซื้อยกลังสุดคุ้ม เหมาะสำหรับใช้ในบ้าน รถยนต์ และออฟฟิศ",
+      price: "199",
+      image: "/examples/tissue.png",
+    },
+  ],
 };
 
 // Reference script structures (high-conversion commerce shot templates, used for the "showcase" display and new-user reference)
@@ -177,6 +203,53 @@ const exampleTemplatesByLocale: Record<Locale, ExampleTemplate[]> = {
       ],
     },
   ],
+  th: [
+    {
+      id: "tpl-pain",
+      name: "เจาะจุดเจ็บปวด · 3 วินาทีทอง",
+      styleType: "pain_point",
+      styleLabel: "เจาะจุดเจ็บปวด",
+      description: "เปิดคลิป 3 วินาทีแรกด้วยการชี้ปัญหาตรงจุด ดึงดูดความสนใจและสร้างอารมณ์ร่วม นำเสนอสินค้าเป็นทางออก และปิดท้ายด้วยโปรโมชั่นจำกัดเวลา โครงสร้างยอดนิยมสำหรับการขายของ",
+      totalDuration: 28,
+      shots: [
+        { shotId: 1, type: "hook", duration: 3, description: "เปิดคลิปมุมมองบุคคลที่หนึ่งอย่างรวดเร็ว พร้อมตั้งคำถามเจาะจุดเจ็บปวด", camera: "ถือกล้องตามติด", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "คุณก็เคยเบื่อกับปัญหา___ใช่ไหม?", prompt: "" },
+        { shotId: 2, type: "pain_point", duration: 5, description: "ขยายภาพสถานการณ์ปัญหาให้เห็นชัดเจนเพื่อสร้างอารมณ์ร่วม", camera: "โคลสอัพ", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "ทุกครั้งที่เจอ___มันน่าหงุดหงิดจริงๆ", prompt: "" },
+        { shotId: 3, type: "product_reveal", duration: 4, description: "เปิดตัวสินค้า ค่อยๆ เลื่อนกล้องเข้าหาบรรจุภัณฑ์", camera: "ดอลลี่เข้าช้าๆ", visualSource: "product_image", transition: "ai_start_end", voiceover: "จนกระทั่งผมได้ลองใช้สิ่งนี้", prompt: "" },
+        { shotId: 4, type: "demo", duration: 8, description: "สาธิตจุดเด่นและผลลัพธ์การใช้งานจริง", camera: "ระยะปานกลาง", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "ดูสิ___ปัญหาหมดไปอย่างง่ายดาย", prompt: "" },
+        { shotId: 5, type: "cta", duration: 3, description: "แสดงสินค้า ราคา และตะกร้า กระตุ้นให้กดสั่งซื้อ", camera: "ภาพนิ่ง", visualSource: "product_image", transition: "direct_concat", voiceover: "โปรโมชั่นพิเศษมีจำนวนจำกัด รีบกดสั่งซื้อเลย!", prompt: "" },
+      ],
+    },
+    {
+      id: "tpl-compare",
+      name: "เปรียบเทียบรีวิว · วัดกันหมัดต่อหมัด",
+      styleType: "comparison",
+      styleLabel: "เปรียบเทียบรีวิว",
+      description: "เปรียบเทียบหลายรุ่นพร้อมกัน ใช้การทดสอบจริงแสดงจุดเด่นของสินค้า พร้อมหลักฐานความนิยม เหมาะสำหรับสินค้าที่ต้องตัดสินใจด้วยเหตุผล",
+      totalDuration: 30,
+      shots: [
+        { shotId: 1, type: "hook", duration: 3, description: "วางสินค้าหลายรุ่นเรียงกัน สร้างความน่าติดตาม", camera: "มุมสูงมุมกว้าง", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "ลงทุนซื้อมาทดสอบ 5 รุ่น เพื่อบอกว่าตัวไหนคุ้มที่สุด", prompt: "" },
+        { shotId: 2, type: "demo", duration: 9, description: "เปรียบเทียบฟังก์ชันหลักทีละจุดอย่างละเอียด", camera: "โคลสอัพเปรียบเทียบ", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "รุ่นแรกไม่ผ่าน... แต่รุ่นนี้ทำไมดีเกินคาด?", prompt: "" },
+        { shotId: 3, type: "product_reveal", duration: 4, description: "ประกาศรุ่นชนะเลิศ โคลสอัพตัวสินค้า", camera: "ซูมเข้า", visualSource: "product_image", transition: "ai_start_end", voiceover: "และผู้ชนะในวันนี้ก็คือตัวนี้เลย", prompt: "" },
+        { shotId: 4, type: "social_proof", duration: 6, description: "แสดงยอดขายและรีวิวการันตีคุณภาพ", camera: "ภาพนิ่ง", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "ยอดขายทะลุแสนชิ้น รีวิวพึงพอใจ 99%", prompt: "" },
+        { shotId: 5, type: "cta", duration: 3, description: "แนะนำช่องทางสั่งซื้อและของแถม", camera: "ภาพนิ่ง", visualSource: "product_image", transition: "direct_concat", voiceover: "กดที่ตะกร้าด้านล่าง สั่งซื้อวันนี้รับของแถมฟรีทันที", prompt: "" },
+      ],
+    },
+    {
+      id: "tpl-story",
+      name: "ละครสั้นดำเนินเรื่อง · เข้าถึงอารมณ์",
+      styleType: "story",
+      styleLabel: "เรื่องราวละคร",
+      description: "นำเสนอสินค้าผ่านเรื่องราวสั้นที่ผู้ชมเข้าถึงได้ง่าย ชูอารมณ์ความรู้สึกก่อนแล้วค่อยสอดแทรกสินค้า เหมาะสำหรับความงาม อาหาร และสินค้าไลฟ์สไตล์",
+      totalDuration: 26,
+      shots: [
+        { shotId: 1, type: "hook", duration: 3, description: "ตัวละครเปิดตัว สร้างสถานการณ์ชวนสงสัย", camera: "ระยะปานกลางด้านหน้า", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "วันนั้นเกิดเรื่องไม่คาดคิดที่น่าอายมากๆ", prompt: "" },
+        { shotId: 2, type: "pain_point", duration: 5, description: "ฉากความน่าอายหรือปัญหาที่ตัวละครเผชิญ", camera: "โคลสอัพ", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "ตอนนั้นอยากจะแทรกแผ่นดินหนีจริงๆ", prompt: "" },
+        { shotId: 3, type: "product_reveal", duration: 3, description: "สินค้าปรากฏเป็นจุดเปลี่ยนของเหตุการณ์", camera: "โคลสอัพ", visualSource: "product_image", transition: "ai_start_end", voiceover: "ยังดีที่มีสิ่งนี้ติดกระเป๋าไว้", prompt: "" },
+        { shotId: 4, type: "demo", duration: 7, description: "หลังใช้สถานการณ์พลิกกลับ แสดงผลลัพธ์ที่ดีเยี่ยม", camera: "ระยะปานกลาง", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "พอได้ใช้แล้ว ความมั่นใจกลับมาเต็มร้อยเลย", prompt: "" },
+        { shotId: 5, type: "cta", duration: 3, description: "ป้ายยาตอนจบและแนะนำให้สั่งซื้อ", camera: "ภาพนิ่ง", visualSource: "product_image", transition: "direct_concat", voiceover: "เพื่อนๆ รีบไปลองกันเลยนะ คุ้มมาก!", prompt: "" },
+      ],
+    },
+  ],
 };
 
 // Homepage "Example Showcase": a complete viewable sample (script structure + pre-composed demo clip)
@@ -229,6 +302,24 @@ const exampleShowcaseByLocale: Record<Locale, ExampleShowcase> = {
       { shotId: 2, type: "demo", duration: 5, description: "Water-absorption demo — won't tear when wet", camera: "Top-down close-up", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "Thick 3-ply — won't tear even when wet", prompt: "" },
       { shotId: 3, type: "product_reveal", duration: 4, description: "Macro close-up of the tissue texture", camera: "Macro push-in", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "Virgin wood pulp — gentle, no lint", prompt: "" },
       { shotId: 4, type: "cta", duration: 4, description: "Warm family use scene", camera: "Static", visualSource: "product_image", transition: "direct_concat", voiceover: "Buy by the case for the best value — grab it!", prompt: "" },
+    ],
+  },
+  th: {
+    id: "showcase-tissue",
+    title: "ทิชชู่หนาพิเศษ · เจาะจุดเจ็บปวด",
+    productName: "ทิชชู่เนื้อนุ่มหนาพิเศษ",
+    category: "ของใช้ในบ้าน",
+    styleLabel: "เจาะจุดเจ็บปวด",
+    totalDuration: 17,
+    resolution: "1080p",
+    aspectRatio: "9:16",
+    cover: "/examples/tissue.png",
+    videoUrl: "/examples/sample-tissue.mp4",
+    shots: [
+      { shotId: 1, type: "hook", duration: 4, description: "ภาพโคลสอัพกล่องทิชชู่ในห้องนั่งเล่น ค่อยๆ เคลื่อนกล้องเข้า", camera: "ดอลลี่เข้าช้าๆ", visualSource: "product_image", transition: "ai_start_end", voiceover: "คุณยังใช้ทิชชู่ที่เช็ดทีเดียวก็ขาดอยู่หรือเปล่า?", prompt: "" },
+      { shotId: 2, type: "demo", duration: 5, description: "สาธิตการดูดซับน้ำ โดนน้ำแล้วไม่เปื่อยขาด", camera: "มุมสูงโคลสอัพ", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "หนาพิเศษ 3 ชั้น โดนน้ำก็ยังเหนียวนุ่มไม่ขาด", prompt: "" },
+      { shotId: 3, type: "product_reveal", duration: 4, description: "ภาพมาโครโคลสอัพเนื้อสัมผัสของกระดาษทิชชู่", camera: "มาโครซูมเข้า", visualSource: "ai_generate", transition: "ai_start_end", voiceover: "ผลิตจากเยื่อไม้บริสุทธิ์ อ่อนโยน ไม่เป็นขุย", prompt: "" },
+      { shotId: 4, type: "cta", duration: 4, description: "ฉากการใช้งานที่อบอุ่นในครอบครัว", camera: "ภาพนิ่ง", visualSource: "product_image", transition: "direct_concat", voiceover: "ซื้อยกลังสุดคุ้ม กดสั่งซื้อที่ตะกร้าเลย!", prompt: "" },
     ],
   },
 };

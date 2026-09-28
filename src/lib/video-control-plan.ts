@@ -46,7 +46,7 @@ export interface VideoControlPlan extends VideoControlSummary {
 const isNonEmpty = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
 const unique = <T,>(values: T[]): T[] => [...new Set(values)];
 
-function referenceInstruction(items: VideoReferenceInput[], locale: "zh" | "en", imageOffset = 0): string {
+function referenceInstruction(items: VideoReferenceInput[], locale: "zh" | "en" | "th", imageOffset = 0): string {
   if (!items.length) return "";
   let image = imageOffset;
   let video = 0;
@@ -56,29 +56,39 @@ function referenceInstruction(items: VideoReferenceInput[], locale: "zh" | "en",
     const token = item.mediaType === "image" ? `@Image${n}` : item.mediaType === "video" ? `@Video${n}` : `@Audio${n}`;
     const role = locale === "zh"
       ? ({ keyframe: "构图关键帧", "end-frame": "目标尾帧", character: "人物身份", product: "商品外观", continuity: "上一镜连续性", motion: "动作与表演", audio: "声音与音色" } as const)[item.role]
+      : locale === "th"
+      ? ({ keyframe: "ภาพคีย์เฟรมจัดองค์ประกอบ", "end-frame": "เฟรมเป้าหมายสุดท้าย", character: "อัตลักษณ์ตัวละคร", product: "รูปลักษณ์สินค้า", continuity: "ความต่อเนื่องจากช็อตก่อนหน้า", motion: "การเคลื่อนไหวและการแสดง", audio: "เสียงและน้ำเสียง" } as const)[item.role]
       : ({ keyframe: "shot composition", "end-frame": "target ending", character: "character identity", product: "product appearance", continuity: "previous-shot continuity", motion: "motion and performance", audio: "voice and sound" } as const)[item.role];
     return `${token}=${role}`;
   });
   return locale === "zh"
     ? `参考映射：${labels.join("；")}。每份参考只用于对应职责，不要把定妆照背景或参考视频构图复制进成片；人物、商品和空间状态需跨全镜稳定。`
+    : locale === "th"
+    ? `การแมปข้อมูลอ้างอิง: ${labels.join("; ")} ใช้ข้อมูลอ้างอิงแต่ละส่วนตามหน้าที่เท่านั้น ห้ามนำพื้นหลังของภาพตัวละครหรือการจัดเฟรมของวิดีโออ้างอิงมาใส่ในผลงาน รักษาความคงที่ของตัวละคร สินค้า และมิติพื้นที่ตลอดทั้งช็อต`
     : `Reference map: ${labels.join("; ")}. Use each reference only for its declared role; do not copy a character-sheet background or reference-video framing into the result. Keep character, product, and spatial state stable throughout.`;
 }
 
-function nativeAudioInstruction(input: { voiceover?: string; description?: string; speakerVisible?: boolean; locale: "zh" | "en" }): string {
+function nativeAudioInstruction(input: { voiceover?: string; description?: string; speakerVisible?: boolean; locale: "zh" | "en" | "th" }): string {
   const voiceover = input.voiceover?.trim();
   if (voiceover) {
     if (!input.speakerVisible) {
       return input.locale === "zh"
         ? `音频方向：旁白只自然说一遍「${voiceover}」；保留符合场景的环境声与物体交互声，不要额外说词，不要生成背景音乐。`
+        : input.locale === "th"
+        ? `ทิศทางเสียง: เสียงบรรยายพูดอย่างเป็นธรรมชาติเพียงรอบเดียวว่า "${voiceover}"; รักษาระดับเสียงแวดล้อมและเสียงโต้ตอบกับวัตถุที่สมจริงตามฉาก ห้ามมีบทพูดอื่นเพิ่มเติม และห้ามสร้างดนตรีประกอบ`
         : `Audio direction: the voice-over says exactly once, “${voiceover}”. Add natural location and object sounds, no extra spoken words, and no background music.`;
     }
     return input.locale === "zh"
       ? `音频方向：画面中的说话人只自然说一遍「${voiceover}」，口型、情绪和动作严格同步；保留符合场景的环境声与物体交互声，不要额外说词，不要生成背景音乐。`
+      : input.locale === "th"
+      ? `ทิศทางเสียง: ผู้พูดในฉากพูดอย่างเป็นธรรมชาติเพียงรอบเดียวว่า "${voiceover}" ให้รูปปาก อารมณ์ และท่าทางตรงกับเสียงอย่างแม่นยำ; รักษาระดับเสียงแวดล้อมและเสียงโต้ตอบกับวัตถุที่สมจริงตามฉาก ห้ามมีบทพูดอื่นเพิ่มเติม และห้ามสร้างดนตรีประกอบ`
       : `Audio direction: the visible speaker says exactly once, “${voiceover}”. Keep lips, emotion, and body action synchronized; add natural location and object sounds, no extra spoken words, and no background music.`;
   }
   const scene = input.description?.trim();
   return input.locale === "zh"
     ? `音频方向：生成与${scene ? `“${scene}”` : "画面动作"}同步的自然环境声和物体交互声；不要说话，不要生成背景音乐。`
+    : input.locale === "th"
+    ? `ทิศทางเสียง: สร้างเสียงแวดล้อมและเสียงโต้ตอบกับวัตถุที่สอดคล้องกับ${scene ? `"${scene}"` : "การเคลื่อนไหวในภาพ"}อย่างเป็นธรรมชาติ; ห้ามมีเสียงพูด และห้ามสร้างดนตรีประกอบ`
     : `Audio direction: generate natural location and object sounds synchronized with ${scene ? `“${scene}”` : "the visible action"}; no speech and no background music.`;
 }
 
@@ -101,7 +111,7 @@ export function buildVideoControlPlan(input: {
   voiceover?: string;
   speakerVisible?: boolean;
   description?: string;
-  locale: "zh" | "en";
+  locale: "zh" | "en" | "th";
 }): VideoControlPlan {
   const capabilities = getVideoModelCapabilities(input.modelId, input.supportsAudio, input.provider);
   const optional: VideoReferenceInput[] = [

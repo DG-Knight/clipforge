@@ -133,10 +133,11 @@ function priceOf(model: Model | undefined): number | undefined {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
 
-function formatDate(value: Date | string | null | undefined, locale: "zh" | "en") {
+function formatDate(value: Date | string | null | undefined, locale: "zh" | "en" | "th") {
   if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
+  const tag = locale === "zh" ? "zh-CN" : locale === "th" ? "th-TH" : "en";
+  return Number.isNaN(date.getTime()) ? "—" : new Intl.DateTimeFormat(tag, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
 function Section({ title, hint, icon, children }: { title: string; hint?: string; icon: React.ReactNode; children: React.ReactNode }) {
@@ -523,7 +524,7 @@ export default function ProductionPage() {
           </Section>
 
           <Section title={t("diagnosis")} icon={<LuCircleAlert className="h-4 w-4" />}>
-            {diagnosis ? <div><p className="text-sm leading-6">{diagnosis.message[locale]}</p><p className="mt-3 text-xs font-medium text-muted-foreground">{t("recover")}</p><div className="mt-2 flex flex-wrap gap-1.5">{diagnosis.actions.map((action) => <span key={action} className="rounded-full border border-amber-500/25 bg-amber-500/8 px-2.5 py-1 text-[11px] text-amber-300">{t(`recovery_${action}`)}</span>)}</div></div> : <p className="flex items-center gap-2 text-sm text-muted-foreground"><LuShieldCheck className="h-4 w-4 text-emerald-400" />{t("noFailure")}</p>}
+            {diagnosis ? <div><p className="text-sm leading-6">{diagnosis.message[locale] ?? diagnosis.message.en}</p><p className="mt-3 text-xs font-medium text-muted-foreground">{t("recover")}</p><div className="mt-2 flex flex-wrap gap-1.5">{diagnosis.actions.map((action) => <span key={action} className="rounded-full border border-amber-500/25 bg-amber-500/8 px-2.5 py-1 text-[11px] text-amber-300">{t(`recovery_${action}`)}</span>)}</div></div> : <p className="flex items-center gap-2 text-sm text-muted-foreground"><LuShieldCheck className="h-4 w-4 text-emerald-400" />{t("noFailure")}</p>}
           </Section>
 
           <Section title={t("preview")} hint={t("previewDesc")} icon={<LuFilm className="h-4 w-4" />}>
@@ -534,7 +535,7 @@ export default function ProductionPage() {
           <Section title={t("repairs")} icon={<LuSparkles className="h-4 w-4" />}>
             <Button className="h-10 w-full" disabled={overview.latestComposition?.status !== "done" || busy === "qc"} onClick={runQc}>{busy === "qc" ? <LuLoaderCircle className="animate-spin motion-reduce:animate-none" /> : <LuRefreshCw />}{busy === "qc" ? t("qcRunning") : t("runQc")}</Button>
             {!overview.latestComposition?.id && <p className="mt-2 text-xs text-muted-foreground">{t("noComposition")}</p>}
-            {repairs.length > 0 && <div className="mt-3 space-y-2">{repairs.map((repair) => <div key={repair.checkId} className="rounded-lg border border-border/50 bg-background/30 p-3"><div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">{t(`stage_${repair.stage}`)}</span><span className="text-[10px] text-muted-foreground">{repair.automatic ? t("freeAutoFix") : t("manualReview")}</span></div><p className="mt-1 text-xs leading-5 text-muted-foreground">{repair.message[locale]}</p></div>)}{repairs.every((repair) => repair.automatic) && <Button variant="outline" className="h-10 w-full" disabled={busy === "repair"} onClick={applyAutomaticRepairs}>{busy === "repair" ? <LuLoaderCircle className="animate-spin motion-reduce:animate-none" /> : <LuSparkles />}{busy === "repair" ? t("repairStarting") : t("applyFreeRepairs")}</Button>}</div>}
+            {repairs.length > 0 && <div className="mt-3 space-y-2">{repairs.map((repair) => <div key={repair.checkId} className="rounded-lg border border-border/50 bg-background/30 p-3"><div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">{t(`stage_${repair.stage}`)}</span><span className="text-[10px] text-muted-foreground">{repair.automatic ? t("freeAutoFix") : t("manualReview")}</span></div><p className="mt-1 text-xs leading-5 text-muted-foreground">{repair.message[locale] ?? repair.message.en}</p></div>)}{repairs.every((repair) => repair.automatic) && <Button variant="outline" className="h-10 w-full" disabled={busy === "repair"} onClick={applyAutomaticRepairs}>{busy === "repair" ? <LuLoaderCircle className="animate-spin motion-reduce:animate-none" /> : <LuSparkles />}{busy === "repair" ? t("repairStarting") : t("applyFreeRepairs")}</Button>}</div>}
           </Section>
 
           <Section title={t("masterTitle")} hint={t("masterHint")} icon={<LuSlidersHorizontal className="h-4 w-4" />}>

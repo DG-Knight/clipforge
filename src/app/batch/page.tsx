@@ -477,6 +477,8 @@ export default function BatchPage() {
     setHomogeneity(null);
     const tasks: BatchTask[] = selected.map((p, i) => ({
       id: p.id,
+      productName: p.name,
+      status: "pending" as TaskStatus,
       ...(plan[i]
         ? {
             variation: describeSlot(

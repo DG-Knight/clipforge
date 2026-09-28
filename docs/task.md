@@ -59,9 +59,10 @@
   - [x] 8.11 เพิ่มฟิลด์ `th` และ `getMessage()` ใน `src/lib/llm-error.ts` พร้อมรักษาความเข้ากันได้ของเทสต์เดิม
   - [x] 8.12 รันการทดสอบอัตโนมัติ 115 tests ผ่าน 100%
 
-- [x] **9. บันทึกและสรุปเอกสาร (Documentation & Commit)**
-  - [x] 9.1 อัปเดต `docs/implementation-plan.md`
-  - [x] 9.2 อัปเดต `docs/task.md`
-  - [x] 9.3 อัปเดต `docs/walkthrough.md`
-  - [x] 9.4 อัปเดต `docs/changelog.md`
-  - [x] 9.5 Commit & Push งานเข้าสู่ Git Repository
+- [x] **10. สร้างตัวติดตั้ง Windows Application (.exe Installer)**
+  - [x] 10.1 ปรับแต่ง Type และฟังก์ชัน i18n สำหรับการคอมไพล์ Production Build (`Next.js Build`)
+  - [x] 10.2 เพิ่มชุดข้อมูลตัวอย่างสินค้า เทมเพลต และโชว์เคสภาษาไทยใน `src/lib/examples.ts`
+  - [x] 10.3 รองรับภาษาไทยในข้อความแจ้งเตือนข้อผิดพลาด (`friendly-error.ts`), เวลาสัมพัทธ์ (`relative-time.ts`), และการประเมินคุณภาพคลิป (`publish-readiness.ts`)
+  - [x] 10.4 ผูกรวมทรัพยากร Standalone และคอมไพล์ native modules (Better-SQLite3) เข้ากับ Electron ABI
+  - [x] 10.5 แพ็กเกจระบบเป็นไฟล์ติดตั้ง Windows NSIS Installer สำเร็จ: `release/ClipForge Setup 0.9.10.exe` (158 MB)
+
