@@ -22,11 +22,22 @@ export function resolveChineseFontFile(): string | undefined {
     // bundled project font (recommended: place a CJK ttf in public/fonts for consistent deployment)
     join(process.cwd(), "public", "fonts", "subtitle.ttf"),
     join(process.cwd(), "public", "fonts", "subtitle.otf"),
-    // common macOS Chinese fonts
+    // common Windows Chinese and Thai fonts
+    "C:\\Windows\\Fonts\\leelawad.ttf",
+    "C:\\Windows\\Fonts\\LeelaUIb.ttf",
+    "C:\\Windows\\Fonts\\tahoma.ttf",
+    "C:\\Windows\\Fonts\\msyh.ttc",
+    "C:\\Windows\\Fonts\\arial.ttf",
+    // common macOS Chinese and Thai fonts
     "/System/Library/Fonts/PingFang.ttc",
     "/System/Library/Fonts/STHeiti Medium.ttc",
     "/Library/Fonts/Arial Unicode.ttf",
-    // common Linux Chinese fonts (server deployment)
+    "/System/Library/Fonts/Supplemental/Thonburi.ttc",
+    "/System/Library/Fonts/Thonburi.ttc",
+    // common Linux Chinese and Thai fonts (server deployment)
+    "/usr/share/fonts/truetype/noto/NotoSansThai-Regular.ttf",
+    "/usr/share/fonts/opentype/noto/NotoSansThai-Regular.ttf",
+    "/usr/share/fonts/truetype/thai/tlwgtypewriter.ttf",
     "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
     "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
@@ -104,9 +115,15 @@ export function resolveChineseFontFamily(): string {
   if (p.includes("pingfang")) return "PingFang SC";
   if (p.includes("stheiti")) return "STHeiti";
   if (p.includes("hiragino")) return "Hiragino Sans GB";
+  if (p.includes("notosansthai")) return "Noto Sans Thai";
+  if (p.includes("leelawad") || p.includes("leelaui")) return "Leelawadee UI";
+  if (p.includes("thonburi")) return "Thonburi";
+  if (p.includes("tahoma")) return "Tahoma";
+  if (p.includes("msyh") || p.includes("yahei")) return "Microsoft YaHei";
   if (p.includes("notosanscjk") || p.includes("noto")) return "Noto Sans CJK SC";
   if (p.includes("wqy") || p.includes("zenhei")) return "WenQuanYi Zen Hei";
   if (p.includes("arial unicode")) return "Arial Unicode MS";
+  if (p.includes("arial")) return "Arial";
   return "PingFang SC";
 }
 
@@ -115,29 +132,62 @@ function isCJK(ch: string): boolean {
   return /[⺀-鿿豈-﫿＀-￯　-〿가-힣]/.test(ch);
 }
 
+/** Thai combining marks (vowels above/below, tone marks) have 0 horizontal display width */
+const THAI_COMBINING_MARKS = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/;
+
+/** Thai non-line-start characters (combining marks + following vowels/punctuation that cannot start a line) */
+const THAI_NO_LINE_START = /[\u0E30-\u0E3A\u0E45\u0E47-\u0E4E\u0E46\u0E2F]/;
+
 /**
  * Auto-wrap subtitle text: fold long copy into multiple lines based on frame width
  * (inserts real newlines, which drawtext supports natively).
- * Solves the issue of localised English subtitles overflowing the frame edges
- * (English subtitle strings are far longer than their Chinese equivalents).
- * Width estimation: CJK char ≈ fontSize, Latin char ≈ fontSize×0.55;
- * Latin breaks on word boundaries (no mid-word splits), CJK breaks per character.
+ * Solves the issue of localised English/Thai subtitles overflowing the frame edges.
+ * Width estimation:
+ * - Thai combining marks = 0
+ * - CJK char ≈ fontSize
+ * - Latin / Thai base char ≈ fontSize×0.55
+ * Supports word-level segmentation for Thai using Intl.Segmenter.
  * Pure function for easy unit testing.
  */
 export function wrapCaption(text: string, fontSize: number, frameWidth: number): string {
   const clean = (text || "").replace(/\s+/g, " ").trim();
   if (!clean) return clean;
   const maxWidth = frameWidth * 0.86; // side margins
-  const charW = (ch: string) => (isCJK(ch) ? fontSize : fontSize * 0.55);
+  const charW = (ch: string) => {
+    if (THAI_COMBINING_MARKS.test(ch)) return 0;
+    if (isCJK(ch)) return fontSize;
+    return fontSize * 0.55;
+  };
   const strW = (s: string) => Array.from(s).reduce((w, c) => w + charW(c), 0);
 
   const lines: string[] = [];
   let line = "";
-  // Closing punctuation must never start a line (CJK typesetting's 行首禁则): when the break
-  // point lands right before one, squeeze it onto the current line — the 14% side margin
-  // comfortably absorbs one extra glyph, and "，" opening a caption line reads as a typo.
-  const NO_LINE_START = /[。！？；，、：…!?;,.、」』”’）)\]】%]/;
+  // Closing punctuation and combining marks must never start a line
+  const NO_LINE_START = /[。！？；，、：…!?;,.、」』”’）)\]】%\u0E30-\u0E3A\u0E45\u0E47-\u0E4E\u0E46\u0E2F]/;
   const hardBreak = (token: string) => {
+    // If token contains Thai characters and Intl.Segmenter is supported, segment by Thai words
+    if (/[\u0E00-\u0E7F]/.test(token) && typeof Intl !== "undefined" && Intl.Segmenter) {
+      const seg = new Intl.Segmenter("th", { granularity: "word" });
+      for (const { segment: word } of seg.segment(token)) {
+        if (line && strW(line + word) > maxWidth) {
+          lines.push(line);
+          line = "";
+        }
+        if (strW(word) > maxWidth) {
+          for (const ch of word) {
+            if (line && strW(line + ch) > maxWidth && !NO_LINE_START.test(ch)) {
+              lines.push(line);
+              line = "";
+            }
+            line += ch;
+          }
+        } else {
+          line += word;
+        }
+      }
+      return;
+    }
+
     for (const ch of token) {
       if (line && strW(line + ch) > maxWidth && !NO_LINE_START.test(ch)) {
         lines.push(line);
@@ -146,9 +196,10 @@ export function wrapCaption(text: string, fontSize: number, frameWidth: number):
       line += ch;
     }
   };
+
   for (const token of clean.split(" ")) {
     if (strW(token) > maxWidth) {
-      // single token exceeds max width (long CJK string or very long word) → hard-break per character
+      // single token exceeds max width (long CJK/Thai string or very long word) → hard-break
       hardBreak(token);
       continue;
     }

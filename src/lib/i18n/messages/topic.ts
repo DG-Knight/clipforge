@@ -92,4 +92,49 @@ export const topic: NamespaceMessages = {
     errorGenerateCheckLlm: "Script generation failed. Check your LLM settings",
     errorGenerate: "Script generation failed",
   },
+  th: {
+    // แถบส่วนหัวของหน้า
+    heroBadge: "ไม่ต้องใช้สินค้า · พิมพ์ประโยคเดียวเป็นคลิป",
+    heroTitle: "พิมพ์ประโยคเดียวเป็นคลิป",
+    heroSubtitle:
+      "เพียงระบุหัวข้อสั้นๆ ประโยคเดียว AI จะเขียนบทบรรยายและดึงฟุตเทจฟรีให้ทันที จากนั้นเพียงกด「มีเดีย」และ「รวมคลิป」ก็จะได้วิดีโอสั้นแนวตั้งทันที ทำได้ทุกหัวข้อ ไม่จำกัดเฉพาะการขายของ",
+    // แจ้งเตือนเมื่อยังไม่ตั้งค่า LLM
+    llmBannerTitle: "ต้องตั้งค่า LLM ก่อนจึงจะสร้างสคริปต์ได้",
+    llmBannerDesc: "จำเป็นต้องระบุ LLM ที่ใช้เขียนสคริปต์ (Base URL / API Key / ชื่อโมเดล) ในหน้า「ตั้งค่า」",
+    llmBannerCta: "คลิกไปที่หน้าตั้งค่า →",
+    // ช่องใส่หัวข้อ
+    topicLabel: "หัวข้อของคุณในหนึ่งประโยค",
+    topicPlaceholder: "เช่น: วิธีดริปกาแฟง่ายๆ ดื่มเองที่บ้าน",
+    tryLabel: "ลองหัวข้อนี้:",
+    exampleTopic1: "วิธีดริปกาแฟง่ายๆ ดื่มเองที่บ้าน",
+    exampleTopic2: "ทำไมแสงไฟเมืองยามค่ำคืนถึงฮีลใจ",
+    exampleTopic3: "3 นิสัยเล็กๆ ที่เปลี่ยนเช้าวันใหม่ให้มีพลัง",
+    exampleTopic4: "5 กิจกรรมน่าทำในวันฝนตก",
+    exampleTopic5: "ทำไมเราถึงคิดถึงวัยเด็กเสมอ",
+    // สไตล์เสียงบรรยาย
+    narrationLabel: "สไตล์บทบรรยาย",
+    narration_knowledge_label: "ให้ความรู้และสาระ",
+    narration_knowledge_desc: "อธิบายเรื่องยากให้เข้าใจง่าย ได้เกร็ดความรู้ใหม่",
+    narration_story_label: "เล่าเรื่องกินใจ",
+    narration_story_desc: "การเล่าเรื่องที่ดึงดูดอารมณ์และสร้างความรู้สึกร่วม",
+    narration_lifestyle_label: "ไลฟ์สไตล์",
+    narration_lifestyle_desc: "เสียงบรรยายสไตล์ Vlog พรีเมียม มีรสนิยม",
+    narration_inspiration_label: "คำคมสร้างแรงบันดาลใจ",
+    narration_inspiration_desc: "จังหวะกระชับ โดนใจ ชวนกดไลก์และเซฟ",
+    narration_travel_label: "ท่องเที่ยวและธรรมชาติ",
+    narration_travel_desc: "จุดหมายปลายทางและวิวสวยๆ ที่เห็นแล้วอยากออกเดินทาง",
+    // ความยาว
+    durationLabel: "ความยาวเป้าหมาย",
+    // ปุ่มสร้าง
+    generatingScript: "AI กำลังเขียนสคริปต์…",
+    ctaGenerate: "สร้างสคริปต์",
+    // ขั้นตอนการทำงาน
+    flowStep1: "1 เขียนสคริปต์",
+    flowStep2: "2 จับคู่วิดีโออัตโนมัติ",
+    flowStep3: "3 รวมเป็นคลิปสำเร็จ",
+    // ข้อผิดพลาด
+    errorNoLlm: "ยังไม่ได้ตั้งค่า LLM โปรดกรอก API Key ในหน้า「ตั้งค่า」ก่อน",
+    errorGenerateCheckLlm: "สร้างสคริปต์ไม่สำเร็จ โปรดตรวจสอบการตั้งค่า LLM",
+    errorGenerate: "สร้างสคริปต์ไม่สำเร็จ",
+  },
 };

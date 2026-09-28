@@ -782,6 +782,24 @@ describe("字幕换行宽度估算（多语言）", () => {
     for (const l of lines) expect(w(l)).toBeLessThanOrEqual(maxWidth + 1);
     expect(lines.length).toBeGreaterThan(1); // this long sentence should actually wrap
   });
+
+  it("ข้อความภาษาไทยตัดคำและตัดบรรทัดได้อย่างถูกต้อง ไม่ล้นความกว้างสูงสุด และไม่เริ่มบรรทัดด้วยสระ/วรรณยุกต์ลอย", () => {
+    const fontSize = 48, frameWidth = 720;
+    const maxWidth = frameWidth * 0.86;
+    const th = "ยินดีต้อนรับสู่ระบบสร้างวิดีโอสั้นอัจฉริยะที่จะช่วยให้คุณสร้างคลิปได้อย่างรวดเร็วและมืออาชีพ";
+    const lines = wrapCaption(th, fontSize, frameWidth).split("\n");
+
+    const thaiCombining = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/;
+    const thaiNoLineStart = /[\u0E30-\u0E3A\u0E45\u0E47-\u0E4E\u0E46\u0E2F]/;
+    const w = (s: string) => [...s].reduce((acc, c) => acc + (thaiCombining.test(c) ? 0 : fontSize * 0.55), 0);
+
+    expect(lines.length).toBeGreaterThan(1);
+    for (const l of lines) {
+      expect(w(l)).toBeLessThanOrEqual(maxWidth + 1);
+      // ตัวแรกของบรรทัดต้องไม่ใช่สระบน-ล่าง หรือวรรณยุกต์
+      expect(thaiNoLineStart.test(l[0])).toBe(false);
+    }
+  });
 });
 
 describe("composeErrorMessage（ffmpeg 合成错误归类）", () => {

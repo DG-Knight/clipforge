@@ -21,7 +21,7 @@ import { production } from "./production";
 import { transcript } from "./transcript";
 import { materials } from "./materials";
 
-// 所有命名空间集中注册（新增页面时在此追加一行）
+// รวมการลงทะเบียนทุก Namespace ไว้ที่นี่
 const namespaces = {
   common,
   home,
@@ -46,8 +46,9 @@ const namespaces = {
   materials,
 };
 
-/** messages[locale][namespace][key] = 翻译文本 */
+/** messages[locale][namespace][key] = ข้อความคำแปล */
 export const messages: Record<Locale, Record<string, Record<string, string>>> = {
   zh: Object.fromEntries(Object.entries(namespaces).map(([ns, m]) => [ns, m.zh])),
   en: Object.fromEntries(Object.entries(namespaces).map(([ns, m]) => [ns, m.en])),
+  th: Object.fromEntries(Object.entries(namespaces).map(([ns, m]) => [ns, m.th])),
 };

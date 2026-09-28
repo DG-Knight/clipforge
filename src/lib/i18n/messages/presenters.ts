@@ -11,4 +11,8 @@ export const presenters: NamespaceMessages = {
     pageTitle: "Presenter library",
     pageSubtitle: "Make your on-camera people reusable assets: style once, keep the same face across grids and films",
   },
+  th: {
+    pageTitle: "คลังผู้ประกาศ",
+    pageSubtitle: "เปลี่ยนผู้บรรยายหน้ากล้องเป็นสินทรัพย์ที่นำกลับมาใช้ใหม่ได้: สร้างภาพอ้างอิงครั้งเดียว ล็อกใบหน้าเดิมได้ตลอดทุกคลิป",
+  },
 };

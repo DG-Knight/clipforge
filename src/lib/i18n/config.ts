@@ -1,26 +1,29 @@
-/** Locale configuration: Chinese is the default/primary language; English is the globally switchable alternative */
-export const LOCALES = ["zh", "en"] as const;
+/** การกำหนดค่าภาษา (Locale configuration): ภาษาจีนเป็นภาษาเริ่มต้นเดิม, ภาษาอังกฤษและภาษาไทยเป็นภาษาที่สามารถสลับใช้งานได้ */
+export const LOCALES = ["zh", "en", "th"] as const;
 export type Locale = (typeof LOCALES)[number];
 
-/** Default locale: Chinese first */
+/** ภาษาเริ่มต้น: ภาษาจีน */
 export const DEFAULT_LOCALE: Locale = "zh";
 
-/** Labels shown in the language switcher */
+/** ป้ายกำกับที่แสดงในตัวสลับภาษา (Language Switcher) */
 export const LOCALE_LABELS: Record<Locale, string> = {
   zh: "中文",
   en: "English",
+  th: "ไทย",
 };
 
-/** Bilingual message entries for a single namespace (one page/module) */
+/** โครงสร้างข้อความในแต่ละ Namespace รองรับ 3 ภาษา (zh, en, th) */
 export interface NamespaceMessages {
   zh: Record<string, string>;
   en: Record<string, string>;
+  th: Record<string, string>;
 }
 
 /**
- * Auto-detects the UI locale from the user's system/browser language.
- * Chinese systems (zh / zh-CN / zh-TW…) → zh; everything else → en (English as the global fallback).
- * Returns the default locale in environments without navigator (SSR).
+ * ตรวจจับภาษาอัตโนมัติจากเบราว์เซอร์หรือระบบของผู้ใช้
+ * หากระบบเป็นภาษาจีน (zh) -> "zh"
+ * หากระบบเป็นภาษาไทย (th) -> "th"
+ * อื่นๆ -> "en"
  */
 export function detectBrowserLocale(): Locale {
   if (typeof navigator === "undefined") return DEFAULT_LOCALE;
@@ -29,8 +32,10 @@ export function detectBrowserLocale(): Locale {
     : [navigator.language]) as string[];
   for (const l of langs) {
     if (!l) continue;
-    if (l.toLowerCase().startsWith("zh")) return "zh";
-    // Any explicit non-Chinese language match falls back to English (we only support zh/en)
+    const lower = l.toLowerCase();
+    if (lower.startsWith("zh")) return "zh";
+    if (lower.startsWith("th")) return "th";
+    // ภาษาอื่นนอกจากนี้ใช้ภาษาอังกฤษเป็นค่ากลางสากล
     return "en";
   }
   return DEFAULT_LOCALE;

@@ -89,4 +89,47 @@ export const generationSettings: NamespaceMessages = {
     motionStrength: "Motion strength",
     videoNegativePlaceholder: "Elements to avoid",
   },
+  th: {
+    // ประเภทสื่อ
+    mediaImage: "สร้างภาพ",
+    mediaVideo: "สร้างวิดีโอ",
+    platformDefault: "ค่าเริ่มต้นของแพลตฟอร์ม",
+
+    // จุดเชื่อมต่อโมเดลกำหนดเอง
+    customModelTitle: "จุดเชื่อมต่อโมเดลที่กำหนดเอง",
+    customModelDesc:
+      "ผูก Model ID ใดๆ เข้ากับแพลตฟอร์มที่มีอยู่ เมื่อเพิ่มแล้วจะสามารถเลือกใน「โมเดลสร้างภาพ/วิดีโอเริ่มต้น」ด้านบนได้ทันที (ใช้ API Key ร่วมกับแพลตฟอร์ม AI)",
+    fieldProvider: "แพลตฟอร์ม",
+    fieldType: "ประเภท",
+    fieldModelId: "Model ID",
+    modelIdPlaceholder: "เช่น fal-ai/flux-pro/v1.1",
+    fieldName: "ชื่อที่แสดง (ไม่บังคับ)",
+    namePlaceholder: "หากเว้นว่างจะใช้ Model ID",
+    audioCheckbox: "โมเดลวิดีโอนี้สร้างเสียงมาด้วยในตัว (ข้ามขั้นตอน TTS)",
+    addModel: "เพิ่มโมเดล",
+    audioSuffix: " · มีเสียงในตัว",
+    delete: "ลบ",
+
+    // พารามิเตอร์การสร้าง
+    genParamsTitle: "พารามิเตอร์การสร้าง (ค่าเริ่มต้นส่วนกลาง)",
+    genParamsDesc: "ใช้ร่วมกันในการสร้างภาพและวิดีโอ ช่องตัวเลขที่เว้นว่างไว้จะใช้ค่าเริ่มต้นของโมเดลนั้นๆ",
+    imageSection: "รูปภาพ",
+    aspectRatio: "อัตราส่วนภาพ",
+    aspect916: "9:16 แนวตั้ง",
+    aspect169: "16:9 แนวนอน",
+    aspect11: "1:1 จัตุรัส",
+    count: "จำนวนที่สร้าง",
+    steps: "จำนวนสเต็ป (Inference Steps)",
+    guidanceScale: "ค่าควบคุมความตรงคำสั่ง (Guidance Scale)",
+    seed: "ค่าสุ่ม (Seed)",
+    seedPlaceholder: "สุ่ม",
+    negativePrompt: "คำสั่งสิ่งที่ไม่ต้องการ (Negative Prompt, ไม่บังคับ)",
+    imageNegativePlaceholder: "สิ่งที่ไม่ต้องการให้มีในภาพ เช่น เบลอ, ตัวหนังสือ, ลายน้ำ",
+    videoSection: "วิดีโอ (ช็อตเคลื่อนไหว)",
+    resolution: "ความละเอียด",
+    duration: "ความยาว (วินาที)",
+    fps: "เฟรมเรต (FPS)",
+    motionStrength: "ความแรงของการเคลื่อนไหว",
+    videoNegativePlaceholder: "สิ่งที่ไม่ต้องการให้มีในวิดีโอ",
+  },
 };
