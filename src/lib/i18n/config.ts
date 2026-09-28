@@ -26,6 +26,15 @@ export interface NamespaceMessages {
  * อื่นๆ -> "en"
  */
 export function detectBrowserLocale(): Locale {
+  if (typeof window !== "undefined" && typeof location !== "undefined") {
+    try {
+      const params = new URLSearchParams(location.search);
+      const lang = params.get("lang");
+      if (lang === "th" || lang === "zh" || lang === "en") return lang;
+    } catch {
+      // ignore
+    }
+  }
   if (typeof navigator === "undefined") return DEFAULT_LOCALE;
   const langs = (navigator.languages && navigator.languages.length
     ? navigator.languages
@@ -33,10 +42,13 @@ export function detectBrowserLocale(): Locale {
   for (const l of langs) {
     if (!l) continue;
     const lower = l.toLowerCase();
-    if (lower.startsWith("zh")) return "zh";
     if (lower.startsWith("th")) return "th";
-    // ภาษาอื่นนอกจากนี้ใช้ภาษาอังกฤษเป็นค่ากลางสากล
-    return "en";
+    if (lower.startsWith("zh")) return "zh";
+  }
+  // หากพบภาษาอังกฤษเป็นหลัก
+  for (const l of langs) {
+    if (!l) continue;
+    if (l.toLowerCase().startsWith("en")) return "en";
   }
   return DEFAULT_LOCALE;
 }

@@ -26,7 +26,7 @@ export function LocaleInitializer() {
   // sync <html lang>
   useEffect(() => {
     if (typeof document !== "undefined") {
-      document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+      document.documentElement.lang = locale === "zh" ? "zh-CN" : locale === "th" ? "th" : "en";
     }
   }, [locale]);
 
