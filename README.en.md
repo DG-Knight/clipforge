@@ -10,7 +10,7 @@
 
 <p align="center"><strong>🧑‍🎓 First time here? Start with the 👉 <a href="TUTORIAL.en.md">beginner tutorial (every step spelled out)</a></strong> · <a href="TUTORIAL.md">中文教程</a><br/><sub>Install · add one key · your first free video in 3 minutes · troubleshooting table · where your data lives</sub></p>
 
-<p align="right"><strong>English</strong> · <a href="README.md">中文</a></p>
+<p align="right"><a href="README.md">ไทย</a> · <strong>English</strong> · <a href="README.zh.md">中文</a></p>
 
 <p align="center">
   <img src="https://github.com/xixihhhh/clipforge/actions/workflows/ci.yml/badge.svg" alt="CI" />

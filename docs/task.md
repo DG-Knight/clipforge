@@ -40,7 +40,12 @@
   - [x] 5.3 เพิ่มเคสทดสอบ `wrapCaption` ภาษาไทยใน `src/lib/__tests__/backend.test.ts`
   - [x] 5.4 รันชุดทดสอบด้วย Vitest ผ่านครบทุกการทดสอบ
 
-- [x] **6. บันทึกและสรุปเอกสาร (Documentation & Changelog)**
-  - [x] 6.1 สร้างและอัปเดต `docs/walkthrough.md`
-  - [x] 6.2 สร้างและอัปเดต `docs/changelog.md`
-  - [x] 6.3 Commit งานเข้าสู่ Git
+- [x] **6. เอกสาร README ภาษาไทยฉบับสมบูรณ์ (ทางเลือกที่ 2)**
+  - [x] 6.1 ย้ายเอกสารภาษาจีนเดิมไปที่ `README.zh.md`
+  - [x] 6.2 แปลงไฟล์หลัก `README.md` เป็นภาษาไทยฉบับสมบูรณ์ พร้อมภาพรวม ฟีเจอร์เด่น และขั้นตอนติดตั้ง
+  - [x] 6.3 อัปเดตแถบสลับภาษาเชื่อมโยงกันระหว่าง `README.md` (ไทย), `README.en.md` (อังกฤษ), และ `README.zh.md` (จีน)
+
+- [x] **7. บันทึกและสรุปเอกสาร (Documentation & Changelog)**
+  - [x] 7.1 อัปเดต `docs/walkthrough.md`
+  - [x] 7.2 อัปเดต `docs/changelog.md`
+  - [x] 7.3 Commit งานเข้าสู่ Git
