@@ -144,20 +144,37 @@ export async function generateSpeech(text: string, config: TTSConfig): Promise<B
  * Calibrated for zh narration voices at 1.0x speed (~4.2 CJK chars/sec, ~2.8 Latin
  * words/sec, plus punctuation pauses) and deliberately errs long by 15%: extra tail
  * silence is harmless, while an under-estimate cuts speech.
+ * Thai (Premwadee/Niwat at 1.0x) runs ~8 base chars/sec; combining vowels/tone marks
+ * (U+0E31, U+0E34–0E3A, U+0E47–0E4E) take no speaking time and are excluded from the count.
+ */
+/**
+ * Rough speech-duration estimate in seconds, used when ffprobe cannot report the length
+ * of a synthesized audio file (issue #14: a failed probe fell back to the script's guessed
+ * shot duration, hard-trimming the narration mid-sentence).
+ * Calibrated for zh narration voices at 1.0x speed (~4.2 CJK chars/sec, ~2.8 Latin
+ * words/sec, plus punctuation pauses) and deliberately errs long by 15%: extra tail
+ * silence is harmless, while an under-estimate cuts speech.
+ * Thai (Premwadee/Niwat at 1.0x) runs ~8 base chars/sec; combining vowels/tone marks
+ * (U+0E31, U+0E34-U+0E3A, U+0E47-U+0E4E) take no speaking time and are excluded from
+ * the count. Previously spaceless Thai fell into the Latin bucket as a single "word"
+ * (~0.4s for a whole sentence) and narrations were cut mid-sentence.
  */
 export function estimateSpeechSeconds(text: string): number {
   const clean = (text || "").replace(/\s+/g, " ").trim();
   if (!clean) return 0;
   let cjkChars = 0;
+  let thaiChars = 0;
   let pauses = 0;
   let latin = "";
   for (const ch of Array.from(clean)) {
     if (/[⺀-鿿豈-﫿぀-ヿ가-힣]/.test(ch)) cjkChars++;
-    else if (/[。！？；，、：…!?;,.]/.test(ch)) pauses++;
+    else if (/[\u0E00-\u0E7F]/.test(ch)) {
+      if (!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)) thaiChars++;
+    } else if (/[，。！？；，、：…!?;,.\u0E2F]/.test(ch)) pauses++;
     else latin += ch;
   }
   const latinWords = latin.split(/\s+/).filter(Boolean).length;
-  const sec = cjkChars / 4.2 + latinWords / 2.8 + pauses * 0.2;
+  const sec = cjkChars / 4.2 + thaiChars / 8 + latinWords / 2.8 + pauses * 0.2;
   return Math.max(1, sec * 1.15);
 }
 

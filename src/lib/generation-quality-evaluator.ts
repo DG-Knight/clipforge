@@ -15,7 +15,7 @@ export async function evaluateGenerationQuality(input: {
   contract: ShotQualityContract;
   outputImageDataUrl: string;
   referenceImageUrls?: string[];
-  locale: "zh" | "en";
+  locale: "zh" | "en" | "th";
   config: LLMConfig;
   sampleContext?: string;
 }): Promise<GenerationQualityReport> {

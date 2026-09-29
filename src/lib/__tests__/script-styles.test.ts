@@ -75,6 +75,13 @@ describe("assignCharacterVoices（免费多音色分配）", () => {
     expect([...m.values()][0]).not.toBe("zh-CN-XiaoxiaoNeural");
   });
 
+  it("ไทย：旁白ไทยได้เสียงละครไทย (Premwadee/Niwat)", () => {
+    const m = assignCharacterVoices(cast(1, "female"), "th-TH-PremwadeeNeural");
+    expect([...m.values()][0]).toBe("th-TH-PremwadeeNeural");
+    const mm = assignCharacterVoices(cast(1, "male"), "th-TH-NiwatNeural");
+    expect([...mm.values()][0]).toBe("th-TH-NiwatNeural");
+  });
+
   it("男女混排各用各池；重复 id 只分配一次", () => {
     const c: ScriptCharacter[] = [
       { id: "a", name: "A", gender: "female" },

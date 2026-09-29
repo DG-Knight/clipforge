@@ -43,6 +43,16 @@ describe("splitKaraokeUnits", () => {
     expect(splitKaraokeUnits("")).toEqual([]);
     expect(splitKaraokeUnits("   ")).toEqual([]);
   });
+  it("泰语按词切（不再整句一个单元）", () => {
+    const units = splitKaraokeUnits("สวัสดีครับเพื่อนๆ");
+    expect(units.length).toBeGreaterThan(1);
+    expect(units.join("")).toBe("สวัสดีครับเพื่อนๆ");
+  });
+  it("泰英混排各按各切", () => {
+    const units = splitKaraokeUnits("ลด 50% sale");
+    expect(units.join("")).toBe("ลด 50% sale");
+    expect(units.length).toBeGreaterThan(2);
+  });
 });
 
 describe("buildKaraokeAss", () => {

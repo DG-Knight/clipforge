@@ -37,6 +37,13 @@ describe("buildVariationPlan", () => {
     expect(plan.filter((s) => s.bgm).every((s) => !!s.bgmMood)).toBe(true);
   });
 
+  it("voiceLang th-TH rotates Thai voices instead of Chinese ones", () => {
+    const plan = buildVariationPlan({ count: 3, category: "beauty", voiceLang: "th-TH", seed: 1 });
+    const voices = plan.map((s) => s.voice ?? "");
+    expect(voices.length).toBe(3);
+    expect(voices.every((v) => v.startsWith("th-TH-"))).toBe(true);
+  });
+
   it("describeSlot renders a readable one-liner", () => {
     const [slot] = buildVariationPlan({ count: 1, category: "beauty", styleType: "auto", seed: 1 });
     const text = describeSlot(slot, { pain_point: "痛点式" });

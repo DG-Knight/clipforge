@@ -112,6 +112,15 @@ describe("transcript edit ranges", () => {
     ] };
     expect(detectFillerWordIds(fillers)).toEqual(["a", "c"]);
   });
+
+  it("marks Thai fillers (เอ่อ/อืม/ครับ) for review", () => {
+    const fillers = { ...document, words: [
+      { id: "a", text: "เอ่อ", start: 0, end: 0.2 },
+      { id: "b", text: "สินค้า", start: 0.3, end: 0.7 },
+      { id: "c", text: "ครับ", start: 0.8, end: 1 },
+    ] };
+    expect(detectFillerWordIds(fillers)).toEqual(["a", "c"]);
+  });
 });
 describe("transcript normalization", () => {
   it("uses the probed source duration instead of trusting a client claim", () => {

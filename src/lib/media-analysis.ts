@@ -70,8 +70,8 @@ export function parseMediaAnalysis(raw: string, mediaType: "image" | "video"): M
   return result;
 }
 
-function analysisPrompt(mediaType: "image" | "video", locale: "zh" | "en", sampleContext?: string): string {
-  const language = locale === "en" ? "English" : "简体中文";
+function analysisPrompt(mediaType: "image" | "video", locale: "zh" | "en" | "th", sampleContext?: string): string {
+  const language = locale === "en" ? "English" : locale === "th" ? "ภาษาไทย" : "简体中文";
   return `You are a senior commercial video art director. Analyze the supplied ${mediaType} visual${mediaType === "video" ? " contact sheet" : ""} and return ONLY one JSON object. Write all values in ${language}.
 ${sampleContext ? `Sampling context: ${sampleContext}` : ""}
 Do not identify real people. Describe observable visual facts, production techniques, and reusable creative direction.
@@ -100,7 +100,7 @@ JSON schema:
 export async function analyzeVisualMedia(input: {
   imageDataUrl: string;
   mediaType: "image" | "video";
-  locale: "zh" | "en";
+  locale: "zh" | "en" | "th";
   config: LLMConfig;
   sampleContext?: string;
 }): Promise<MediaAnalysisResult> {

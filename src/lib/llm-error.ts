@@ -37,14 +37,14 @@ export interface LLMClientConfig extends LLMTarget {
 export class LLMRequestError extends Error {
   readonly zh: string;
   readonly en: string;
-  readonly th?: string;
+  readonly th: string;
   readonly status?: number;
   constructor(zh: string, en: string, status?: number, options?: { cause?: unknown; th?: string }) {
     super(zh, options);
     this.name = "LLMRequestError";
     this.zh = zh;
     this.en = en;
-    this.th = options?.th;
+    this.th = options?.th || en;
     this.status = status;
   }
 
@@ -242,10 +242,16 @@ function rawDetail(err: unknown): string {
   return msg.replace(/\s+/g, " ").trim().slice(0, 180);
 }
 
-/** Bilingual message pair. */
+/** Message in the three UI locales (th optional during migration — falls back to en). */
 export interface LLMMessagePair {
   zh: string;
   en: string;
+  th?: string;
+}
+
+/** Pick a pair's text for the request locale (th→th, en→en, else zh). */
+export function pairText(pair: LLMMessagePair, locale: "zh" | "en" | "th"): string {
+  return locale === "th" ? pair.th ?? pair.en : locale === "en" ? pair.en : pair.zh;
 }
 
 /**
@@ -261,6 +267,7 @@ export function explainLLMStatus(status: number | undefined, target: LLMTarget =
     return {
       zh: "API Key 无效或无权限：请到对应平台重新复制 Key，并确认该 Key 已开通这个模型",
       en: "Invalid or unauthorized API key: copy a fresh key from the provider and make sure it can access this model",
+      th: "API Key ไม่ถูกต้องหรือไม่มีสิทธิ์: โปรดคัดลอก Key ใหม่จากผู้ให้บริการ และตรวจว่า Key นี้เปิดใช้โมเดลนี้แล้ว",
     };
   }
   if (status === 402) {
@@ -268,35 +275,41 @@ export function explainLLMStatus(status: number | undefined, target: LLMTarget =
       return {
         zh: "Pollinations 的免 Key 免费文本接口已停用（现在只会返回 402/502）：请到设置里重新点一次 Pollinations 预设，把地址换成 https://gen.pollinations.ai/v1，并到 https://enter.pollinations.ai/keys 免费注册领 Key 填入；也可改用「Ollama 本地」完全离线免费，或填自己的厂商 Key",
         en: "Pollinations' keyless free text API is retired (it now only returns 402/502): re-apply the Pollinations preset in Settings to switch the endpoint to https://gen.pollinations.ai/v1 and paste a free key from https://enter.pollinations.ai/keys — or switch to local Ollama, or use your own provider key",
+        th: "API ข้อความฟรีแบบไม่ต้องใช้ Key ของ Pollinations ปิดบริการแล้ว (ตอนนี้คืน 402/502 เท่านั้น): ไปที่หน้าตั้งค่าแล้วกดพรีเซ็ต Pollinations อีกครั้งเพื่อเปลี่ยนที่อยู่เป็น https://gen.pollinations.ai/v1 และรับ Key ฟรีที่ https://enter.pollinations.ai/keys — หรือจะใช้ Ollama ในเครื่องแบบออฟไลน์ฟรี หรือใส่ Key ของผู้ให้บริการเองก็ได้",
       };
     }
     if (isPollinations(baseUrl)) {
       return {
         zh: "Pollinations 额度不足（免费额度按天发放，用完即停）：请到 https://enter.pollinations.ai/keys 查看或领取额度，或改用「Ollama 本地」/ 自己的厂商 Key",
         en: "Pollinations credit exhausted (free pollen is granted daily and stops when spent): check https://enter.pollinations.ai/keys, or switch to local Ollama / your own provider key",
+        th: "โควตา Pollinations หมด (โควตาฟรีแจกเป็นรายวัน หมดแล้วต้องรอพรุ่งนี้): ไปดูหรือรับโควตาที่ https://enter.pollinations.ai/keys หรือเปลี่ยนไปใช้ Ollama ในเครื่อง / Key ของผู้ให้บริการเอง",
       };
     }
     return {
       zh: "接口返回「需要付费」：该账户余额或额度已用尽，请充值后重试，或在设置里换一个渠道",
       en: "The endpoint returned Payment Required: this account is out of credit — top it up or switch provider in Settings",
+      th: "ปลายทาง API แจ้งว่าต้องชำระเงิน: เครดิตหรือโควตาของบัญชีนี้หมดแล้ว — เติมเงินแล้วลองใหม่ หรือเปลี่ยนผู้ให้บริการในหน้าตั้งค่า",
     };
   }
   if (status === 404) {
     return {
       zh: `地址或模型名不存在：确认 baseUrl 是否需要以 /v1 结尾，以及模型「${model}」是否在该平台上线`,
       en: `Endpoint or model not found: check whether the baseUrl needs a /v1 suffix and whether model "${model}" exists on this platform`,
+      th: `ไม่พบที่อยู่หรือชื่อโมเดล: ตรวจว่า baseUrl ต้องลงท้ายด้วย /v1 หรือไม่ และโมเดล "${model}" เปิดให้ใช้บนแพลตฟอร์มนี้แล้วหรือยัง`,
     };
   }
   if (status === 413) {
     return {
       zh: "请求内容过大：请减少商品图片数量或缩短描述后重试",
       en: "Request payload too large: use fewer product images or a shorter description",
+      th: "เนื้อหาคำขอใหญ่เกินไป: ลดจำนวนรูปสินค้าหรือย่อคำอธิบายแล้วลองใหม่",
     };
   }
   if (status === 429) {
     return {
       zh: "触发限流（免费/公共端点很常见）：已自动重试仍失败，请等十几秒再试，或改用自己的 Key / 本地 Ollama",
       en: "Rate limited (common on free/shared endpoints): automatic retries were exhausted — wait a few seconds, or use your own key / local Ollama",
+      th: "ถูกจำกัดอัตราการเรียก (พบบ่อยบนปลายทางฟรี/สาธารณะ): ระบบลองใหม่อัตโนมัติแล้วแต่ยังไม่สำเร็จ — รอสักครู่แล้วลองอีกครั้ง หรือเปลี่ยนไปใช้ Key ของตัวเอง / Ollama ในเครื่อง",
     };
   }
   if (status === 400 || status === 422) {
@@ -307,20 +320,23 @@ export function explainLLMStatus(status: number | undefined, target: LLMTarget =
       return {
         zh: "模型输出长度不够，本次生成中途被打断：请缩短视频时长或减少分镜数量，也可在设置里换一个输出更充裕的模型（免费/公共模型的输出上限通常很小）",
         en: "The model ran out of output budget mid-generation: shorten the video or use fewer shots, or switch to a model with a larger output budget (free/shared models cap output aggressively)",
+        th: "โมเดลเขียนไม่ทันจบเพราะโควตาความยาวเอาต์พุตหมดกลางทาง: ลดความยาววิดีโอหรือจำนวนช็อตลง หรือเปลี่ยนไปใช้โมเดลที่ให้เอาต์พุตยาวกว่าในหน้าตั้งค่า (โมเดลฟรี/สาธารณะมักจำกัดความยาวเอาต์พุตไว้น้อย)",
       };
     }
     return {
       zh: "请求被拒绝（400）：多为模型名填错或该模型不支持本次参数，可换个模型再试",
       en: "Request rejected (400): usually a wrong model name or a parameter this model does not support — try another model",
+      th: "คำขอถูกปฏิเสธ (400): มักเกิดจากชื่อโมเดลผิดหรือโมเดลนี้ไม่รองรับพารามิเตอร์ที่ส่งไป — ลองเปลี่ยนไปใช้โมเดลอื่น",
     };
   }
   if (status !== undefined && status >= 500) {
     return {
       zh: "对方服务暂时不可用（5xx）：已自动重试仍失败，请稍后再试或在设置里换一个渠道",
       en: "The provider is temporarily unavailable (5xx): automatic retries were exhausted — try again later or switch provider in Settings",
+      th: "ฝั่งผู้ให้บริการขัดข้องชั่วคราว (5xx): ระบบลองใหม่อัตโนมัติแล้วแต่ยังไม่สำเร็จ — โปรดลองภายหลังหรือเปลี่ยนผู้ให้บริการในหน้าตั้งค่า",
     };
   }
-  return { zh: "LLM 请求失败", en: "LLM request failed" };
+  return { zh: "LLM 请求失败", en: "LLM request failed", th: "คำขอไปยัง LLM ล้มเหลว" };
 }
 
 /**
@@ -328,7 +344,7 @@ export function explainLLMStatus(status: number | undefined, target: LLMTarget =
  * Connection-level failures come from the SDK's typed errors (no HTTP status exists for them);
  * everything else is keyed off the status via explainLLMStatus.
  */
-export function explainLLMError(err: unknown, target: LLMTarget = {}): { zh: string; en: string; status?: number } {
+export function explainLLMError(err: unknown, target: LLMTarget = {}): { zh: string; en: string; th: string; status?: number } {
   const status = llmErrorStatus(err);
   const detail = rawDetail(err);
   // Match on the untruncated message (providers bury the useful phrase behind a JSON envelope) but
@@ -336,9 +352,10 @@ export function explainLLMError(err: unknown, target: LLMTarget = {}): { zh: str
   const full = target.detail ?? (err instanceof Error ? err.message : String(err ?? ""));
   const model = target.model || "?";
   const baseUrl = target.baseUrl || "?";
-  const withCtx = ({ zh, en }: LLMMessagePair) => ({
+  const withCtx = ({ zh, en, th }: LLMMessagePair) => ({
     zh: `${zh}（模型: ${model}，地址: ${baseUrl}）｜原始报错: ${detail}`,
     en: `${en} (model: ${model}, endpoint: ${baseUrl}) | raw: ${detail}`,
+    th: `${th ?? en} (model: ${model}, endpoint: ${baseUrl}) | raw: ${detail}`,
     status,
   });
 
@@ -346,22 +363,24 @@ export function explainLLMError(err: unknown, target: LLMTarget = {}): { zh: str
     return withCtx({
       zh: "请求超时：网络不稳或该端点响应过慢，请重试；国内访问海外端点建议配置代理",
       en: "Request timed out: unstable network or a slow endpoint — retry, and consider a proxy for overseas endpoints",
+      th: "คำขอหมดเวลา: เครือข่ายไม่เสถียรหรือปลายทางตอบช้า — โปรดลองใหม่ และถ้าเข้าถึงปลายทางต่างประเทศลำบาก ลองตั้งค่าพร็อกซี",
     });
   }
   if (err instanceof APIConnectionError) {
     return withCtx({
       zh: "连不上这个 API 地址：请检查网络/代理是否可访问该域名；本地 Ollama 需先启动服务（ollama serve）",
       en: "Cannot reach the API endpoint: check network/proxy access to this host; a local Ollama needs `ollama serve` running",
+      th: "เชื่อมต่อกับที่อยู่ API นี้ไม่ได้: ตรวจว่าเครือข่าย/พร็อกซีเข้าถึงโดเมนนี้ได้หรือไม่ — ถ้าใช้ Ollama ในเครื่องต้องเปิดบริการก่อน (ollama serve)",
     });
   }
   return withCtx(explainLLMStatus(status, { ...target, detail: full }));
 }
 
-/** Wrap any provider error into an LLMRequestError carrying actionable bilingual text. */
+/** Wrap any provider error into an LLMRequestError carrying actionable multilingual text. */
 export function toLLMRequestError(err: unknown, target: LLMTarget = {}): LLMRequestError {
   if (err instanceof LLMRequestError) return err;
-  const { zh, en, status } = explainLLMError(err, target);
-  return new LLMRequestError(zh, en, status, { cause: err });
+  const { zh, en, th, status } = explainLLMError(err, target);
+  return new LLMRequestError(zh, en, status, { cause: err, th });
 }
 
 /**
@@ -380,19 +399,23 @@ export async function withLLMErrors<T>(fn: () => Promise<T>, target: LLMClientCo
     // 404, so the happy path and every other failure keep their timing.
     if (wrapped.status === 404 && target.baseUrl) {
       const hint = modelListHint(await listModels(target.baseUrl, target.apiKey || ""), target.model, target.baseUrl);
-      if (hint) throw new LLMRequestError(`${wrapped.zh}｜${hint.zh}`, `${wrapped.en} | ${hint.en}`, 404, { cause: err });
+      if (hint)
+        throw new LLMRequestError(`${wrapped.zh}｜${hint.zh}`, `${wrapped.en} | ${hint.en}`, 404, {
+          cause: err,
+          th: `${wrapped.th} | ${hint.th ?? hint.en}`,
+        });
     }
     throw wrapped;
   }
 }
 
 /**
- * Locale pair for any error thrown out of a generation path: an LLMRequestError keeps its two
- * locales, anything else (parse failures, DB errors) reuses its single message for both.
- * Lets API routes stay one-liners while still answering English clients in English.
+ * Locale triple for any error thrown out of a generation path: an LLMRequestError keeps its
+ * locales, anything else (parse failures, DB errors) reuses its single message for all three.
+ * Lets API routes stay one-liners while still answering English/Thai clients in their language.
  */
-export function llmErrorPair(err: unknown): { zh: string; en: string } {
-  if (err instanceof LLMRequestError) return { zh: err.zh, en: err.en };
+export function llmErrorPair(err: unknown): LLMMessagePair {
+  if (err instanceof LLMRequestError) return { zh: err.zh, en: err.en, th: err.th };
   const msg = err instanceof Error ? err.message : String(err ?? "");
-  return { zh: msg, en: msg };
+  return { zh: msg, en: msg, th: msg };
 }

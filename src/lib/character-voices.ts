@@ -9,31 +9,40 @@
  * Pure functions, unit-testable.
  */
 import type { ScriptCharacter } from "@/lib/db/schema";
+import { langOfVoice } from "@/lib/tts-voices";
 
 /**
  * Distinct-sounding zh-CN Edge voice pools. Order matters (assignment is positional per gender).
  * Xiaoxiao is deliberately NOT first in the female pool: it is the project-wide default narrator
  * voice, and a dialogue character sounding identical to the narrator kills the two-person illusion.
  */
-const FEMALE_POOL = ["zh-CN-XiaoyiNeural", "zh-CN-liaoning-XiaobeiNeural", "zh-CN-shaanxi-XiaoniNeural"];
-const MALE_POOL = ["zh-CN-YunxiNeural", "zh-CN-YunjianNeural", "zh-CN-YunyangNeural"];
+const FEMALE_POOL_ZH = ["zh-CN-XiaoyiNeural", "zh-CN-liaoning-XiaobeiNeural", "zh-CN-shaanxi-XiaoniNeural"];
+const MALE_POOL_ZH = ["zh-CN-YunxiNeural", "zh-CN-YunjianNeural", "zh-CN-YunyangNeural"];
+// Thai Edge catalogue only ships one voice per gender — pools of one, wrap-around still applies.
+const FEMALE_POOL_TH = ["th-TH-PremwadeeNeural"];
+const MALE_POOL_TH = ["th-TH-NiwatNeural"];
 
 /**
  * Assign a distinct Edge voice to each character (positional by gender, deterministic).
  * Returns characterId → voice id. Characters beyond a pool's size wrap around (voices repeat) —
  * the drama style caps the cast at 2-4, so wrapping is a degenerate case, not the norm.
+ * The pools follow the narrator voice language (Thai narration → Thai cast, so the dialogue
+ * doesn't switch language mid-video); defaults to zh-CN to keep existing callers untouched.
  */
-export function assignCharacterVoices(characters: ScriptCharacter[]): Map<string, string> {
+export function assignCharacterVoices(characters: ScriptCharacter[], narratorVoice = "zh-CN-XiaoxiaoNeural"): Map<string, string> {
+  const isTh = langOfVoice(narratorVoice) === "th-TH";
+  const femalePool = isTh ? FEMALE_POOL_TH : FEMALE_POOL_ZH;
+  const malePool = isTh ? MALE_POOL_TH : MALE_POOL_ZH;
   const out = new Map<string, string>();
   let f = 0;
   let m = 0;
   for (const c of characters) {
     if (!c?.id || out.has(c.id)) continue;
     if (c.gender === "male") {
-      out.set(c.id, MALE_POOL[m % MALE_POOL.length]);
+      out.set(c.id, malePool[m % malePool.length]);
       m++;
     } else {
-      out.set(c.id, FEMALE_POOL[f % FEMALE_POOL.length]);
+      out.set(c.id, femalePool[f % femalePool.length]);
       f++;
     }
   }

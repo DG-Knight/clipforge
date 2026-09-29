@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { settings } from "@/lib/i18n/messages/settings";
+import { pickLocaleText } from "@/lib/i18n/config";
 
 /**
  * Audit-fix regression: the settings page previously hard-coded Chinese provider names
@@ -31,5 +32,18 @@ describe("settings i18n 厂商名/错误无中文泄漏（审计修复）", () =
     expect(zh.providerVolcengineName).toBe("火山引擎");
     expect(zh.providerAlibabaName).toBe("阿里百炼");
     expect(zh.providerSiliconflowName).toBe("硅基流动");
+  });
+});
+
+describe("pickLocaleText（三语分支单点）", () => {
+  const v = { zh: "无", en: "None", th: "ไม่ใส่" };
+  it("th→th，zh→zh，其他→en", () => {
+    expect(pickLocaleText("th", v)).toBe("ไม่ใส่");
+    expect(pickLocaleText("zh", v)).toBe("无");
+    expect(pickLocaleText("en", v)).toBe("None");
+    expect(pickLocaleText(undefined, v)).toBe("None");
+  });
+  it("缺 th 时回落英文而非 key（迁移期不断档）", () => {
+    expect(pickLocaleText("th", { zh: "无", en: "None" })).toBe("None");
   });
 });

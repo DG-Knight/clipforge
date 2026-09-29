@@ -24,10 +24,10 @@ export type GateItemId = "readiness" | "qc" | "quality" | "credits" | "aiPolicy"
 export interface GateItem {
   id: GateItemId;
   status: GateStatus;
-  /** one-line summary, bilingual — UI/CLI pick by locale */
-  message: { zh: string; en: string };
+  /** one-line summary, trilingual — UI/CLI pick by locale (th optional, falls back to en) */
+  message: { zh: string; en: string; th?: string };
   /** concrete problems behind a warn/fail, ready to display as sub-lines */
-  problems: { zh: string; en: string }[];
+  problems: { zh: string; en: string; th?: string }[];
 }
 
 export interface GateReport {
@@ -35,7 +35,7 @@ export interface GateReport {
   status: GateStatus;
   items: GateItem[];
   summary: { pass: number; warn: number; fail: number };
-  verdict: { zh: string; en: string };
+  verdict: { zh: string; en: string; th?: string };
 }
 
 /**
@@ -43,7 +43,11 @@ export interface GateReport {
  * caller runs it once per locale on identical input; the item lists are index-aligned because the
  * checker is deterministic.
  */
-export function gateItemFromReadiness(zh: ReadinessReport | null, en: ReadinessReport | null): GateItem {
+export function gateItemFromReadiness(
+  zh: ReadinessReport | null,
+  en: ReadinessReport | null,
+  th: ReadinessReport | null = null
+): GateItem {
   if (!zh || !en) {
     return {
       id: "readiness",
@@ -51,14 +55,19 @@ export function gateItemFromReadiness(zh: ReadinessReport | null, en: ReadinessR
       message: {
         zh: "没有可检查的脚本——先生成并选择脚本",
         en: "No script to check — generate and select a script first",
+        th: "ยังไม่มีสคริปต์ให้ตรวจ — สร้างและเลือกสคริปต์ก่อน",
       },
       problems: [],
     };
   }
   const problems = zh.items
-    .map((item, i) => ({ item, enMsg: en.items[i]?.message ?? item.message }))
+    .map((item, i) => ({
+      item,
+      enMsg: en.items[i]?.message ?? item.message,
+      thMsg: th?.items[i]?.message ?? item.message,
+    }))
     .filter(({ item }) => item.status !== "pass")
-    .map(({ item, enMsg }) => ({ zh: item.message, en: enMsg }));
+    .map(({ item, enMsg, thMsg }) => ({ zh: item.message, en: enMsg, ...(th ? { th: thMsg } : {}) }));
   if (zh.overall === "needsWork") {
     return {
       id: "readiness",
@@ -66,6 +75,7 @@ export function gateItemFromReadiness(zh: ReadinessReport | null, en: ReadinessR
       message: {
         zh: `脚本发布就绪检查未过（${zh.fail} 项需修复、${zh.warn} 项有风险）`,
         en: `Script readiness check failed (${zh.fail} to fix, ${zh.warn} risky)`,
+        ...(th ? { th: `ตรวจความพร้อมสคริปต์ไม่ผ่าน (ต้องแก้ ${th.fail} ข้อ เสี่ยง ${th.warn} ข้อ)` } : {}),
       },
       problems,
     };
@@ -77,6 +87,7 @@ export function gateItemFromReadiness(zh: ReadinessReport | null, en: ReadinessR
       message: {
         zh: `脚本发布就绪检查有 ${zh.warn} 项风险提示`,
         en: `Script readiness check has ${zh.warn} risk warning(s)`,
+        ...(th ? { th: `ตรวจความพร้อมสคริปต์มีข้อควรระวัง ${th.warn} ข้อ` } : {}),
       },
       problems,
     };
@@ -84,7 +95,11 @@ export function gateItemFromReadiness(zh: ReadinessReport | null, en: ReadinessR
   return {
     id: "readiness",
     status: "pass",
-    message: { zh: "脚本发布就绪检查全部通过", en: "Script readiness checks all passed" },
+    message: {
+      zh: "脚本发布就绪检查全部通过",
+      en: "Script readiness checks all passed",
+      ...(th ? { th: "ตรวจความพร้อมสคริปต์ผ่านทั้งหมด" } : {}),
+    },
     problems: [],
   };
 }
@@ -95,7 +110,7 @@ export function gateItemFromQc(qc: QcReport | null): GateItem {
     return {
       id: "qc",
       status: "fail",
-      message: { zh: "还没有成片——先合成视频再过门禁", en: "No composed video yet — compose before gating" },
+      message: { zh: "还没有成片——先合成视频再过门禁", en: "No composed video yet — compose before gating", th: "ยังไม่มีวิดีโอรวมฉาก — รวมวิดีโอก่อนแล้วค่อยตรวจ" },
       problems: [],
     };
   }
@@ -105,7 +120,7 @@ export function gateItemFromQc(qc: QcReport | null): GateItem {
     return {
       id: "qc",
       status: "fail",
-      message: { zh: `成片质检不通过（${n} 项失败）`, en: `Video QC failed (${n} check(s))` },
+      message: { zh: `成片质检不通过（${n} 项失败）`, en: `Video QC failed (${n} check(s))`, th: `ตรวจคุณภาพวิดีโอไม่ผ่าน (ล้มเหลว ${n} รายการ)` },
       problems,
     };
   }
@@ -116,6 +131,7 @@ export function gateItemFromQc(qc: QcReport | null): GateItem {
       message: {
         zh: `成片质检有 ${problems.length} 项警告`,
         en: `Video QC has ${problems.length} warning(s)`,
+        th: `ตรวจคุณภาพวิดีโอมีข้อควรระวัง ${problems.length} รายการ`,
       },
       problems,
     };
@@ -123,7 +139,7 @@ export function gateItemFromQc(qc: QcReport | null): GateItem {
   return {
     id: "qc",
     status: "pass",
-    message: { zh: "成片质检通过", en: "Video QC passed" },
+    message: { zh: "成片质检通过", en: "Video QC passed", th: "ตรวจคุณภาพวิดีโอผ่าน" },
     problems: [],
   };
 }
@@ -141,7 +157,7 @@ export function gateItemFromGenerationQuality(rows: QualityGateRow[]): GateItem 
     return {
       id: "quality",
       status: "pass",
-      message: { zh: "没有需要语义验收的 AI 生成镜头", en: "No AI-generated shots require semantic review" },
+      message: { zh: "没有需要语义验收的 AI 生成镜头", en: "No AI-generated shots require semantic review", th: "ไม่มีช็อตที่ AI สร้างซึ่งต้องตรวจรับโดยคน" },
       problems: [],
     };
   }
@@ -149,18 +165,19 @@ export function gateItemFromGenerationQuality(rows: QualityGateRow[]): GateItem 
   const pending = rows.filter((row) => !row.humanDecision && !row.verdict);
   const flagged = rows.filter((row) => !row.humanDecision && (row.verdict === "review" || row.verdict === "reject"));
   const problems = [
-    ...rejected.map((row) => ({ zh: `分镜 ${row.shotId}：人工已标记不采用`, en: `Shot ${row.shotId}: explicitly rejected by the reviewer` })),
-    ...pending.map((row) => ({ zh: `分镜 ${row.shotId}：尚未运行镜头质量评估`, en: `Shot ${row.shotId}: shot quality has not been evaluated` })),
+    ...rejected.map((row) => ({ zh: `分镜 ${row.shotId}：人工已标记不采用`, en: `Shot ${row.shotId}: explicitly rejected by the reviewer`, th: `ช็อต ${row.shotId}: ผู้ตรวจปฏิเสธอย่างชัดเจน` })),
+    ...pending.map((row) => ({ zh: `分镜 ${row.shotId}：尚未运行镜头质量评估`, en: `Shot ${row.shotId}: shot quality has not been evaluated`, th: `ช็อต ${row.shotId}: ยังไม่ได้ประเมินคุณภาพช็อต` })),
     ...flagged.map((row) => ({
       zh: `分镜 ${row.shotId}：自动评估${row.overall != null ? ` ${Math.round(row.overall)} 分` : ""}，需人工确认`,
       en: `Shot ${row.shotId}: automated review${row.overall != null ? ` scored ${Math.round(row.overall)}` : ""}; human confirmation needed`,
+      th: `ช็อต ${row.shotId}: ประเมินอัตโนมัติ${row.overall != null ? ` ได้ ${Math.round(row.overall)} คะแนน` : ""} ต้องให้คนยืนยัน`,
     })),
   ];
   if (rejected.length > 0) {
     return {
       id: "quality",
       status: "fail",
-      message: { zh: `${rejected.length} 个当前镜头已被人工拒绝，请先切换或修复`, en: `${rejected.length} active shot(s) were explicitly rejected; replace or fix them before release` },
+      message: { zh: `${rejected.length} 个当前镜头已被人工拒绝，请先切换或修复`, en: `${rejected.length} active shot(s) were explicitly rejected; replace or fix them before release`, th: `มีช็อตที่ถูกปฏิเสธแล้ว ${rejected.length} ช็อต — เปลี่ยนหรือแก้ก่อนเผยแพร่` },
       problems,
     };
   }
@@ -168,14 +185,14 @@ export function gateItemFromGenerationQuality(rows: QualityGateRow[]): GateItem 
     return {
       id: "quality",
       status: "warn",
-      message: { zh: `${pending.length + flagged.length} 个 AI 镜头仍需质量确认`, en: `${pending.length + flagged.length} AI-generated shot(s) still need quality confirmation` },
+      message: { zh: `${pending.length + flagged.length} 个 AI 镜头仍需质量确认`, en: `${pending.length + flagged.length} AI-generated shot(s) still need quality confirmation`, th: `ยังมีช็อต AI ที่ต้องยืนยันคุณภาพอีก ${pending.length + flagged.length} ช็อต` },
       problems,
     };
   }
   return {
     id: "quality",
     status: "pass",
-    message: { zh: "当前 AI 镜头均已通过自动建议或人工验收", en: "All active AI-generated shots passed automated or human review" },
+    message: { zh: "当前 AI 镜头均已通过自动建议或人工验收", en: "All active AI-generated shots passed automated or human review", th: "ช็อต AI ทั้งหมดผ่านการตรวจอัตโนมัติหรือตรวจโดยคนแล้ว" },
     problems: [],
   };
 }
@@ -192,6 +209,7 @@ export function gateItemFromCredits(m: CreditsManifest | null): GateItem {
       message: {
         zh: "没有素材记录可核对授权——若用了外部素材请人工确认",
         en: "No asset records to verify licensing — confirm manually if external footage was used",
+        th: "ไม่มีบันทึกสื่อให้ตรวจสอบลิขสิทธิ์ — หากใช้สื่อจากภายนอกโปรดตรวจสอบเอง",
       },
       problems: [],
     };
@@ -205,12 +223,14 @@ export function gateItemFromCredits(m: CreditsManifest | null): GateItem {
       return {
         zh: `${zhWhere}：${i.license || "许可未知"} — ${i.note.zh}`,
         en: `${enWhere}: ${i.license || "license unknown"} — ${i.note.en}`,
+        th: `${enWhere}: ${i.license || "ไม่ทราบใบอนุญาต"} — ${i.note.th ?? i.note.en}`,
       };
     });
   if (m.summary.needsAttribution > 0) {
     problems.push({
       zh: `${m.summary.needsAttribution} 条署名行需随发布文案附上（见授权清单）`,
       en: `${m.summary.needsAttribution} attribution line(s) must accompany the post (see the manifest)`,
+      th: `ต้องแนบบรรทัดระบุที่มา ${m.summary.needsAttribution} รายการไปกับโพสต์ (ดูในรายการลิขสิทธิ์)`,
     });
   }
   if (m.summary.needsReview > 0) {
@@ -220,6 +240,7 @@ export function gateItemFromCredits(m: CreditsManifest | null): GateItem {
       message: {
         zh: `${m.summary.needsReview} 项素材许可需人工复核（NC/ND/未知）——投流前确认或替换`,
         en: `${m.summary.needsReview} asset license(s) need manual review (NC/ND/unknown) — confirm or replace before running ads`,
+        th: `มีใบอนุญาตสื่อที่ต้องให้คนตรวจอีก ${m.summary.needsReview} รายการ (NC/ND/ไม่ทราบ) — ยืนยันหรือเปลี่ยนก่อนยิงแอด`,
       },
       problems,
     };
@@ -231,6 +252,7 @@ export function gateItemFromCredits(m: CreditsManifest | null): GateItem {
       message: {
         zh: `素材可商用，但 ${m.summary.needsAttribution} 条署名需随发布附上`,
         en: `Assets are commercial-safe, but ${m.summary.needsAttribution} attribution(s) must accompany the post`,
+        th: `สื่อใช้เชิงพาณิชย์ได้ แต่ต้องระบุที่มา ${m.summary.needsAttribution} รายการเมื่อเผยแพร่`,
       },
       problems,
     };
@@ -238,7 +260,7 @@ export function gateItemFromCredits(m: CreditsManifest | null): GateItem {
   return {
     id: "credits",
     status: "pass",
-    message: { zh: "素材授权可商用，无需署名", en: "Assets are commercial-safe, no attribution required" },
+    message: { zh: "素材授权可商用，无需署名", en: "Assets are commercial-safe, no attribution required", th: "สื่อใช้เชิงพาณิชย์ได้อย่างปลอดภัย ไม่ต้องระบุที่มา" },
     problems: [],
   };
 }
@@ -256,6 +278,7 @@ export function gateItemFromAiPolicy(warnings: AiCommerceWarning[]): GateItem {
       message: {
         zh: "AI 带货平台规则检查通过（测评形态/数字人类目/亲测宣称）",
         en: "AI-commerce platform-policy checks passed (review form / digital-human category / testimony claims)",
+        th: "ผ่านการตรวจกฎแพลตฟอร์ม AI คอมเมิร์ซ (รูปแบบรีวิว/หมวดดิจิทัลฮิวแมน/การอ้างทดลองจริง)",
       },
       problems: [],
     };
@@ -266,6 +289,7 @@ export function gateItemFromAiPolicy(warnings: AiCommerceWarning[]): GateItem {
     message: {
       zh: `AI 带货平台规则有 ${warnings.length} 项风险提示（抖音 2026-07 规则，功能不受限，人工确认后发布）`,
       en: `AI-commerce platform policy raised ${warnings.length} risk warning(s) (Douyin 2026-07 rules; nothing is blocked — review before publishing)`,
+      th: `กฎแพลตฟอร์ม AI คอมเมิร์ซมีข้อควรระวัง ${warnings.length} ข้อ (กฎ TikTok ปี 2026 — ไม่ปิดกั้นฟีเจอร์ ตรวจสอบก่อนเผยแพร่)`,
     },
     problems: warnings.map((w) => w.message),
   };
@@ -284,6 +308,7 @@ export function gateItemFromRealMix(mix: RealMixReport | null): GateItem {
       message: {
         zh: "无脚本/素材，实拍占比暂不可计算",
         en: "No script/assets yet — real-footage share not computable",
+        th: "ยังไม่มีสคริปต์/สื่อ — ยังคำนวณสัดส่วนฟุตเทจจริงไม่ได้",
       },
       problems: [],
     };
@@ -302,15 +327,18 @@ export function buildGateReport(items: GateItem[]): GateReport {
       ? {
           zh: "未过发布门禁——存在必须修复的问题，请勿直接发布/投流",
           en: "Release gate failed — fix the blocking issues before publishing or running ads",
+          th: "ไม่ผ่านประตูก่อนเผยแพร่ — มีปัญหาที่ต้องแก้ก่อน ห้ามเผยแพร่หรือยิงแอดทันที",
         }
       : status === "warn"
         ? {
             zh: "有条件通过——存在需人工确认的风险项，确认后再发布",
             en: "Conditionally passed — review the flagged risks before publishing",
+            th: "ผ่านแบบมีเงื่อนไข — มีความเสี่ยงที่ต้องให้คนยืนยัน ตรวจสอบก่อนเผยแพร่",
           }
         : {
             zh: "通过发布门禁——自动检查未发现拦截项",
             en: "Release gate passed — no blocking issues found by automated checks",
+            th: "ผ่านประตูก่อนเผยแพร่ — การตรวจอัตโนมัติไม่พบปัญหาที่ขวางทาง",
           };
   return { status, items, summary: { pass, warn, fail }, verdict };
 }

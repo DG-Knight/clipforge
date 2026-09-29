@@ -22,3 +22,20 @@ python3 -m fontTools.subset noto-cjk.otf --text-file=chars.txt \
 ```
 
 > ⚠️ 子集只含常用字（覆盖自然语言旁白 99.9%）；极生僻字可能缺字。如需全覆盖换全量 Noto CJK。
+
+## 泰语 / Thai (Noto Sans Thai)
+
+`NotoSansThai-Regular.ttf` + `NotoSansThai-Bold.ttf` — Google Fonts (SIL OFL 1.1, 见 `OFL-NotoSansThai.txt`),
+纯泰语字幕时 `resolveFontFileForText()` / `resolveFontFamilyForText()` 自动选用（混排泰+CJK 时保持 CJK 字体，
+单个 drawtext 字体文件无法同时覆盖两种文字）。Sarabun 暂不打包：文档字体笔画细，小字号视频字幕可读性不如 Noto Sans Thai。
+
+ Thai subtitles use Noto Sans Thai (screen-optimized, full Thai+Latin+GPOS mark positioning);
+ Sarabun is intentionally not bundled (document typeface, too thin for small video captions).
+
+复现（variable font 取静态实例）：
+```bash
+curl -sL -o NotoSansThai-var.ttf \
+  https://raw.githubusercontent.com/google/fonts/main/ofl/notosansthai/NotoSansThai%5Bwdth%2Cwght%5D.ttf
+python3 -m fontTools.varLib.instancer NotoSansThai-var.ttf wght=400 -o NotoSansThai-Regular.ttf --update-name-table
+python3 -m fontTools.varLib.instancer NotoSansThai-var.ttf wght=700 -o NotoSansThai-Bold.ttf --update-name-table
+```

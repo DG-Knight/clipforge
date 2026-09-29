@@ -9,11 +9,11 @@ export async function POST(req: NextRequest) {
   const { provider: providerName, model, prompt, imageUrl, imageUrls, mode, apiKey, baseUrl, options } = body;
 
   if (!providerName || !model || !prompt) {
-    return apiError(req, "缺少必要参数", "Missing required parameters");
+    return apiError(req, "缺少必要参数", "Missing required parameters", "ยังไม่ได้ใส่พารามิเตอร์ที่จำเป็น");
   }
 
   if (!apiKey) {
-    return apiError(req, "缺少 API Key，请先在设置中配置对应平台", "Missing API Key, please configure the corresponding platform in settings first");
+    return apiError(req, "缺少 API Key，请先在设置中配置对应平台", "Missing API Key, please configure the corresponding platform in settings first", "ยังไม่ได้ใส่ API Key — กรุณาตั้งค่าแพลตฟอร์มที่ใช้ในหน้าตั้งค่าก่อน");
   }
 
   try {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("生图失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "生图失败", "Image generation failed") },
+      { error: error instanceof Error ? error.message : errText(req, "生图失败", "Image generation failed", "สร้างรูปไม่สำเร็จ") },
       { status: 500 }
     );
   }

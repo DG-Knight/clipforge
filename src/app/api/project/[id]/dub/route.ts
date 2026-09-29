@@ -17,7 +17,7 @@ const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
 
   let body: Record<string, unknown> = {};
   try {
@@ -26,21 +26,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     /* allow empty body; validated below */
   }
   const targetLang = typeof body.targetLang === "string" ? body.targetLang.trim() : "";
-  if (!targetLang) return apiError(req, "请指定 targetLang（如 en/ja/ko/es）", "Please specify targetLang (e.g. en/ja/ko/es)");
+  if (!targetLang) return apiError(req, "请指定 targetLang（如 en/ja/ko/es）", "Please specify targetLang (e.g. en/ja/ko/es)", "กรุณาระบุ targetLang (เช่น th/en/ja/ko/es)");
   const llmConfig = body.llmConfig as { baseUrl?: string; apiKey?: string; model?: string } | undefined;
   if (!llmConfig?.baseUrl || !llmConfig?.model) {
-    return apiError(req, "请配置 LLM 参数（baseUrl、model；本地/免费端点 apiKey 可留空）", "Please configure LLM parameters (baseUrl, model; apiKey may be left empty for local/free endpoints)");
+    return apiError(req, "请配置 LLM 参数（baseUrl、model；本地/免费端点 apiKey 可留空）", "Please configure LLM parameters (baseUrl, model; apiKey may be left empty for local/free endpoints)", "กรุณาตั้งค่าพารามิเตอร์ LLM (baseUrl, model; apiKey ปล่อยว่างได้สำหรับปลายทางฟรี/ในเครื่อง)");
   }
 
   const db = getDb();
   const [project] = await db.select().from(projects).where(eq(projects.id, id));
-  if (!project) return apiError(req, "项目不存在", "Project not found", 404);
+  if (!project) return apiError(req, "项目不存在", "Project not found", 404, "ไม่พบโปรเจกต์");
 
   const rows = await db.select().from(scriptsTable).where(eq(scriptsTable.projectId, id));
-  if (!rows.length) return apiError(req, "该项目还没有脚本", "This project has no script yet", 404);
+  if (!rows.length) return apiError(req, "该项目还没有脚本", "This project has no script yet", 404, "โปรเจกต์นี้ยังไม่มีสคริปต์");
   const source = rows.find((r) => r.selected) ?? rows[rows.length - 1];
   const shots = (source.shots ?? []) as Shot[];
-  if (!shots.length) return apiError(req, "脚本没有分镜", "The script has no shots");
+  if (!shots.length) return apiError(req, "脚本没有分镜", "The script has no shots", "สคริปต์ไม่มีช็อต");
 
   let translated: Shot[];
   try {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       model: llmConfig.model,
     });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : errText(req, "翻译失败", "Translation failed") }, { status: 502 });
+    return NextResponse.json({ error: e instanceof Error ? e.message : errText(req, "翻译失败", "Translation failed", "แปลภาษาไม่สำเร็จ") }, { status: 502 });
   }
   const totalDuration = translated.reduce((sum, sh) => sum + sh.duration, 0);
 

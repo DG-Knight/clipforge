@@ -33,17 +33,17 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return apiError(req, "请求体不是合法 JSON", "Request body is not valid JSON");
+    return apiError(req, "请求体不是合法 JSON", "Request body is not valid JSON", "ตัวคำขอไม่ใช่ JSON ที่ถูกต้อง");
   }
 
   const topic = typeof body.topic === "string" ? body.topic.trim() : "";
   if (!topic) {
-    return apiError(req, "请填写一句话主题", "Please enter a one-sentence topic");
+    return apiError(req, "请填写一句话主题", "Please enter a one-sentence topic", "กรุณากรอกหัวข้อหนึ่งประโยค");
   }
 
   const llmConfig = body.llmConfig as { baseUrl?: string; apiKey?: string; model?: string } | undefined;
   if (!llmConfig?.baseUrl || !llmConfig?.apiKey || !llmConfig?.model) {
-    return apiError(req, "请配置 LLM 参数（baseUrl、apiKey、model）", "Please configure the LLM parameters (baseUrl, apiKey, model)");
+    return apiError(req, "请配置 LLM 参数（baseUrl、apiKey、model）", "Please configure the LLM parameters (baseUrl, apiKey, model)", "กรุณาตั้งค่าพารามิเตอร์ LLM (baseUrl, apiKey, model)");
   }
 
   const narrationStyle = VALID_NARRATION.has(body.narrationStyle as TopicNarrationStyle)
@@ -64,12 +64,12 @@ export async function POST(req: NextRequest) {
       .from(projects)
       .where(eq(projects.id, projectId));
     if (exists.length === 0) {
-      return apiError(req, "项目不存在", "Project not found", 404);
+      return apiError(req, "项目不存在", "Project not found", 404, "ไม่พบโปรเจกต์");
     }
     // refuse to overwrite a product project with a topic script — it would silently convert it to topic type and delete its existing scripts
     if (exists[0].contentType === "product") {
       return NextResponse.json(
-        { error: errText(req, "该项目是带货项目，请新建主题项目而不是覆盖它", "This project is a commerce project — please create a new topic project instead of overwriting it"), projectId },
+        { error: errText(req, "该项目是带货项目，请新建主题项目而不是覆盖它", "This project is a commerce project — please create a new topic project instead of overwriting it", "โปรเจกต์นี้เป็นแบบขายของ กรุณาสร้างโปรเจกต์หัวข้อใหม่แทนการทับตัวเดิม"), projectId },
         { status: 409 }
       );
     }
@@ -93,10 +93,10 @@ export async function POST(req: NextRequest) {
       llmConfig: llmConfig as { baseUrl: string; apiKey: string; model: string },
     });
   } catch (error) {
-    // LLM failures carry an actionable bilingual message (bad key / dead free endpoint / rate limit)
-    const { zh, en } = llmErrorPair(error);
+    // LLM failures carry an actionable multilingual message (bad key / dead free endpoint / rate limit)
+    const { zh, en, th } = llmErrorPair(error);
     // project already created; return projectId so the frontend can navigate and retry
-    return NextResponse.json({ error: errText(req, `脚本生成失败: ${zh}`, `Script generation failed: ${en}`), projectId }, { status: 500 });
+    return NextResponse.json({ error: errText(req, `脚本生成失败: ${zh}`, `Script generation failed: ${en}`, `สร้างสคริปต์ไม่สำเร็จ: ${th}`), projectId }, { status: 500 });
   }
 
   // persist to DB: delete old scripts → insert new ones → select first by default → update project status to scripting
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     // DB persistence failure must return an error, never fall back to 200 — the frontend would navigate as if successful but find empty scripts (old scripts may already be deleted = data loss)
     console.error("topic script DB persistence failed:", e);
-    return NextResponse.json({ error: errText(req, "脚本落库失败，请重试", "Failed to save scripts to the database, please try again"), projectId }, { status: 500 });
+    return NextResponse.json({ error: errText(req, "脚本落库失败，请重试", "Failed to save scripts to the database, please try again", "บันทึกสคริปต์ลงฐานข้อมูลไม่สำเร็จ โปรดลองอีกครั้ง"), projectId }, { status: 500 });
   }
 
   return NextResponse.json({ projectId, scripts: savedScripts });

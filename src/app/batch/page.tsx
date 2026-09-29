@@ -21,6 +21,7 @@ import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getExampleProducts } from "@/lib/examples";
 import { buildVariationPlan, describeSlot } from "@/lib/variation-plan";
 import { useT, useLocale } from "@/lib/i18n";
+import { pickLocaleText } from "@/lib/i18n/config";
 
 // Video mode options (labelKey refers to a batch-namespace i18n key; resolved at render time)
 const videoModeOptions = [
@@ -471,6 +472,7 @@ export default function BatchPage() {
           count: selected.length,
           category: (selected[0]?.category ?? "other") as Parameters<typeof buildVariationPlan>[0]["category"],
           styleType: styleTypeMap[scriptStyle] ?? "auto",
+          voiceLang: locale === "th" ? "th-TH" : locale === "zh" ? "zh-CN" : "en-US",
           seed: Date.now() % 100000,
         })
       : [];
@@ -902,7 +904,7 @@ export default function BatchPage() {
                           : "bg-red-500/10 border-red-500/20 text-red-400"
                     }`}
                   >
-                    {locale === "en" ? homogeneity.message.en : homogeneity.message.zh}
+                    {pickLocaleText(locale, homogeneity.message)}
                   </div>
                 )}
               </CardContent>

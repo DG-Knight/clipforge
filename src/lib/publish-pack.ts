@@ -40,7 +40,7 @@ export interface PublishPackInput {
   category?: string; // beauty/food/home/fashion/digital/other
   sellingPoints?: string; // selling points / description, may be multiple sentences
   platform?: string; // douyin/kuaishou/xiaohongshu/tiktok
-  locale?: "zh" | "en"; // copy language, defaults to zh; en uses English titles/hashtags/CTA for overseas markets (avoids delivering Chinese copy to English-speaking users)
+  locale?: "zh" | "en" | "th"; // copy language, defaults to zh; en uses English titles/hashtags/CTA for overseas markets (avoids delivering Chinese copy to English-speaking users)
   shopUrl?: string; // storefront link to drive buyers to (from ingest or set manually); UTM-tagged into shopLink
   affiliateCode?: string; // optional affiliate/partner code for commission tracking
 }
@@ -65,6 +65,16 @@ const CATEGORY_TAGS_EN: Record<string, string[]> = {
   other: ["TikTokMadeMeBuyIt", "MustHave", "ProductReview", "WorthIt", "TikTokFinds", "DailyFinds"],
 };
 
+// Category trending hashtags (Thai TikTok Shop / Shopee / Lazada commerce context)
+const CATEGORY_TAGS_TH: Record<string, string[]> = {
+  beauty: ["ของดีบอกต่อ", "ป้ายยา", "สกินแคร์", "บิวตี้", "รีวิวบิวตี้", "ใช้ดีบอกต่อ"],
+  food: ["ของอร่อย", "ป้ายยาของกิน", "รีวิวอาหาร", "สายกิน", "อร่อยบอกต่อ", "TikTokShopTH"],
+  home: ["ของใช้ในบ้าน", "จัดบ้าน", "ของดีเข้าบ้าน", "ป้ายยา", "รีวิวของใช้", "TikTokShopTH"],
+  fashion: ["OOTD", "แฟชั่น", "แต่งตัว", "ป้ายยาเสื้อผ้า", "รีวิวแฟชั่น", "TikTokShopTH"],
+  digital: ["แก็ดเจ็ต", "รีวิวไอที", "ของมันต้องมี", "ป้ายยาไอที", "TechTH", "TikTokShopTH"],
+  other: ["ของดีบอกต่อ", "ป้ายยา", "รีวิว", "ใช้ดีบอกต่อ", "ของมันต้องมี", "TikTokShopTH"],
+};
+
 // Platform trending hashtags
 const PLATFORM_TAGS: Record<string, string[]> = {
   douyin: ["抖音好物", "抖音电商"],
@@ -74,12 +84,14 @@ const PLATFORM_TAGS: Record<string, string[]> = {
   tiktok: ["TikTokMadeMeBuyIt", "TikTokShop"],
   reels: ["Reels", "InstagramReels", "ReelsFinds"],
   shorts: ["Shorts", "YouTubeShorts"],
+  shopee: ["ShopeeTH", "ShopeeHaul", "ช้อปปี้"],
+  lazada: ["LazadaTH", "LazadaFinds", "ลาซาด้า"],
 };
 
 /** Extract the first selling point: split on CJK/ASCII punctuation and newlines, trim whitespace, clip to max length (English points are longer, so max is tunable) */
 function firstSellingPoint(sp: string | undefined, max: number): string {
   if (!sp) return "";
-  const first = sp.split(/[。.,，;；\n、]/).map((s) => s.trim()).find((s) => s.length > 0) || "";
+  const first = sp.split(/[。.,，;；\n、\u0E2F]|\s{2,}/).map((s) => s.trim()).find((s) => s.length > 0) || "";
   return clip(first, max);
 }
 
@@ -96,7 +108,7 @@ function clip(s: string, max: number): string {
  */
 export function buildPublishPrompt(
   input: { productName: string; category?: string; productDescription?: string; platform?: string },
-  locale: "zh" | "en" = "zh"
+  locale: "zh" | "en" | "th" = "zh"
 ): string {
   const { productName, category, productDescription, platform } = input;
   if (locale === "en") {
@@ -115,6 +127,23 @@ Output STRICT JSON only (no extra text):
   }
 }
 commentKit rules: comments are the video's second landing page. 2-3 objections. NEVER write fake customer testimonials or seeded "I bought it and love it" comments — first-person creator replies only.`;
+  }
+  if (locale === "th") {
+    const platformHint = platform ? `แพลตฟอร์มเป้าหมาย: ${platform}` : "แพลตฟอร์มเป้าหมาย: TikTok Shop / Shopee / Lazada";
+    return `คุณคือนักการตลาดวิดีโอสั้นสายขายของมืออาชีพ เขียนแคปชันสำหรับลงขายสินค้าด้านล่างนี้ โดยใช้ภาษาไทยทั้งหมด ${platformHint}
+สินค้า: ${productName}
+${category ? `หมวดหมู่: ${category}\n` : ""}${productDescription ? `จุดขาย: ${productDescription}\n` : ""}
+ตอบเป็น JSON อย่างเคร่งครัดเท่านั้น (ห้ามมีข้อความอื่น):
+{
+  "titles": ["3 พาดหัวสั้นดึงดูด มีอารมณ์/จุดเจ็บ/ตัวเลข แต่ละอันไม่เกิน 40 ตัวอักษร"],
+  "hashtags": ["6-10 แฮชแท็กพร้อม # อันแรกต้องเป็นแท็กเฉพาะสินค้า (ชื่อสินค้าติดกันไม่มีช่องว่าง) เพื่อให้ค้นเจอ ที่เหลือตามกระแสหมวดและแพลตฟอร์ม"],
+  "caption": "แคปชันเชียร์ขายประโยคเดียว ภาษาพูด มีคำชวนซื้อ ไม่เกิน 120 ตัวอักษร ขึ้นต้นด้วยคีย์เวิร์ดสินค้า",
+  "commentKit": {
+    "pinned": "คอมเมนต์ปักหมุดถามตอบ: ตั้งคำถามที่ลูกค้าลังเลที่สุด แล้วตอบจากประสบการณ์ใช้จริงของครีเอเตอร์ พร้อมชวนถามต่อ ไม่เกิน 150 ตัวอักษร",
+    "objections": [{ "q": "ข้อโต้แย้งที่เจอบ่อย (แพง/ใช้ดีจริงไหม/ลังเล)", "a": "ตอบแบบเป็นกันเอง ซื่อสัตย์ ไม่แต่งเรื่อง ไม่เกิน 100 ตัวอักษร" }]
+  }
+}
+กฎคอมเมนต์: คอมเมนต์คือหน้าแลนดิ้งที่สอง เตรียมข้อโต้แย้ง 2-3 ข้อ ห้ามเขียนรีวิวปลอมหรือคอมเมนต์หน้าม้า — ตอบจากประสบการณ์จริงเท่านั้น`;
   }
   const platformHint = platform ? `目标平台：${platform}。` : "目标平台：抖音/快手/小红书。";
   return `你是资深电商带货短视频运营。请为以下商品生成发布文案。${platformHint}
@@ -158,6 +187,17 @@ const TITLE_POOL_EN: Array<{ needsPoint?: boolean; render: (n: string, p: string
   { render: (n) => `Don't buy another until you've seen this ${n}` },
 ];
 
+const TITLE_POOL_TH: Array<{ needsPoint?: boolean; render: (n: string, p: string) => string }> = [
+  { render: (n) => `${n}ดีจริงต้องบอกต่อ` },
+  { needsPoint: true, render: (n, p) => `${n}｜${p} ใครใช้ก็ติดใจ` },
+  { render: (n) => `3 เหตุผลที่ต้องมี${n}` },
+  { render: (n) => `ใครยังไม่มี${n}ต้องดู` },
+  { render: (n) => `${n}ทำไมขายดีขนาดนี้` },
+  { render: (n) => `ใช้${n}แล้วจะรู้ว่าของดีเป็นยังไง` },
+  { needsPoint: true, render: (n, p) => `รีวิว${n}｜${p}` },
+  { render: (n) => `ก่อนซื้อ${n}ดูคลิปนี้ก่อน` },
+];
+
 /** Deterministic string hash (stable per input, so the same product always gets the same titles). */
 function hashStr(s: string): number {
   let h = 0;
@@ -165,14 +205,14 @@ function hashStr(s: string): number {
   return h;
 }
 
-/** Pick 3 distinct, varied title hooks from the pool (deterministic by name; drops point-requiring templates when no point; zh clipped to 22). */
-export function pickTitles(name: string, point: string, en: boolean): string[] {
-  const pool = (en ? TITLE_POOL_EN : TITLE_POOL_ZH).filter((t) => point || !t.needsPoint);
+/** Pick 3 distinct, varied title hooks from the pool (deterministic by name; drops point-requiring templates when no point; zh clipped to 22, th to 30). */
+export function pickTitles(name: string, point: string, locale: "zh" | "en" | "th" = "zh"): string[] {
+  const pool = (locale === "en" ? TITLE_POOL_EN : locale === "th" ? TITLE_POOL_TH : TITLE_POOL_ZH).filter((t) => point || !t.needsPoint);
   const start = hashStr(name) % pool.length;
   const out: string[] = [];
   for (let i = 0; i < 3; i++) {
     const s = pool[(start + i) % pool.length].render(name, point);
-    out.push(en ? clip(s, 60) : clip(s, 22));
+    out.push(locale === "en" ? clip(s, 60) : locale === "th" ? clip(s, 30) : clip(s, 22));
   }
   return out;
 }
@@ -185,8 +225,9 @@ export function pickTitles(name: string, point: string, en: boolean): string[] {
  */
 export function buildCommentKit(input: PublishPackInput): CommentKit {
   const en = input.locale === "en";
-  const name = clip((input.productName || "").trim() || (en ? "this find" : "这款好物"), en ? 40 : 16);
-  const point = firstSellingPoint(input.sellingPoints, en ? 40 : 12);
+  const th = input.locale === "th";
+  const name = clip((input.productName || "").trim() || (en ? "this find" : th ? "ไอเทมนี้" : "这款好物"), en ? 40 : th ? 24 : 16);
+  const point = firstSellingPoint(input.sellingPoints, en ? 40 : th ? 24 : 12);
   if (en) {
     return {
       pinned: `Most-asked question first: is the ${name} actually worth it? I've been using it myself${point ? ` — ${point}` : ""}, ask me anything below 👇`,
@@ -208,6 +249,17 @@ export function buildCommentKit(input: PublishPackInput): CommentKit {
         "Reply with your real experience only — fabricated customer testimonials and seeded fake comments are an enforcement target on every platform.",
     };
   }
+  if (th) {
+    return {
+      pinned: `คำถามที่โดนถามบ่อยที่สุด: ${name}คุ้มไหม เราใช้เอง${point ? ` ${point}` : ""} สงสัยอะไรถามใต้คลิปได้เลย`,
+      objections: [
+        { q: "แพงไปไหม/คุ้มไหม", a: "หารเป็นราคาต่อครั้งที่ใช้ ตกครั้งละไม่กี่บาท ไม่โอเคคืนได้" },
+        { q: "ใช้ดีจริงเหรอ", a: `ในคลิปคือวิธีใช้จริงของเรา${point ? ` (${point})` : ""} ใช้ไปนานๆ จะมารีวิวเพิ่ม` },
+        { q: "ยังลังเลอยู่", a: "ไม่ต้องรีบ เซฟคลิปไว้ก่อน ดูรีวิวแล้วค่อยกด" },
+      ],
+      notice: "ตอบจากประสบการณ์ใช้จริงเท่านั้น — ห้ามเขียนรีวิวปลอมหรือคอมเมนต์หน้าม้า ทุกแพลตฟอร์มตรวจจับ",
+    };
+  }
   return {
     pinned: `评论区问得最多的先答：${name}到底值不值？我自己在用${point ? `，${point}` : ""}，有问题评论区直接问👇`,
     objections: [
@@ -221,22 +273,23 @@ export function buildCommentKit(input: PublishPackInput): CommentKit {
 
 export function buildPublishPack(input: PublishPackInput): PublishPack {
   const en = input.locale === "en";
-  const name = clip((input.productName || "").trim() || (en ? "this find" : "这款好物"), en ? 40 : 16);
+  const th = input.locale === "th";
+  const name = clip((input.productName || "").trim() || (en ? "this find" : th ? "ไอเทมนี้" : "这款好物"), en ? 40 : th ? 24 : 16);
   const cat = (input.category || "other").toLowerCase();
-  const point = firstSellingPoint(input.sellingPoints, en ? 40 : 12);
+  const point = firstSellingPoint(input.sellingPoints, en ? 40 : th ? 24 : 12);
 
   // Titles: pick 3 varied hooks from the pool (deterministic per product, so a creator's many videos don't share identical titles)
-  const titles = pickTitles(name, point, en);
+  const titles = pickTitles(name, point, input.locale ?? "zh");
 
   // Hashtags: product-specific tag + category + platform, deduplicated, prefixed with #, capped at ~10.
   // Product-specific tag goes first — in 2026, Douyin/TikTok discovery relies heavily on product keywords;
   // generic category tags give broad but unfocused exposure.
   // Adding a product-name tag lets people searching for that exact product find your video directly.
   const platform = (input.platform || "").toLowerCase();
-  const catTags = en ? CATEGORY_TAGS_EN : CATEGORY_TAGS;
+  const catTags = en ? CATEGORY_TAGS_EN : th ? CATEGORY_TAGS_TH : CATEGORY_TAGS;
   const rawName = (input.productName || "").trim();
   // Strip spaces/punctuation from the product name (hashtags cannot contain spaces); keep only letters, digits, and CJK; clip to max length
-  const productTag = rawName ? `#${clip(rawName.replace(/[^\p{L}\p{N}]/gu, ""), en ? 24 : 12)}` : "";
+  const productTag = rawName ? `#${clip(rawName.replace(/[^\p{L}\p{N}]/gu, ""), en ? 24 : th ? 18 : 12)}` : "";
   const tagWords = [
     ...(catTags[cat] || catTags.other),
     ...(PLATFORM_TAGS[platform] || []),
@@ -251,11 +304,13 @@ export function buildPublishPack(input: PublishPackInput): PublishPack {
   }
 
   // Promo caption: conversational + call to action. Clip the lead phrase first, then append the fixed CTA so the CTA tail is never truncated
-  const cta = en ? " — tap the link below to grab it 🛒" : "，点下方小黄车带走它～";
+  const cta = en ? " — tap the link below to grab it 🛒" : th ? " กดตะกร้าด้านล่างเลย~" : "，点下方小黄车带走它～";
   const lead = en
     ? `Obsessed with ${name}${point ? ", " + point : ""}`
-    : `${name}真的绝了${point ? "，" + point : ""}`;
-  const capMax = en ? 130 : 40;
+    : th
+      ? `${name}ดีจริงต้องบอกต่อ${point ? " " + point : ""}`
+      : `${name}真的绝了${point ? "，" + point : ""}`;
+  const capMax = en ? 130 : th ? 90 : 40;
   const caption = clip(lead, capMax - Array.from(cta).length) + cta;
 
   // UTM-tagged storefront link (only when a shopUrl was supplied) so the creator can attribute traffic per platform
@@ -276,7 +331,13 @@ export function buildPublishPack(input: PublishPackInput): PublishPack {
  * "疑似AI生成" badge + throttles; TikTok C2PA-flags and suppresses reach 50-70%), while self-declared
  * content distributes normally. Standalone so both the key-free pack and the LLM publish path use it.
  */
-export function buildAiDeclaration(locale?: "zh" | "en"): { notice: string; line: string } {
+export function buildAiDeclaration(locale?: "zh" | "en" | "th"): { notice: string; line: string } {
+  if (locale === "th") {
+    return {
+      notice: "ลงโพสต์อย่าลืมเปิดป้ายเนื้อหาที่สร้างโดย AI ของแพลตฟอร์ม — ไม่ประกาศจะโดนติดป้ายและลดการมองเห็น ประกาศเองไม่มีผลต่อการแจกจ่าย",
+      line: "วิดีโอนี้มีเนื้อหาที่สร้างโดย AI",
+    };
+  }
   return locale === "en"
     ? {
         notice:

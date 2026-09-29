@@ -27,20 +27,20 @@ export type CameraPresetCategory =
   | "handheld"
   | "special";
 
-/** UI group labels for the picker (bilingual data, rendered by locale). */
-export const CAMERA_PRESET_CATEGORIES: Record<CameraPresetCategory, { zh: string; en: string }> = {
-  push_pull: { zh: "推拉", en: "Push / Pull" },
-  orbit: { zh: "环绕", en: "Orbit" },
-  pan_track: { zh: "平移跟随", en: "Pan / Track" },
-  crane: { zh: "升降俯仰", en: "Crane" },
-  handheld: { zh: "手持实感", en: "Handheld" },
-  special: { zh: "特殊技法", en: "Special" },
+/** UI group labels for the picker (trilingual data, rendered by locale). */
+export const CAMERA_PRESET_CATEGORIES: Record<CameraPresetCategory, { zh: string; en: string; th: string }> = {
+  push_pull: { zh: "推拉", en: "Push / Pull", th: "เข้า-ออก" },
+  orbit: { zh: "环绕", en: "Orbit", th: "โคจรรอบ" },
+  pan_track: { zh: "平移跟随", en: "Pan / Track", th: "แพน/ตาม" },
+  crane: { zh: "升降俯仰", en: "Crane", th: "เครน" },
+  handheld: { zh: "手持实感", en: "Handheld", th: "ถือถ่าย" },
+  special: { zh: "特殊技法", en: "Special", th: "เทคนิคพิเศษ" },
 };
 
 export interface CameraPreset {
   id: string;
   /** Display name (picker card label) */
-  name: { zh: string; en: string };
+  name: { zh: string; en: string; th: string };
   category: CameraPresetCategory;
   /** The exact camera sentence written into `Shot.camera` / the motion prompt */
   prompt: { zh: string; en: string };
@@ -52,7 +52,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   // ---- push / pull ----
   {
     id: "crash_push",
-    name: { zh: "急速推近", en: "Crash Push-In" },
+    name: { zh: "急速推近", en: "Crash Push-In", th: "พุ่งเข้าอย่างเร็ว" },
     category: "push_pull",
     prompt: {
       zh: "镜头急速推近主体，冲击力强，开场抓眼",
@@ -62,7 +62,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "slow_push",
-    name: { zh: "缓慢推近", en: "Slow Push-In" },
+    name: { zh: "缓慢推近", en: "Slow Push-In", th: "ค่อยๆ เข้าใกล้" },
     category: "push_pull",
     prompt: {
       zh: "镜头缓慢平稳推近主体，逐渐聚焦细节",
@@ -72,7 +72,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "pull_reveal",
-    name: { zh: "拉远揭示", en: "Pull-Back Reveal" },
+    name: { zh: "拉远揭示", en: "Pull-Back Reveal", th: "ถอยเปิดฉาก" },
     category: "push_pull",
     prompt: {
       zh: "镜头缓慢拉远，逐渐揭示完整场景与主体全貌",
@@ -82,7 +82,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "dolly_zoom",
-    name: { zh: "希区柯克变焦", en: "Dolly Zoom" },
+    name: { zh: "希区柯克变焦", en: "Dolly Zoom", th: "ดอลลี่ซูม" },
     category: "push_pull",
     prompt: {
       zh: "镜头推近的同时背景被拉远压缩，主体大小保持稳定，空间张力强烈",
@@ -93,7 +93,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   // ---- orbit ----
   {
     id: "orbit_slow",
-    name: { zh: "环绕展示", en: "Slow Orbit" },
+    name: { zh: "环绕展示", en: "Slow Orbit", th: "โคจรรอบช้าๆ" },
     category: "orbit",
     prompt: {
       zh: "镜头围绕主体缓慢环绕半圈，高光沿表面流动，立体感强",
@@ -103,7 +103,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "lazy_susan",
-    name: { zh: "转台展示", en: "Turntable" },
+    name: { zh: "转台展示", en: "Turntable", th: "แท่นหมุนโชว์" },
     category: "orbit",
     prompt: {
       zh: "镜头固定，商品如置于旋转展台上缓缓自转，光影随转动流过表面",
@@ -113,7 +113,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "arc_quarter",
-    name: { zh: "弧形环移", en: "Arc Move" },
+    name: { zh: "弧形环移", en: "Arc Move", th: "เคลื่อนโค้ง" },
     category: "orbit",
     prompt: {
       zh: "镜头沿弧线绕主体环拍四分之一圈，背景视差自然流动",
@@ -124,7 +124,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   // ---- pan / track ----
   {
     id: "lateral_track",
-    name: { zh: "横移扫过", en: "Lateral Track" },
+    name: { zh: "横移扫过", en: "Lateral Track", th: "แพนข้าง" },
     category: "pan_track",
     prompt: {
       zh: "镜头缓慢横移扫过画面，展示场景层次",
@@ -134,7 +134,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "follow_track",
-    name: { zh: "跟随镜头", en: "Follow Track" },
+    name: { zh: "跟随镜头", en: "Follow Track", th: "ตามติด" },
     category: "pan_track",
     prompt: {
       zh: "镜头平稳跟随主体动作移动，保持主体居中",
@@ -144,7 +144,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "whip_pan",
-    name: { zh: "甩镜切换", en: "Whip Pan" },
+    name: { zh: "甩镜切换", en: "Whip Pan", th: "สะบัดกล้อง" },
     category: "pan_track",
     prompt: {
       zh: "镜头快速甩动转向主体，动感强烈，节奏利落",
@@ -155,7 +155,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   // ---- crane ----
   {
     id: "crane_up",
-    name: { zh: "升镜展开", en: "Crane Up" },
+    name: { zh: "升镜展开", en: "Crane Up", th: "เครนขึ้น" },
     category: "crane",
     prompt: {
       zh: "镜头从低处缓缓升起并微微俯视主体，场景逐渐展开",
@@ -165,7 +165,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "crane_down_close",
-    name: { zh: "降镜聚焦", en: "Crane Down" },
+    name: { zh: "降镜聚焦", en: "Crane Down", th: "เครนลงประชิด" },
     category: "crane",
     prompt: {
       zh: "镜头从高处缓缓下降贴近主体，收束到特写",
@@ -175,7 +175,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "overhead_top",
-    name: { zh: "俯拍下降", en: "Top-Down" },
+    name: { zh: "俯拍下降", en: "Top-Down", th: "มุมท็อปดาวน์" },
     category: "crane",
     prompt: {
       zh: "镜头垂直俯拍主体，缓慢下降贴近，桌面构图干净",
@@ -186,7 +186,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   // ---- handheld ----
   {
     id: "handheld_real",
-    name: { zh: "手持实拍感", en: "Handheld" },
+    name: { zh: "手持实拍感", en: "Handheld", th: "ถือถ่ายธรรมชาติ" },
     category: "handheld",
     prompt: {
       zh: "轻微手持晃动感，呼吸般的自然移动，真实 vlog 质感",
@@ -196,7 +196,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "pov_walk",
-    name: { zh: "第一视角", en: "POV Walk" },
+    name: { zh: "第一视角", en: "POV Walk", th: "มุมมองบุคคลที่หนึ่ง" },
     category: "handheld",
     prompt: {
       zh: "第一人称视角向前走近主体，画面自然微晃，沉浸感强",
@@ -207,7 +207,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   // ---- special ----
   {
     id: "macro_glide",
-    name: { zh: "微距滑移", en: "Macro Glide" },
+    name: { zh: "微距滑移", en: "Macro Glide", th: "มาโครสไลด์" },
     category: "special",
     prompt: {
       zh: "微距特写沿商品表面缓慢滑移，材质细节纤毫毕现",
@@ -217,7 +217,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "hero_rise",
-    name: { zh: "英雄仰拍", en: "Hero Shot" },
+    name: { zh: "英雄仰拍", en: "Hero Shot", th: "ช็อตฮีโร่" },
     category: "special",
     prompt: {
       zh: "低角度仰拍主体，镜头缓慢推近，气势感十足",
@@ -227,7 +227,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "push_then_hold",
-    name: { zh: "推近定住", en: "Push Then Hold" },
+    name: { zh: "推近定住", en: "Push Then Hold", th: "เข้าแล้วค้าง" },
     category: "special",
     prompt: {
       zh: "镜头先缓慢推近主体，随后固定住画面稳定收尾",
@@ -237,7 +237,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "locked_on",
-    name: { zh: "锁定跟拍", en: "Locked-On" },
+    name: { zh: "锁定跟拍", en: "Locked-On", th: "ล็อกเป้านิ่ง" },
     category: "special",
     prompt: {
       zh: "LOCKED-ON SHOT：镜头如刚性固定在主体上，主体在画面中位置锁定不动，背景随移动流动",
@@ -247,7 +247,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "fpv_dive",
-    name: { zh: "FPV 俯冲", en: "FPV Dive" },
+    name: { zh: "FPV 俯冲", en: "FPV Dive", th: "FPV โฉบลง" },
     category: "special",
     prompt: {
       zh: "FPV 无人机视角向主体快速俯冲贴近，路径流畅带速度感",
@@ -257,7 +257,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "body_orbit",
-    name: { zh: "贴身环走", en: "Close Orbit Walk" },
+    name: { zh: "贴身环走", en: "Close Orbit Walk", th: "เดินวนรอบตัว" },
     category: "handheld",
     prompt: {
       zh: "手持镜头贴近人物缓慢环走半圈，带自然呼吸晃动，背景视差流动",
@@ -267,7 +267,7 @@ export const CAMERA_PRESETS: CameraPreset[] = [
   },
   {
     id: "focus_shift",
-    name: { zh: "焦点转移", en: "Rack Focus" },
+    name: { zh: "焦点转移", en: "Rack Focus", th: "เปลี่ยนโฟกัส" },
     category: "special",
     prompt: {
       zh: "镜头位置保持不动，焦点从前景缓缓转移到主体，景深变化引导视线",

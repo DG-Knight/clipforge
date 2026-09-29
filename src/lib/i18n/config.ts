@@ -19,6 +19,26 @@ export interface NamespaceMessages {
   th: Record<string, string>;
 }
 
+/** Localized display-text triple (shared catalogs, preset libraries, label maps). */
+export interface LocaleText {
+  zh: string;
+  en: string;
+  /** Thai optional during migration — falls back to English, never a raw key */
+  th?: string;
+}
+
+/**
+ * Single seam for picking display text by locale: th→th, zh→zh, else en.
+ * Replaces ad-hoc `locale === "zh" ? .zh : .en` branches that silently served
+ * English to Thai users despite translated `th` data sitting next to it.
+ * Pure function.
+ */
+export function pickLocaleText(locale: Locale | string | undefined, v: LocaleText): string {
+  if (locale === "th") return v.th ?? v.en ?? v.zh;
+  if (locale === "zh") return v.zh ?? v.en ?? v.th;
+  return v.en ?? v.th ?? v.zh;
+}
+
 /**
  * ตรวจจับภาษาอัตโนมัติจากเบราว์เซอร์หรือระบบของผู้ใช้
  * หากระบบเป็นภาษาจีน (zh) -> "zh"

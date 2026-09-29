@@ -292,8 +292,8 @@ export function rankQualityCandidates<T extends { id: string; report?: Generatio
 }
 
 /** Prompt for a scene-aware contact sheet. The server appends the output first, then references in declared order. */
-export function buildQualityEvaluationPrompt(contract: ShotQualityContract, locale: "zh" | "en", sampleContext?: string): string {
-  const language = locale === "en" ? "English" : "简体中文";
+export function buildQualityEvaluationPrompt(contract: ShotQualityContract, locale: "zh" | "en" | "th", sampleContext?: string): string {
+  const language = locale === "en" ? "English" : locale === "th" ? "ภาษาไทย" : "简体中文";
   return `You are a strict commercial-video quality reviewer. Image 1 is the generated ${contract.mediaType === "video" ? "video contact sheet" : "image"}. Any following images are references in this order: ${contract.referenceRoles.slice(1).join(", ") || "none"}.
 Judge only visible evidence. Do not identify real people. Compare appearance without naming anyone. Treat the requested shot contract as authoritative and return ONLY one JSON object with all prose in ${language}.
 ${sampleContext ? `Sampling context: ${sampleContext}` : ""}

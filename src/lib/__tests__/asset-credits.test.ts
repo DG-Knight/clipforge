@@ -100,6 +100,20 @@ describe("renderCreditsMarkdown", () => {
     expect(renderCreditsMarkdown(clean, "en")).toContain("✅");
   });
 
+  it("泰语报告：标题/分区/种类/备注全泰语、模板无中文（用户数据原样保留）", () => {
+    const th = renderCreditsMarkdown(m, "th");
+    expect(th).toContain("# รายการลิขสิทธิ์สื่อ — 咖啡好物");
+    expect(th).toContain("ต้องระบุที่มา");
+    expect(th).toContain("ต้องตรวจทานโดยคน");
+    expect(th).toContain("ช็อต 2");
+    expect(th).toContain("รูปภาพ");
+    expect(th).toContain("ใช้เชิงพาณิชย์ได้โดยไม่ต้องระบุที่มา");
+    // 模板中文词不应出现（项目名/作者等用户数据除外）
+    for (const w of ["分镜", "图片", "视频", "素材", "需附署名", "需人工复核", "许可未知", "全部素材"]) {
+      expect(th).not.toContain(w);
+    }
+  });
+
   it("attribution line falls back gracefully on missing fields", () => {
     expect(buildAttributionLine({ author: null, license: "by-2.0", sourceUrl: null })).toBe("Unknown author · by-2.0");
   });

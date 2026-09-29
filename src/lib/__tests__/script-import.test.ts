@@ -20,6 +20,15 @@ describe("splitNarration", () => {
   it("空白 → 空数组", () => {
     expect(splitNarration("  \n  ")).toEqual([]);
   });
+  it("泰语：ฯ 切句，超长句按空格（泰语逗号）再切分", () => {
+    expect(splitNarration("ประโยคแรกฯ ประโยคที่สอง")).toEqual(["ประโยคแรก", "ประโยคที่สอง"]);
+    const long = Array.from({ length: 30 }, () => "คำไทย").join(" ");
+    const pieces = splitNarration(long);
+    expect(pieces.length).toBeGreaterThan(1);
+    for (const p of pieces) {
+      expect(Array.from(p).length).toBeLessThanOrEqual(100);
+    }
+  });
 });
 
 describe("estimateDurationSec", () => {
@@ -27,6 +36,9 @@ describe("estimateDurationSec", () => {
     expect(estimateDurationSec("短")).toBe(2); // lower bound
     expect(estimateDurationSec("a".repeat(140))).toBe(10); // 140/14
     expect(estimateDurationSec("中".repeat(100))).toBe(15); // 100/5=20 → upper bound 15
+  });
+  it("泰语约 8 字/秒（组合元音不计入字数膨胀）", () => {
+    expect(estimateDurationSec("ก".repeat(80))).toBe(10); // 80/8
   });
 });
 

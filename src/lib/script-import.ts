@@ -12,10 +12,12 @@
 
 import type { Shot } from "@/lib/db/schema";
 
-/** Sentence-ending punctuation (primary split boundary for shots) */
-const SENTENCE_DELIM = /[。！？!?\n]+/;
+/** Sentence-ending punctuation (primary split boundary for shots; ไปยาลใหญ่ ends Thai sentences) */
+const SENTENCE_DELIM = /[。！？!?\n\u0E2F]+/;
 /** Secondary punctuation (used to further split overly long sentences) */
 const SUBCLAUSE_DELIM = /[，,；;、]+/;
+/** Secondary punctuation for Thai (spaces work like commas in Thai copy) */
+const SUBCLAUSE_DELIM_TH = /[，,；;、\s]+/;
 /** Maximum characters per shot (exceed this and the sentence is re-split on secondary punctuation to avoid overly long voiceover per shot) */
 const MAX_CHARS_PER_SHOT = 100;
 /** Maximum number of shots (guards against abuse / excessively long input) */
@@ -25,9 +27,13 @@ function hasCJK(s: string): boolean {
   return /[一-鿿぀-ヿ가-힣]/.test(s);
 }
 
-/** Estimates TTS duration (seconds) for a piece of copy: ~5 chars/sec for CJK, ~14 chars/sec for Latin; clamped to 2–15 s */
+function hasThai(s: string): boolean {
+  return /[\u0E00-\u0E7F]/.test(s);
+}
+
+/** Estimates TTS duration (seconds) for a piece of copy: ~5 chars/sec for CJK, ~8 for Thai, ~14 for Latin; clamped to 2–15 s */
 export function estimateDurationSec(text: string): number {
-  const cps = hasCJK(text) ? 5 : 14;
+  const cps = hasCJK(text) ? 5 : hasThai(text) ? 8 : 14; // Thai ~8 chars/sec
   return Math.min(15, Math.max(2, Math.round(text.length / cps)));
 }
 
@@ -46,13 +52,15 @@ export function splitNarration(text: string): string[] {
     }
     // Overly long sentence: accumulate sub-clauses up to the limit, then split; keep as-is if a single sub-clause still exceeds the limit (edge case)
     let buf = "";
-    for (const sub of sent.split(SUBCLAUSE_DELIM).map((s) => s.trim()).filter(Boolean)) {
+    const delim = hasThai(sent) ? SUBCLAUSE_DELIM_TH : SUBCLAUSE_DELIM;
+    const joiner = hasThai(sent) ? " " : "，";
+    for (const sub of sent.split(delim).map((s) => s.trim()).filter(Boolean)) {
       // +1 accounts for the "，" that joins buf and sub below, so the combined piece never exceeds the limit
       if (buf && (buf.length + 1 + sub.length) > MAX_CHARS_PER_SHOT) {
         pieces.push(buf);
         buf = sub;
       } else {
-        buf = buf ? `${buf}，${sub}` : sub;
+        buf = buf ? `${buf}${joiner}${sub}` : sub;
       }
     }
     if (buf) pieces.push(buf);

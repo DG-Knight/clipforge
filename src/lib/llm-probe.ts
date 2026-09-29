@@ -107,6 +107,7 @@ export async function probeLLMEndpoint(input: ProbeInput): Promise<ProbeOutcome>
         warning: {
           zh: "该模型的输出上限很小（连一句话都写不完）：脚本生成可能中途被截断，建议减少分镜数量/时长，或换一个输出更充裕的模型",
           en: "This model's output budget is tiny (it cannot even finish one sentence): script generation may be cut off — use fewer shots / a shorter video, or pick a model with a larger output budget",
+          th: "โมเดลนี้มีโควตาความยาวเอาต์พุตน้อยมาก (เขียนไม่จบแม้แต่ประโยคเดียว): การสร้างสคริปต์อาจถูกตัดกลางทาง — ลดจำนวนช็อต/ความยาววิดีโอ หรือเปลี่ยนไปใช้โมเดลที่ให้เอาต์พุตยาวกว่า",
         },
       };
     }
@@ -123,7 +124,7 @@ export async function probeLLMEndpoint(input: ProbeInput): Promise<ProbeOutcome>
       return {
         ok: false,
         status: res.status,
-        error: withRaw({ zh: `${explained.zh}。${hint.zh}`, en: `${explained.en}. ${hint.en}` }, res, text),
+        error: withRaw({ zh: `${explained.zh}。${hint.zh}`, en: `${explained.en}. ${hint.en}`, th: `${explained.th ?? explained.en}. ${hint.th ?? hint.en}` }, res, text),
       };
     }
   }
@@ -134,5 +135,5 @@ export async function probeLLMEndpoint(input: ProbeInput): Promise<ProbeOutcome>
 /** Append the provider's own words — screenshots of this line are what make bug reports actionable. */
 function withRaw(pair: LLMMessagePair, res: Response, text: string): LLMMessagePair {
   const raw = `${res.status} ${res.statusText}${text ? ` - ${text.replace(/\s+/g, " ").slice(0, 200)}` : ""}`;
-  return { zh: `${pair.zh} · ${raw}`, en: `${pair.en} · ${raw}` };
+  return { zh: `${pair.zh} · ${raw}`, en: `${pair.en} · ${raw}`, th: `${pair.th ?? pair.en} · ${raw}` };
 }

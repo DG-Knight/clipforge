@@ -53,6 +53,15 @@ describe("checkPublishReadiness", () => {
     expect(item(r, "hook")?.status).toBe("pass");
   });
 
+  it("泰语钩子含ไหม/ทำไม → hook pass（不再误报偏平）", () => {
+    const r = checkPublishReadiness(
+      [mk({ type: "hook", duration: 3, voiceover: "รู้ไหมครับว่าทำไมผิวหมอง" })],
+      20,
+      { locale: "th" }
+    );
+    expect(item(r, "hook")?.status).toBe("pass");
+  });
+
   it("时长太短/太长 → duration warn", () => {
     expect(item(checkPublishReadiness(good, 10), "duration")?.status).toBe("warn");
     expect(item(checkPublishReadiness(good, 70), "duration")?.status).toBe("warn");

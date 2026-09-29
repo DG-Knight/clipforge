@@ -12,7 +12,7 @@ import { apiError } from "@/lib/api-error";
 const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
 
 /**
- * GET /api/project/[id]/credits?format=json|md&lang=zh|en — export the asset license manifest:
+ * GET /api/project/[id]/credits?format=json|md&lang=zh|en|th — export the asset license manifest:
  * per-shot provenance (source/author/license) with commercial-risk classification (NC/ND/unknown →
  * manual review), paste-ready attribution lines for CC BY assets, and the BGM credit (read from the
  * sidecar free-bgm writes at download time). Solves "free footage has no licensing proof → ad review
@@ -20,15 +20,16 @@ const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
  */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
 
   const url = new URL(req.url);
   const format = url.searchParams.get("format") === "md" ? "md" : "json";
-  const lang = url.searchParams.get("lang") === "en" ? "en" : "zh";
+  const langParam = url.searchParams.get("lang");
+  const lang = langParam === "en" ? "en" : langParam === "th" ? "th" : "zh";
 
   const db = getDb();
   const [proj] = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
-  if (!proj) return apiError(req, "项目不存在", "Project not found", 404);
+  if (!proj) return apiError(req, "项目不存在", "Project not found", 404, "ไม่พบโปรเจกต์");
 
   // Active asset per shot = what composition actually uses; older takes remain reviewable.
   const rows = await db
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     .orderBy(desc(assetsTable.createdAt));
   const current = rows;
   if (current.length === 0) {
-    return apiError(req, "该项目还没有素材，先自动配画面或上传素材", "This project has no assets yet; auto-fill or upload materials first", 404);
+    return apiError(req, "该项目还没有素材，先自动配画面或上传素材", "This project has no assets yet; auto-fill or upload materials first", "โปรเจกต์นี้ยังไม่มีสื่อ — จับคู่วิดีโออัตโนมัติหรืออัปโหลดสื่อก่อน", 404);
   }
 
   // BGM provenance: free-bgm drops a .credit.json sidecar next to the downloaded track

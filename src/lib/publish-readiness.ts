@@ -54,7 +54,8 @@ const PRODUCT_LATE_SEC = 7;
 const PRODUCT_SHOT_TYPES = new Set(["product_reveal", "product_intro", "demo"]);
 
 // Hook signals: question / number / pain-point / contrast — any one qualifies as "has a hook"
-const HOOK_SIGNAL = /[?？!！]|\d|别再|还在|总是|为什么|怎么|居然|竟然|没想到|原来|你知道|千万别|后悔|踩雷|谁懂|绝了/;
+// Thai signals (question particles + urgency hooks) so Thai openers no longer misfire as "flat"
+const HOOK_SIGNAL = /[?？!！]|\d|别再|还在|总是|为什么|怎么|居然|竟然|没想到|原来|你知道|千万别|后悔|踩雷|谁懂|绝了|ไหม|ทำไม|รู้ไหม|อย่าพลาด|ที่สุด|ฟรี/;
 // Call-to-action signals
 const CTA_SIGNAL = /小黄车|下方|点击|购买|带走|链接|加购|抢|下单|橱窗|入手|戳|领|tap|link|buy|shop|cart|grab|ตะกร้า|คลิก|ซื้อ|สั่งซื้อ|ด้านล่าง|ลิงก์|กด/i;
 

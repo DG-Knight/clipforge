@@ -9,10 +9,12 @@
 
 const MODELS_TIMEOUT_MS = 8000;
 
-/** Bilingual text, structurally identical to llm-error's LLMMessagePair (declared here to stay dep-free). */
+/** Trilingual text, structurally identical to llm-error's LLMMessagePair (declared here to stay dep-free). */
 export interface ModelHint {
   zh: string;
   en: string;
+  /** Thai optional during migration — consumers fall back to en */
+  th?: string;
 }
 
 /** Strip trailing slashes so `${base}/models` never doubles up. */
@@ -73,6 +75,7 @@ export function modelListHint(models: string[], wanted?: string, baseUrl?: strin
       ? {
           zh: "（本机 Ollama 一个模型都没读到：先在终端跑 `ollama pull qwen2.5`，并确认 Ollama 正在运行）",
           en: "(no models found on this local Ollama: run `ollama pull qwen2.5` and make sure Ollama is running)",
+          th: "(ไม่พบโมเดลใดใน Ollama เครื่องนี้เลย: รัน `ollama pull qwen2.5` ในเทอร์มินัลก่อน และตรวจว่า Ollama กำลังทำงานอยู่)",
         }
       : undefined;
   }
@@ -88,9 +91,11 @@ export function modelListHint(models: string[], wanted?: string, baseUrl?: strin
   const listEn = `${shown.join(", ")}${models.length > shown.length ? `… (${models.length} total)` : ""}`;
   const tagNote = isOllama(baseUrl) ? "（Ollama 的模型名必须写全，含 :tag）" : "";
   const tagNoteEn = isOllama(baseUrl) ? " (Ollama model names must include the :tag)" : "";
+  const tagNoteTh = isOllama(baseUrl) ? " (ชื่อโมเดลของ Ollama ต้องพิมพ์ให้ครบถ้วน รวม :tag ด้วย)" : "";
 
   return {
     zh: `${guess ? `是不是想填「${guess}」？` : ""}该地址实际可用的模型：${list}${tagNote}`,
     en: `${guess ? `Did you mean "${guess}"? ` : ""}Models this endpoint actually exposes: ${listEn}${tagNoteEn}`,
+    th: `${guess ? `ตั้งใจพิมพ์ "${guess}" หรือเปล่า? ` : ""}โมเดลที่ที่อยู่นี้มีให้ใช้จริง: ${listEn}${tagNoteTh}`,
   };
 }

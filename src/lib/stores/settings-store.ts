@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
-import { DEFAULT_TTS_PROVIDER, type TTSProvider } from "@/lib/tts-presets";
+import { DEFAULT_TTS_PROVIDER, isPaidTTSReady, type TTSProvider } from "@/lib/tts-presets";
 import {
   DEFAULT_IMAGE_PARAMS,
   DEFAULT_VIDEO_PARAMS,
@@ -112,6 +112,15 @@ export interface SettingsState {
   applyProductionProfile: (profile: ProductionProfileId) => void;
   /** 一个 Atlas Key 一键接入：脚本+看图+生图+生视频+配音全配好（不覆盖用户已选模型/已开的配音） */
   applyAtlasOneKey: (apiKey: string) => void;
+}
+
+/** Pure helper (unit-testable): one-key TTS wiring keeps the user's TTS only when it
+ * resolves to a usable config with the incoming providers; an enabled-but-empty slot
+ * (e.g. OpenAI-compatible with no key) is rewired to Atlas instead of being kept broken.
+ */
+export function nextTTSForOneKey(current: TTSSetting, providers: Record<string, ProviderSetting>): TTSSetting {
+  if (isPaidTTSReady(current, providers)) return current;
+  return { ...current, enabled: true, provider: "atlas", baseUrl: ATLAS_BASE_URL, model: "", voice: "" };
 }
 
 /** Pollinations 的新端点（旧的 text.pollinations.ai 免 Key 接口已停用） */
@@ -251,6 +260,10 @@ export const useSettingsStore = create<SettingsState>()(
             image: state.defaultImageModel,
             video: state.defaultVideoModel,
           });
+          const nextProviders = {
+            ...state.providers,
+            "atlas-cloud": { ...state.providers["atlas-cloud"], enabled: true, apiKey: key },
+          };
           return {
             llm: {
               provider: "Atlas Cloud",
@@ -260,16 +273,12 @@ export const useSettingsStore = create<SettingsState>()(
               model: ATLAS_ONEKEY_MODELS.llm,
               visionModel: ATLAS_ONEKEY_MODELS.vision,
             },
-            providers: {
-              ...state.providers,
-              "atlas-cloud": { ...state.providers["atlas-cloud"], enabled: true, apiKey: key },
-            },
+            providers: nextProviders,
             defaultImageModel: def.image,
             defaultVideoModel: def.video,
-            // 配音：之前没开过才默认接 Atlas TTS（复用同一个 Key），已配则保持不动
-            tts: state.tts.enabled
-              ? state.tts
-              : { ...state.tts, enabled: true, provider: "atlas", baseUrl: ATLAS_BASE_URL, model: "", voice: "" },
+            // 配音：已配好且能用的保持不动；开了但 Key 不全的旧配置改接 Atlas——
+            // 否则一键接入报成功，配音栏却是空 Key（用户看到的就是“Key 没存上”）
+            tts: nextTTSForOneKey(state.tts, nextProviders),
           };
         }),
     }),

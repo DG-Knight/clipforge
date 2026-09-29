@@ -29,22 +29,22 @@ export async function POST(req: NextRequest) {
   try {
     formData = await req.formData();
   } catch {
-    return apiError(req, "无效的表单数据，请检查上传的文件", "Invalid form data, please check the uploaded files");
+    return apiError(req, "无效的表单数据，请检查上传的文件", "Invalid form data, please check the uploaded files", "ข้อมูลฟอร์มไม่ถูกต้อง โปรดตรวจไฟล์ที่อัปโหลด");
   }
   const files = formData.getAll("files") as File[];
   const productId = formData.get("productId") as string;
 
   if (!files.length) {
-    return apiError(req, "请上传至少一张图片", "Please upload at least one image");
+    return apiError(req, "请上传至少一张图片", "Please upload at least one image", "กรุณาอัปโหลดรูปอย่างน้อยหนึ่งรูป");
   }
 
   if (!productId) {
-    return apiError(req, "缺少商品ID", "Missing product ID");
+    return apiError(req, "缺少商品ID", "Missing product ID", "ยังไม่ได้ระบุรหัสสินค้า");
   }
 
   // Validate productId to prevent path traversal (only UUID format or alphanumeric hyphens allowed)
   if (!/^[a-zA-Z0-9\-]+$/.test(productId)) {
-    return apiError(req, "无效的商品ID格式", "Invalid product ID format");
+    return apiError(req, "无效的商品ID格式", "Invalid product ID format", "รูปแบบรหัสสินค้าไม่ถูกต้อง");
   }
 
   // Product images are stored under uploads/products/<productId>/, isolated from the per-project upload directories
@@ -59,7 +59,8 @@ export async function POST(req: NextRequest) {
       return apiError(
         req,
         `文件 ${file.name} 超过 20MB 大小限制`,
-        `File ${file.name} exceeds the 20MB size limit`
+        `File ${file.name} exceeds the 20MB size limit`,
+        `ไฟล์ ${file.name} ใหญ่เกิน 20MB`
       );
     }
 
@@ -68,7 +69,8 @@ export async function POST(req: NextRequest) {
       return apiError(
         req,
         `文件 ${file.name} 类型不支持，仅允许图片文件`,
-        `File ${file.name} type is not supported; only image files are allowed`
+        `File ${file.name} type is not supported; only image files are allowed`,
+        `ไฟล์ ${file.name} ไม่รองรับ — อนุญาตเฉพาะไฟล์รูปภาพ`
       );
     }
 
@@ -79,7 +81,8 @@ export async function POST(req: NextRequest) {
       return apiError(
         req,
         `文件 ${file.name} 扩展名不支持`,
-        `File ${file.name} extension is not supported`
+        `File ${file.name} extension is not supported`,
+        `ไฟล์ ${file.name} ไม่รองรับนามสกุลนี้`
       );
     }
 

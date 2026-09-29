@@ -13,7 +13,7 @@ import { isCaptionPreset, captionPresetOverrides, CAPTION_PRESETS } from "@/lib/
 import { getDb } from "@/lib/db";
 import { scripts as scriptsTable, assets as assetsTable, projects, compositions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { composeVideo, resolveChineseFontFamily, type ClipInput, type ComposeConfig } from "@/lib/video-composer/composer";
+import { composeVideo, resolveFontFamilyForText, type ClipInput, type ComposeConfig } from "@/lib/video-composer/composer";
 import { extractFirstFrame } from "@/lib/video-composer/frame-extract";
 import { buildSubtitleTimeline, padDurationsForFade, segmentBoundaries, type TimelineSegment } from "@/lib/video-composer/timeline";
 import { buildKaraokeAss } from "@/lib/video-composer/karaoke";
@@ -25,6 +25,7 @@ import { renderAudioStems } from "@/lib/audio-stems";
 import type { Shot, ScriptCharacter } from "@/lib/db/schema";
 import { assignCharacterVoices } from "@/lib/character-voices";
 import { desc, and } from "drizzle-orm";
+import { errText } from "@/lib/api-error";
 
 type ComposeRequestBody = {
   exportAudioStems?: boolean;
@@ -90,7 +91,7 @@ export async function GET(
   } catch (error) {
     console.error("获取合成记录失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "获取合成记录失败" },
+      { error: error instanceof Error ? error.message : errText(req, "获取合成记录失败", "Failed to load the composition record", "โหลดบันทึกการรวมวิดีโอไม่สำเร็จ") },
       { status: 500 }
     );
   }
@@ -139,7 +140,7 @@ export async function POST(
     // 读取项目（拿商品图兜底）与已选脚本
     const projRows = await db.select().from(projects).where(eq(projects.id, id));
     if (projRows.length === 0) {
-      return NextResponse.json({ error: "项目不存在" }, { status: 404 });
+      return NextResponse.json({ error: errText(req, "项目不存在", "Project not found", "ไม่พบโปรเจกต์") }, { status: 404 });
     }
     const project = projRows[0];
     const productImages = (project.productImages ?? []) as string[];
@@ -147,7 +148,7 @@ export async function POST(
     const scriptRows = await db.select().from(scriptsTable).where(eq(scriptsTable.projectId, id));
     const selected = scriptRows.find((s) => s.selected) ?? scriptRows[0];
     if (!selected || !Array.isArray(selected.shots) || selected.shots.length === 0) {
-      return NextResponse.json({ error: "尚未生成脚本，无法合成" }, { status: 400 });
+      return NextResponse.json({ error: errText(req, "尚未生成脚本，无法合成", "No script yet — generate a script before composing", "ยังไม่มีสคริปต์ ไม่สามารถรวมวิดีโอได้") }, { status: 400 });
     }
     let shots = selected.shots as Shot[];
     // Variant-matrix voiceover overrides for hook A/B: applied in memory
@@ -166,10 +167,14 @@ export async function POST(
         return v ? { ...s, voiceover: v } : s;
       });
     }
+    // 可选 TTS 配音配置（前端从设置带入）+ 免费配音嗓音提前解析：
+    // 角色嗓池跟随旁白语言（泰语旁白 → 泰语角色嗓，避免一场戏两种语言）
+    const freeTts = body.freeTts as { enabled?: boolean; voice?: string; rate?: string } | undefined;
+    const freeVoice = freeTts?.voice || DEFAULT_FREE_VOICE;
     // Dialogue-script cast (drama style): deterministic per-character Edge voices, free multi-voice
     // dialogue. Narrator shots (no characterId) keep the default/free voice below.
     const scriptCharacters = (selected.characters ?? []) as ScriptCharacter[];
-    const characterVoices = assignCharacterVoices(scriptCharacters);
+    const characterVoices = assignCharacterVoices(scriptCharacters, freeVoice);
     if (characterVoices.size > 0) {
       console.info(
         `[compose] 剧情多音色：${scriptCharacters.map((c) => `${c.name}→${characterVoices.get(c.id)}`).join("、")}`
@@ -189,9 +194,7 @@ export async function POST(
         ? body.ttsConfig
         : undefined;
     // 免费配音兜底（微软 Edge keyless TTS，无需 Key）：未配付费 TTS 时让「一句话主题成片」也能出声
-    const freeTts = body.freeTts as { enabled?: boolean; voice?: string; rate?: string } | undefined;
     const useFreeTts = !ttsConfig && freeTts?.enabled === true;
-    const freeVoice = freeTts?.voice || DEFAULT_FREE_VOICE;
     const freeRate = typeof freeTts?.rate === "string" ? freeTts.rate : undefined;
     const ttsDir = join(getDataDir(), "uploads", id, "tts");
     if (ttsConfig || useFreeTts) await mkdir(ttsDir, { recursive: true });
@@ -290,7 +293,7 @@ export async function POST(
     const hasAnyAsset = shots.some((s) => toLocalPath(assetByShot.get(s.shotId) ?? productImages[0]));
     if (!hasAnyAsset) {
       return NextResponse.json(
-        { error: "没有可用素材，请先在素材步骤生成素材或上传商品图" },
+        { error: errText(req, "没有可用素材，请先在素材步骤生成素材或上传商品图", "No usable assets — generate assets or upload a product image first", "ไม่มีสื่อที่ใช้ได้ กรุณาสร้างสื่อหรืออัปโหลดรูปสินค้าก่อน") },
         { status: 400 }
       );
     }
@@ -508,7 +511,9 @@ export async function POST(
     // whole-sentence ASS \k burn-in via libass, replacing the rapid short caption cards
     const wantKaraoke = body.karaoke === true || (captionPreset && CAPTION_PRESETS[captionPreset].karaoke === true);
     if (wantKaraoke && karaokeLines.length > 0) {
-      const ass = buildKaraokeAss(karaokeLines, { fontName: resolveChineseFontFamily() });
+      const ass = buildKaraokeAss(karaokeLines, {
+        fontName: resolveFontFamilyForText(karaokeLines.map((l) => l.text).join("\n")),
+      });
       const assDir = join(getDataDir(), "output", id);
       await mkdir(assDir, { recursive: true });
       const assPath = join(assDir, `karaoke_${comp.id}.ass`);
@@ -606,7 +611,7 @@ export async function POST(
   } catch (error) {
     console.error("视频合成失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "视频合成失败" },
+      { error: error instanceof Error ? error.message : errText(req, "视频合成失败", "Video composition failed", "รวมวิดีโอไม่สำเร็จ") },
       { status: 500 }
     );
   }

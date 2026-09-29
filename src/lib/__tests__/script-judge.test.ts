@@ -7,6 +7,7 @@ import {
   factTokens,
   preservesFactTokens,
   JUDGE_IDS,
+  JUDGE_META,
 } from "@/lib/script-judge";
 
 const SHOTS = [
@@ -14,6 +15,17 @@ const SHOTS = [
   { shotId: 2, voiceover: "它的克重是同价位的两倍，一张顶别人三张", description: "展示产品的高品质" },
   { shotId: 3, voiceover: "现在点下方链接就能买到" },
 ];
+
+describe("JUDGE_META 展示名中英泰齐全", () => {
+  it("五位判官都有 th 名（报告页三语）", () => {
+    expect(JUDGE_IDS).toHaveLength(5);
+    for (const id of JUDGE_IDS) {
+      expect(JUDGE_META[id].zh.length).toBeGreaterThan(0);
+      expect(JUDGE_META[id].en.length).toBeGreaterThan(0);
+      expect(JUDGE_META[id].th.length).toBeGreaterThan(0);
+    }
+  });
+});
 
 describe("buildJudgePrompt（判官团二期）", () => {
   it("五判官各就位 + 口语铁律注入 + 长度约束 + 合规红线 + 证据规则 + 分级判据", () => {

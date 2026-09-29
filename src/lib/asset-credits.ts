@@ -31,7 +31,7 @@ export interface CreditItem {
   sourceUrl?: string;
   requiresAttribution: boolean;
   risk: CreditRisk;
-  note: { zh: string; en: string };
+  note: { zh: string; en: string; th?: string };
   /** ready-to-paste attribution line (present when attribution is required) */
   attributionLine?: string;
 }
@@ -109,7 +109,7 @@ function toItem(a: CreditAssetInput): CreditItem {
       provider: a.provider ?? undefined,
       requiresAttribution: false,
       risk: "ok",
-      note: { zh: "自有素材（上传/商品图），无需第三方授权", en: "Own material (upload/product image); no third-party license needed" },
+      note: { zh: "自有素材（上传/商品图），无需第三方授权", en: "Own material (upload/product image); no third-party license needed", th: "สื่อของตัวเอง (อัปโหลด/รูปสินค้า) ไม่ต้องขออนุญาตบุคคลที่สาม" },
     };
   }
   if (a.type === "ai_generated") {
@@ -120,7 +120,7 @@ function toItem(a: CreditAssetInput): CreditItem {
       provider: a.provider ?? undefined,
       requiresAttribution: false,
       risk: "ok",
-      note: { zh: "AI 生成素材（发布时保持 AIGC 标识合规即可）", en: "AI-generated material (keep the AIGC disclosure compliant when publishing)" },
+      note: { zh: "AI 生成素材（发布时保持 AIGC 标识合规即可）", en: "AI-generated material (keep the AIGC disclosure compliant when publishing)", th: "สื่อที่ AI สร้าง (ตอนเผยแพร่คงป้าย AIGC ให้ถูกต้อง)" },
     };
   }
   const { risk, requiresAttribution } = classifyLicense(a.license);
@@ -136,10 +136,10 @@ function toItem(a: CreditAssetInput): CreditItem {
     risk,
     note:
       risk === "review"
-        ? { zh: "许可不明或含 NC/ND 限制，商用投流前请人工确认或替换", en: "Unclear or NC/ND-restricted license; confirm or replace before commercial ads" }
+        ? { zh: "许可不明或含 NC/ND 限制，商用投流前请人工确认或替换", en: "Unclear or NC/ND-restricted license; confirm or replace before commercial ads", th: "ใบอนุญาตไม่ชัดหรือมีข้อจำกัด NC/ND ตรวจทานหรือเปลี่ยนก่อนยิงแอดเชิงพาณิชย์" }
         : requiresAttribution
-          ? { zh: "CC 署名类许可：可商用，发布时需附署名（下方给出可直接复制的署名行）", en: "CC attribution license: commercial use OK, credit required (paste-ready line below)" }
-          : { zh: "可免署名商用", en: "Commercial use without attribution" },
+          ? { zh: "CC 署名类许可：可商用，发布时需附署名（下方给出可直接复制的署名行）", en: "CC attribution license: commercial use OK, credit required (paste-ready line below)", th: "ใบอนุญาต CC แบบต้องระบุที่มา: ใช้เชิงพาณิชย์ได้ แต่ต้องระบุที่มา (มีบรรทัดพร้อมคัดลอกด้านล่าง)" }
+          : { zh: "可免署名商用", en: "Commercial use without attribution", th: "ใช้เชิงพาณิชย์ได้โดยไม่ต้องระบุที่มา" },
   };
   if (requiresAttribution) base.attributionLine = buildAttributionLine(a);
   return base;
@@ -166,10 +166,10 @@ export function buildCreditsManifest(
       risk,
       note:
         risk === "review"
-          ? { zh: "BGM 许可不明，投流前请人工确认", en: "BGM license unclear; confirm before running ads" }
+          ? { zh: "BGM 许可不明，投流前请人工确认", en: "BGM license unclear; confirm before running ads", th: "ใบอนุญาต BGM ไม่ชัด ยิงแอดก่อนโปรดให้คนยืนยัน" }
           : requiresAttribution
-            ? { zh: "BGM 为 CC 署名类许可，发布时需附署名", en: "BGM is CC-attribution licensed; credit required" }
-            : { zh: "BGM 可免署名商用", en: "BGM: commercial use without attribution" },
+            ? { zh: "BGM 为 CC 署名类许可，发布时需附署名", en: "BGM is CC-attribution licensed; credit required", th: "BGM เป็นใบอนุญาต CC แบบต้องระบุที่มา เผยแพร่ต้องระบุที่มา" }
+            : { zh: "BGM 可免署名商用", en: "BGM: commercial use without attribution", th: "BGM ใช้เชิงพาณิชย์ได้โดยไม่ต้องระบุที่มา" },
     };
     if (requiresAttribution) bgmItem.attributionLine = buildAttributionLine(bgm);
   }
@@ -184,63 +184,76 @@ export function buildCreditsManifest(
   };
 }
 
-const KIND_LABEL: Record<string, { zh: string; en: string }> = {
-  image: { zh: "图片", en: "Image" },
-  video: { zh: "视频", en: "Video" },
-  audio: { zh: "音频", en: "Audio" },
-  unknown: { zh: "素材", en: "Asset" },
+const KIND_LABEL: Record<string, { zh: string; en: string; th: string }> = {
+  image: { zh: "图片", en: "Image", th: "รูปภาพ" },
+  video: { zh: "视频", en: "Video", th: "วิดีโอ" },
+  audio: { zh: "音频", en: "Audio", th: "เสียง" },
+  unknown: { zh: "素材", en: "Asset", th: "สื่อ" },
 };
 
 /** Render the manifest as a human-readable Markdown report (paste into ad review / description / archives). */
-export function renderCreditsMarkdown(m: CreditsManifest, locale: "zh" | "en" = "zh"): string {
+export function renderCreditsMarkdown(m: CreditsManifest, locale: "zh" | "en" | "th" = "zh"): string {
   const zh = locale === "zh";
+  const th = locale === "th";
   const lines: string[] = [];
-  lines.push(zh ? `# 素材授权清单 — ${m.project}` : `# Asset license manifest — ${m.project}`);
+  lines.push(
+    zh
+      ? `# 素材授权清单 — ${m.project}`
+      : th
+        ? `# รายการลิขสิทธิ์สื่อ — ${m.project}`
+        : `# Asset license manifest — ${m.project}`
+  );
   lines.push("");
   lines.push(
     zh
       ? `共 ${m.summary.total} 项素材：需署名 ${m.summary.needsAttribution} 项，需人工复核 ${m.summary.needsReview} 项。`
-      : `${m.summary.total} asset(s): ${m.summary.needsAttribution} need attribution, ${m.summary.needsReview} need manual review.`
+      : th
+        ? `สื่อทั้งหมด ${m.summary.total} รายการ: ต้องระบุที่มา ${m.summary.needsAttribution} รายการ ต้องตรวจทาน ${m.summary.needsReview} รายการ`
+        : `${m.summary.total} asset(s): ${m.summary.needsAttribution} need attribution, ${m.summary.needsReview} need manual review.`
   );
   lines.push(
     m.summary.commercialSafe
       ? zh
         ? "✅ 未发现商用限制素材（NC/ND/未知许可为 0）。"
-        : "✅ No commercially-restricted assets found (0 NC/ND/unknown licenses)."
+        : th
+          ? "✅ ไม่พบสื่อที่มีข้อจำกัดเชิงพาณิชย์ (NC/ND/ใบอนุญาตไม่ทราบ = 0)"
+          : "✅ No commercially-restricted assets found (0 NC/ND/unknown licenses)."
       : zh
         ? "⚠️ 存在需人工复核的素材，投流前请确认或替换（见下方标注）。"
-        : "⚠️ Some assets need manual review; confirm or replace before running paid ads (flagged below)."
+        : th
+          ? "⚠️ มีสื่อที่ต้องตรวจทานก่อนยิงแอด โปรดยืนยันหรือเปลี่ยน (ดูรายการด้านล่าง)"
+          : "⚠️ Some assets need manual review; confirm or replace before running paid ads (flagged below)."
   );
   lines.push("");
 
   const attributions = [...m.items, ...(m.bgm ? [m.bgm] : [])].filter((i) => i.attributionLine);
   if (attributions.length > 0) {
-    lines.push(zh ? "## 需附署名（可直接复制到发布文案/简介）" : "## Required attributions (paste into caption/description)");
+    lines.push(zh ? "## 需附署名（可直接复制到发布文案/简介）" : th ? "## ต้องระบุที่มา (คัดลอกไปใส่แคปชัน/คำอธิบายได้เลย)" : "## Required attributions (paste into caption/description)");
     for (const a of attributions) lines.push(`- ${a.attributionLine}`);
     lines.push("");
   }
 
   const reviews = [...m.items, ...(m.bgm ? [m.bgm] : [])].filter((i) => i.risk === "review");
   if (reviews.length > 0) {
-    lines.push(zh ? "## 需人工复核" : "## Needs manual review");
+    lines.push(zh ? "## 需人工复核" : th ? "## ต้องตรวจทานโดยคน" : "## Needs manual review");
     for (const r of reviews) {
-      const where = r.shotId >= 0 ? (zh ? `分镜 ${r.shotId + 1}` : `Shot ${r.shotId + 1}`) : "BGM";
-      lines.push(`- ${where}: ${r.license || (zh ? "许可未知" : "license unknown")}${r.sourceUrl ? ` · ${r.sourceUrl}` : ""}`);
+      const where = r.shotId >= 0 ? (zh ? `分镜 ${r.shotId + 1}` : th ? `ช็อต ${r.shotId + 1}` : `Shot ${r.shotId + 1}`) : "BGM";
+      lines.push(`- ${where}: ${r.license || (zh ? "许可未知" : th ? "ไม่ทราบใบอนุญาต" : "license unknown")}${r.sourceUrl ? ` · ${r.sourceUrl}` : ""}`);
     }
     lines.push("");
   }
 
-  lines.push(zh ? "## 全部素材" : "## All assets");
+  lines.push(zh ? "## 全部素材" : th ? "## สื่อทั้งหมด" : "## All assets");
   const rows = [...m.items, ...(m.bgm ? [m.bgm] : [])];
   for (const i of rows) {
-    const where = i.shotId >= 0 ? (zh ? `分镜 ${i.shotId + 1}` : `Shot ${i.shotId + 1}`) : "BGM";
-    const kind = KIND_LABEL[i.kind]?.[locale] ?? i.kind;
+    const where = i.shotId >= 0 ? (zh ? `分镜 ${i.shotId + 1}` : th ? `ช็อต ${i.shotId + 1}` : `Shot ${i.shotId + 1}`) : "BGM";
+    const kind = KIND_LABEL[i.kind]?.[locale] ?? KIND_LABEL[i.kind]?.en ?? i.kind;
     const bits = [where, kind];
     if (i.provider) bits.push(i.provider);
     if (i.author) bits.push(i.author);
     if (i.license) bits.push(i.license);
     if (i.sourceUrl) bits.push(i.sourceUrl);
-    lines.push(`- ${bits.join(" · ")}${i.note ? ` — ${i.note[locale]}` : ""}`);
+    lines.push(`- ${bits.join(" · ")}${i.note ? ` — ${i.note[locale] ?? i.note.en}` : ""}`);
   }
   lines.push("");
   return lines.join("\n");

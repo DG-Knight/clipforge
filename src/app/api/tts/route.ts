@@ -9,13 +9,14 @@ export async function POST(req: NextRequest) {
     const { text, ttsConfig } = body as { text?: string; ttsConfig?: TTSConfig };
 
     if (!text) {
-      return apiError(req, "缺少配音文本", "Missing voiceover text");
+      return apiError(req, "缺少配音文本", "Missing voiceover text", "ยังไม่ได้ใส่ข้อความสำหรับพากย์เสียง");
     }
     if (!ttsConfig?.baseUrl || !ttsConfig?.apiKey || !ttsConfig?.model || !ttsConfig?.voice) {
       return apiError(
         req,
         "请先在设置中配置 TTS（baseUrl、apiKey、model、voice）",
-        "Please configure TTS in settings first (baseUrl, apiKey, model, voice)"
+        "Please configure TTS in settings first (baseUrl, apiKey, model, voice)",
+        "กรุณาตั้งค่า TTS ในหน้าตั้งค่าก่อน (baseUrl, apiKey, model, voice)"
       );
     }
 
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("TTS failed:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "TTS 失败", "TTS failed") },
+      { error: error instanceof Error ? error.message : errText(req, "TTS 失败", "TTS failed", "สร้างเสียงพากย์ไม่สำเร็จ") },
       { status: 500 }
     );
   }

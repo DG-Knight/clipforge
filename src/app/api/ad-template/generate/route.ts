@@ -74,10 +74,10 @@ export async function POST(req: NextRequest) {
   const llmConfig = body.llmConfig;
 
   if (!productName) {
-    return apiError(req, "请先填写商品名称", "Please enter the product name first");
+    return apiError(req, "请先填写商品名称", "Please enter the product name first", "กรุณากรอกชื่อสินค้าก่อน");
   }
   if (!llmConfig?.baseUrl || !llmConfig?.model) {
-    return apiError(req, "请先在设置中配置 LLM 参数", "Please configure the LLM in settings first");
+    return apiError(req, "请先在设置中配置 LLM 参数", "Please configure the LLM in settings first", "กรุณาตั้งค่า LLM ในหน้าตั้งค่าก่อน");
   }
 
   try {
@@ -100,16 +100,16 @@ export async function POST(req: NextRequest) {
     const start = text.indexOf("{");
     const end = text.lastIndexOf("}");
     if (start === -1 || end <= start) {
-      return apiError(req, "AI 未返回有效的模板配方，请重试", "The AI did not return a valid template recipe, please try again", 502);
+      return apiError(req, "AI 未返回有效的模板配方，请重试", "The AI did not return a valid template recipe, please try again", "AI ไม่ได้ส่งสูตรเทมเพลตที่ใช้ได้กลับมา โปรดลองอีกครั้ง", 502);
     }
     const template = sanitizeCustomAdTemplate(JSON.parse(text.slice(start, end + 1)));
     if (!template) {
-      return apiError(req, "AI 返回的配方无法解析，请重试", "Could not parse the AI's recipe, please try again", 502);
+      return apiError(req, "AI 返回的配方无法解析，请重试", "Could not parse the AI's recipe, please try again", "อ่านสูตรที่ AI ส่งกลับมาไม่ได้ โปรดลองอีกครั้ง", 502);
     }
     return NextResponse.json({ template });
   } catch (error) {
     console.error("AI 定制模板生成失败:", error);
-    const { zh, en } = llmErrorPair(error);
-    return apiError(req, `AI 定制模板生成失败: ${zh}`, `AI template generation failed: ${en}`, 500);
+    const { zh, en, th } = llmErrorPair(error);
+    return apiError(req, `AI 定制模板生成失败: ${zh}`, `AI template generation failed: ${en}`, `สร้างเทมเพลตด้วย AI ไม่สำเร็จ: ${th}`, 500);
   }
 }

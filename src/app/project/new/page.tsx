@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useT, useLocale } from "@/lib/i18n";
+import { pickLocaleText } from "@/lib/i18n/config";
 import { friendlyError } from "@/lib/friendly-error";
 
 // product category options (label changed to i18n key, converted via t() at render time)
@@ -482,7 +483,7 @@ export default function NewProjectPage() {
   const pickedViralTpl = selectedTemplateId ? templates.find((x) => x.id === selectedTemplateId) : null;
   const pickedTemplateNames = [
     pickedViralTpl?.name,
-    pickedAdTpl ? (locale === "zh" ? pickedAdTpl.name.zh : pickedAdTpl.name.en) : null,
+    pickedAdTpl ? pickLocaleText(locale, pickedAdTpl.name) : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -1238,7 +1239,7 @@ export default function NewProjectPage() {
                             : "border-primary/30 bg-primary/5 text-foreground hover:border-primary/60"
                         }`}
                       >
-                        {tpl.emoji} {locale === "zh" ? tpl.name.zh : tpl.name.en}
+                        {tpl.emoji} {pickLocaleText(locale, tpl.name)}
                       </button>
                     ))}
                   </div>
@@ -1256,7 +1257,7 @@ export default function NewProjectPage() {
                         : "border-border/50 bg-muted/20 text-muted-foreground hover:border-primary/40"
                     }`}
                   >
-                    {locale === "th" ? (g.name as { th?: string; en: string }).th ?? g.name.en : locale === "zh" ? g.name.zh : g.name.en}
+                    {pickLocaleText(locale, g.name)}
                     {g.id !== "all" && (
                       <span className="ml-1 opacity-60">{listAdTemplates({ group: g.id }).length}</span>
                     )}
@@ -1419,7 +1420,7 @@ export default function NewProjectPage() {
                         className={EDITOR_INPUT_CLS}
                       >
                         {LOOK_PRESETS.map((p) => (
-                          <option key={p.id} value={p.id}>{locale === "zh" ? p.name.zh : p.name.en}</option>
+                              <option key={p.id} value={p.id}>{pickLocaleText(locale, p.name)}</option>
                         ))}
                       </select>
                     </label>
@@ -1433,7 +1434,7 @@ export default function NewProjectPage() {
                         className={EDITOR_INPUT_CLS}
                       >
                         {AD_TEMPLATE_GROUPS.map((g) => (
-                          <option key={g.id} value={g.id}>{locale === "zh" ? g.name.zh : g.name.en}</option>
+                          <option key={g.id} value={g.id}>{pickLocaleText(locale, g.name)}</option>
                         ))}
                       </select>
                     </label>
@@ -1459,7 +1460,7 @@ export default function NewProjectPage() {
                           >
                             <option value="">{t("adTplCameraAuto")}</option>
                             {CAMERA_PRESETS.map((p) => (
-                              <option key={p.id} value={p.id}>{locale === "zh" ? p.name.zh : p.name.en}</option>
+                          <option key={p.id} value={p.id}>{pickLocaleText(locale, p.name)}</option>
                             ))}
                           </select>
                         </label>
@@ -1479,7 +1480,7 @@ export default function NewProjectPage() {
                         className={EDITOR_INPUT_CLS}
                       >
                         {CAPTION_PRESET_IDS.map((id) => (
-                          <option key={id} value={id}>{locale === "zh" ? CAPTION_LABELS[id].zh : CAPTION_LABELS[id].en}</option>
+                          <option key={id} value={id}>{pickLocaleText(locale, CAPTION_LABELS[id])}</option>
                         ))}
                       </select>
                     </label>
@@ -1495,7 +1496,7 @@ export default function NewProjectPage() {
                         className={EDITOR_INPUT_CLS}
                       >
                         {AD_TEMPLATE_EDIT_VOCAB.bgm.map((b) => (
-                          <option key={b} value={b}>{locale === "zh" ? BGM_LABELS[b]?.zh ?? b : BGM_LABELS[b]?.en ?? b}</option>
+                          <option key={b} value={b}>{pickLocaleText(locale, BGM_LABELS[b] ?? { zh: b, en: b })}</option>
                         ))}
                       </select>
                     </label>
@@ -1516,7 +1517,7 @@ export default function NewProjectPage() {
                       >
                         <option value="">{t("adTplComposeQualityDefault")}</option>
                         {AD_TEMPLATE_EDIT_VOCAB.quality.map((q) => (
-                          <option key={q} value={q}>{locale === "zh" ? QUALITY_LABELS[q]?.zh ?? q : QUALITY_LABELS[q]?.en ?? q}</option>
+                          <option key={q} value={q}>{pickLocaleText(locale, QUALITY_LABELS[q] ?? { zh: q, en: q })}</option>
                         ))}
                       </select>
                     </label>
@@ -1593,7 +1594,7 @@ export default function NewProjectPage() {
                     }`}
                   >
                     <span className={`text-sm font-medium ${selectedAdTemplateId === CUSTOM_AD_TEMPLATE_ID ? "text-primary" : "text-foreground"}`}>
-                      {customAdTemplate.emoji} {locale === "zh" ? customAdTemplate.name.zh : customAdTemplate.name.en}
+                      {customAdTemplate.emoji} {pickLocaleText(locale, customAdTemplate.name)}
                       <span className="ml-1 text-[10px] px-1 py-0.5 rounded bg-primary/15 text-primary align-middle">AI</span>
                       {/* save-for-reuse chip (span, not button — cards are buttons already) */}
                       {!aiTplSaved && (
@@ -1629,13 +1630,13 @@ export default function NewProjectPage() {
                         }`}
                       >
                         <span className={`text-sm font-medium ${selectedAdTemplateId === tpl.id ? "text-primary" : "text-foreground"}`}>
-                          {tpl.emoji} {locale === "zh" ? tpl.name.zh : tpl.name.en}
+                          {tpl.emoji} {pickLocaleText(locale, tpl.name)}
                           <span className="ml-1 text-[10px] px-1 py-0.5 rounded bg-primary/15 text-primary align-middle">
                             {t("adTemplateMine")}
                           </span>
                         </span>
                         <span className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                          {locale === "zh" ? tpl.tagline.zh : tpl.tagline.en}
+                          {pickLocaleText(locale, tpl.tagline)}
                         </span>
                         <span
                           onClick={(e) => { e.stopPropagation(); deleteMyTemplate(tpl.id); }}
@@ -1657,15 +1658,15 @@ export default function NewProjectPage() {
                     }`}
                   >
                     <span className={`text-sm font-medium ${selectedAdTemplateId === tpl.id ? "text-primary" : "text-foreground"}`}>
-                      {tpl.emoji} {locale === "zh" ? tpl.name.zh : tpl.name.en}
-                      {category && tpl.goodFor?.includes(category as AdTemplateCategory) && (
+                          {tpl.emoji} {pickLocaleText(locale, tpl.name)}
+                          {category && tpl.goodFor?.includes(category as AdTemplateCategory) && (
                         <span className="ml-1 text-[10px] px-1 py-0.5 rounded bg-primary/15 text-primary align-middle">
                           {t("adTemplateGoodMatch")}
                         </span>
                       )}
                     </span>
                     <span className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                      {locale === "zh" ? tpl.tagline.zh : tpl.tagline.en}
+                      {pickLocaleText(locale, tpl.tagline)}
                     </span>
                   </button>
                 ))}

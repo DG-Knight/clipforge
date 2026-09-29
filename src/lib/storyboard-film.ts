@@ -31,6 +31,33 @@ const SHOT_TYPE_LABELS: Record<string, { zh: string; en: string }> = {
 
 const CJK_RE = /[一-鿿]/;
 
+const THAI_RE = /[\u0E00-\u0E7F]/;
+
+/**
+ * Count Thai words for density checks: spaceless Thai would otherwise count as a single
+ * "word" and never trip the lip-sync overflow guard. A Thai word carries roughly the same
+ * speaking time as an English word, so the English per-word budget applies. Falls back to
+ * ~4 base chars per word when Intl.Segmenter is unavailable; combining marks carry no weight.
+ * Pure function.
+ */
+function thaiWordCount(line: string): number {
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    try {
+      const seg = new Intl.Segmenter("th", { granularity: "word" });
+      let n = 0;
+      for (const s of seg.segment(line)) {
+        if (s.isWordLike) n++;
+      }
+      if (n > 0) return n;
+    } catch {
+      // fall through to the estimate below
+    }
+  }
+  const comb = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\s]/;
+  const base = Array.from(line).filter((c) => !comb.test(c)).length;
+  return Math.max(1, Math.round(base / 4));
+}
+
 /** Raw total of the script's shot durations in seconds (not clamped) */
 export function filmTotalSeconds(shots: Shot[]): number {
   return shots.reduce((sum, s) => sum + (Number.isFinite(s.duration) ? s.duration : 0), 0);
@@ -225,6 +252,11 @@ export function dialogueDensityWarnings(shots: Shot[]): DialogueDensityWarning[]
       // count letter/digit/CJK chars only — punctuation takes no speaking time
       const count = Array.from(line).filter((c) => /[\p{L}\p{N}]/u.test(c)).length;
       const limit = Math.ceil(seconds * DIALOGUE_MAX_ZH_CHARS_PER_SEC);
+      if (count > limit) out.push({ index, seconds, count, limit });
+    } else if (THAI_RE.test(line)) {
+      // spaceless Thai: Segmenter word count against the same per-word budget as English
+      const count = thaiWordCount(line);
+      const limit = Math.ceil(seconds * DIALOGUE_MAX_EN_WORDS_PER_SEC);
       if (count > limit) out.push({ index, seconds, count, limit });
     } else {
       const count = line.split(/\s+/).filter(Boolean).length;

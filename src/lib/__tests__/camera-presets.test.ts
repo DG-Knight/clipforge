@@ -15,13 +15,14 @@ import { hasCameraConflict, buildMotionPrompt } from "@/lib/motion-prompt";
 const SHOT_TYPES = ["hook", "pain_point", "product_reveal", "demo", "social_proof", "cta"] as const;
 
 describe("CAMERA_PRESETS 库完整性", () => {
-  it("id 唯一且 zh/en 名称与 prompt 均非空", () => {
+  it("id 唯一且 zh/en/th 名称与 zh/en prompt 均非空（prompt 只留中英——喂模型的）", () => {
     const ids = new Set<string>();
     for (const p of CAMERA_PRESETS) {
       expect(ids.has(p.id)).toBe(false);
       ids.add(p.id);
       expect(p.name.zh.length).toBeGreaterThan(0);
       expect(p.name.en.length).toBeGreaterThan(0);
+      expect(p.name.th.length).toBeGreaterThan(0);
       expect(p.prompt.zh.length).toBeGreaterThan(0);
       expect(p.prompt.en.length).toBeGreaterThan(0);
       expect(CAMERA_PRESET_CATEGORIES[p.category]).toBeDefined();
@@ -112,7 +113,14 @@ describe("Mix 双预设叠加", () => {
 });
 
 describe("cameraPresetGuide 脚本 LLM 词表", () => {
-  it("覆盖六类分镜意图标签且包含真实预设句", () => {
+  it("六类分组标签中英泰齐全（picker optgroup 三语）", () => {
+    for (const cat of Object.keys(CAMERA_PRESET_CATEGORIES) as (keyof typeof CAMERA_PRESET_CATEGORIES)[]) {
+      const label = CAMERA_PRESET_CATEGORIES[cat];
+      expect(label.zh.length).toBeGreaterThan(0);
+      expect(label.en.length).toBeGreaterThan(0);
+      expect(label.th.length).toBeGreaterThan(0);
+    }
+  });  it("覆盖六类分镜意图标签且包含真实预设句", () => {
     const guide = cameraPresetGuide();
     for (const label of ["开场钩子", "痛点共鸣", "商品展示", "使用演示", "氛围背书", "收尾转化"]) {
       expect(guide).toContain(label);

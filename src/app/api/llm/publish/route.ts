@@ -15,22 +15,23 @@ export async function POST(req: NextRequest) {
     const { productName, productDescription, category, platform, llmConfig, locale } = body;
 
     if (!productName) {
-      return apiError(req, "缺少商品名称", "Missing product name");
+      return apiError(req, "缺少商品名称", "Missing product name", "ยังไม่ได้ใส่ชื่อสินค้า");
     }
     if (!llmConfig?.baseUrl || !llmConfig?.apiKey || !llmConfig?.model) {
-      return apiError(req, "请先配置 LLM", "Please configure the LLM first");
+      return apiError(req, "请先配置 LLM", "Please configure the LLM first", "กรุณาตั้งค่า LLM ก่อน");
     }
 
     const client = createLLMClient(llmConfig);
     const en = locale === "en";
-    const prompt = buildPublishPrompt({ productName, category, productDescription, platform }, en ? "en" : "zh");
+    const th = locale === "th";
+    const prompt = buildPublishPrompt({ productName, category, productDescription, platform }, th ? "th" : en ? "en" : "zh");
 
     const resp = await withLLMErrors(
       () =>
         client.chat.completions.create({
           model: llmConfig.model,
           messages: [
-            { role: "system", content: en ? "You only output JSON, no explanation." : "你只输出 JSON，不输出任何解释。" },
+            { role: "system", content: en ? "You only output JSON, no explanation." : th ? "ตอบเฉพาะ JSON ไม่ต้องอธิบาย" : "你只输出 JSON，不输出任何解释。" },
             { role: "user", content: prompt },
           ],
           temperature: 0.9,
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
     // comment kit: keep only well-formed LLM entries; fall back to the deterministic
     // template kit so the field is never missing (the notice always comes from our side —
     // the compliance wording is not the LLM's to rewrite)
-    const fallback = buildCommentKit({ productName, category, sellingPoints: productDescription, locale: en ? "en" : "zh" });
+    const fallback = buildCommentKit({ productName, category, sellingPoints: productDescription, locale: th ? "th" : en ? "en" : "zh" });
     const rawKit = parsed.commentKit;
     const objections = Array.isArray(rawKit?.objections)
       ? rawKit.objections
@@ -73,9 +74,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("生成发布文案失败:", error);
-    const { zh, en } = llmErrorPair(error);
+    const { zh, en, th } = llmErrorPair(error);
     return NextResponse.json(
-      { error: errText(req, zh || "生成失败", en || "Generation failed") },
+      { error: errText(req, zh || "生成失败", en || "Generation failed", th || "สร้างไม่สำเร็จ") },
       { status: 500 }
     );
   }

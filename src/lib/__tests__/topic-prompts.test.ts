@@ -19,9 +19,17 @@ describe("buildTopicPrompt（一句话主题成片，去商品化）", () => {
     expect(p).toContain("NOT in Chinese");
   });
 
+  it("泰语主题：追加泰语指令，要求旁白/标题用泰语（不再被当成英文）", () => {
+    const p = buildTopicPrompt({ topic: "วิธีชงกาแฟดริปที่บ้าน" });
+    expect(p).toContain("LANGUAGE");
+    expect(p).toContain("natural Thai");
+    expect(p).not.toContain("NOT in Chinese");
+  });
+
   it("中文主题：不追加英文语言指令（默认中文不变）", () => {
     const p = buildTopicPrompt({ topic: "在家如何泡手冲咖啡" });
     expect(p).not.toContain("NOT in Chinese");
+    expect(p).not.toContain("natural Thai");
   });
 
   it("以主题立框而非商品（不含带货输入字段）", () => {

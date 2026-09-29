@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { escapeSsml, FREE_TTS_VOICES, DEFAULT_FREE_VOICE } from "@/lib/edge-tts";
+import { escapeSsml, FREE_TTS_VOICES, DEFAULT_FREE_VOICE, langOfVoice } from "@/lib/edge-tts";
 
 describe("escapeSsml（SSML 特殊字符转义）", () => {
   it("转义全部 5 个 XML 特殊字符", () => {
@@ -40,6 +40,21 @@ describe("免费音色清单", () => {
   });
   it("默认是温柔女声晓晓", () => {
     expect(DEFAULT_FREE_VOICE).toBe("zh-CN-XiaoxiaoNeural");
+  });
+});
+
+describe("langOfVoice（voice → SSML xml:lang）", () => {
+  it("泰语嗓音返回 th-TH（SSML 不再锁 zh-CN）", () => {
+    expect(langOfVoice("th-TH-PremwadeeNeural")).toBe("th-TH");
+    expect(langOfVoice("th-TH-NiwatNeural")).toBe("th-TH");
+  });
+  it("中英文嗓音返回对应语言", () => {
+    expect(langOfVoice("zh-CN-XiaoxiaoNeural")).toBe("zh-CN");
+    expect(langOfVoice("en-US-AriaNeural")).toBe("en-US");
+  });
+  it("未知嗓音名回落 zh-CN（历史默认行为不变）", () => {
+    expect(langOfVoice("")).toBe("zh-CN");
+    expect(langOfVoice("weird-voice")).toBe("zh-CN");
   });
 });
 

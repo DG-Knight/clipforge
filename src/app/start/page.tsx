@@ -182,13 +182,16 @@ export default function StartPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // trend radar ("what to post today"): Chinese UI reads domestic boards, English UI reads Google Trends.
+  // trend radar ("what to post today"): Chinese UI reads domestic boards, Thai UI reads
+  // Thailand Google Trends, English UI reads US Google Trends.
   // Failure or an empty board silently hides the section — the landing page must never block on it.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(locale === "zh" ? "/api/trends?source=cn&limit=48" : "/api/trends?geo=US&limit=48");
+        const res = await fetch(
+          locale === "zh" ? "/api/trends?source=cn&limit=48" : locale === "th" ? "/api/trends?geo=TH&limit=48" : "/api/trends?geo=US&limit=48"
+        );
         if (!res.ok) return;
         const data = await res.json();
         if (cancelled || !Array.isArray(data.topics)) return;

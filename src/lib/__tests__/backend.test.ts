@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { buildUserPrompt, buildBatchPrompt } from "@/lib/script-engine/prompts";
 import type { ScriptGenerationInput } from "@/lib/script-engine/prompts";
 import { extractJSON, parseScriptResponse, reasoningParams, batchCountFor } from "@/lib/script-engine/generator";
-import { buildComposeCommand, buildComposeInvocation, resolveChineseFontFamily, wrapCaption, composeErrorMessage, buildDrawtext, type ComposeConfig } from "@/lib/video-composer/composer";
+import { buildComposeCommand, buildComposeInvocation, resolveChineseFontFamily, resolveChineseFontFile, resolveThaiFontFile, resolveFontFileForText, resolveFontFamilyForText, wrapCaption, composeErrorMessage, buildDrawtext, type ComposeConfig } from "@/lib/video-composer/composer";
+import { existsSync } from "fs";
+import { join } from "path";
 
 // ==================== Prompt build tests ====================
 
@@ -117,8 +119,16 @@ describe("buildUserPrompt", () => {
     expect(p).toContain("NOT in Chinese");
   });
 
+  it("泰语商品：追加泰语指令，要求旁白/标题用泰语（泰语商品不再被当成英文）", () => {
+    const p = buildUserPrompt({ productName: "เซรั่มหน้าใส", category: "beauty", styleType: "pain_point", productDescription: "ลดจุดด่างดำใน 2 สัปดาห์" });
+    expect(p).toContain("LANGUAGE");
+    expect(p).toContain("natural Thai");
+    expect(p).not.toContain("NOT in Chinese");
+  });
+
   it("中文商品：不追加英文语言指令（默认中文不变）", () => {
     expect(buildUserPrompt(baseInput)).not.toContain("NOT in Chinese");
+    expect(buildUserPrompt(baseInput)).not.toContain("natural Thai");
   });
 });
 
@@ -768,6 +778,32 @@ describe("内置全 CJK 字幕字体", () => {
     // bundled font is in the repo (public/fonts/subtitle.otf) and should take priority over system fonts;
     // karaoke uses libass matching by family name, must resolve to the font's real family name to use the bundled font (otherwise system PingFang lacks Hangul → tofu blocks)
     expect(resolveChineseFontFamily()).toBe("Noto Sans CJK SC");
+  });
+});
+
+describe("泰语字幕字体（Noto Sans Thai，随包内置）", () => {
+  it("打包的 NotoSansThai-Regular/Bold 存在于 public/fonts", () => {
+    expect(existsSync(join(process.cwd(), "public", "fonts", "NotoSansThai-Regular.ttf"))).toBe(true);
+    expect(existsSync(join(process.cwd(), "public", "fonts", "NotoSansThai-Bold.ttf"))).toBe(true);
+  });
+  it("纯泰语文本选中打包的泰语字体文件", () => {
+    expect(resolveThaiFontFile()).toContain("NotoSansThai-Regular.ttf");
+    expect(resolveFontFileForText("สวัสดีครับเพื่อนๆ")).toContain("NotoSansThai-Regular.ttf");
+  });
+  it("纯泰语文本的 ASS 族名为 Noto Sans Thai", () => {
+    expect(resolveFontFamilyForText("สวัสดีครับเพื่อนๆ")).toBe("Noto Sans Thai");
+  });
+  it("中/英文本保持原行为（Noto Sans CJK SC）", () => {
+    expect(resolveFontFamilyForText("你好世界")).toBe("Noto Sans CJK SC");
+    expect(resolveFontFamilyForText("hello world")).toBe("Noto Sans CJK SC");
+    expect(resolveFontFileForText("hello world")).toBe(resolveChineseFontFile());
+  });
+  it("泰汉混排保持 CJK 字体（单个 drawtext 字体文件无法同时覆盖两种文字，不回归）", () => {
+    expect(resolveFontFamilyForText("สวัสดี你好")).toBe("Noto Sans CJK SC");
+  });
+  it("无文本保持原行为", () => {
+    expect(resolveFontFamilyForText()).toBe(resolveChineseFontFamily());
+    expect(resolveFontFamilyForText("")).toBe(resolveChineseFontFamily());
   });
 });
 

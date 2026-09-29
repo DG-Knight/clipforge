@@ -40,6 +40,7 @@ import {
 } from "@/lib/video-control-plan";
 import type { GenerationControlSummary } from "@/lib/video-repair-plan";
 import { useT, useLocale } from "@/lib/i18n";
+import { pickLocaleText } from "@/lib/i18n/config";
 import { LocalMaterialLibrary } from "./_components/local-material-library";
 import { classifyMaterial, MATERIAL_ACCEPT, type PublicLocalMaterial } from "@/lib/material-library";
 import { uploadLocalMaterial, type MaterialUploadProgress } from "@/lib/upload-local-material";
@@ -598,7 +599,7 @@ export default function AssetsPage() {
       if (retake) {
         const patched = applyRetakePatch(finalPrompt, retake);
         finalPrompt = patched.prompt;
-        setTaskMsg(t("retakeApplied", { change: locale === "zh" ? patched.change.zh : patched.change.en }));
+        setTaskMsg(t("retakeApplied", { change: pickLocaleText(locale, patched.change) }));
       }
       const assetIndex = assets.findIndex((item) => item.shotId === shotId);
       const previousAsset = assetIndex > 0 ? assets[assetIndex - 1] : undefined;
@@ -1140,17 +1141,17 @@ export default function AssetsPage() {
             >
               <option value="none">{t("lookNone")}</option>
               {/* "real" family = raw phone-shot looks (UGC anti-AI-slop path); styled = art-directed */}
-              <optgroup label={locale === "zh" ? "实拍感" : "Real-shot"}>
+              <optgroup label={pickLocaleText(locale, { zh: "实拍感", en: "Real-shot", th: "สไตล์ภาพถ่ายจริง" })}>
                 {LOOK_PRESETS.filter((p) => p.group === "real").map((p) => (
                   <option key={p.id} value={p.id}>
-                    {locale === "zh" ? p.name.zh : p.name.en}
+                    {pickLocaleText(locale, p.name)}
                   </option>
                 ))}
               </optgroup>
-              <optgroup label={locale === "zh" ? "风格化" : "Styled"}>
+              <optgroup label={pickLocaleText(locale, { zh: "风格化", en: "Styled", th: "สไตล์จัดแต่ง" })}>
                 {LOOK_PRESETS.filter((p) => p.group !== "real").map((p) => (
                   <option key={p.id} value={p.id}>
-                    {locale === "zh" ? p.name.zh : p.name.en}
+                    {pickLocaleText(locale, p.name)}
                   </option>
                 ))}
               </optgroup>
@@ -1513,15 +1514,15 @@ export default function AssetsPage() {
                                 <optgroup label={t("cameraRecommendGroup")}>
                                   {recommendedPresets(asset.type).map((p) => (
                                     <option key={`rec-${p.id}`} value={p.id}>
-                                      {locale === "zh" ? p.name.zh : p.name.en}
+                                      {pickLocaleText(locale, p.name)}
                                     </option>
                                   ))}
                                 </optgroup>
                                 {(Object.keys(CAMERA_PRESET_CATEGORIES) as CameraPresetCategory[]).map((cat) => (
-                                  <optgroup key={cat} label={locale === "zh" ? CAMERA_PRESET_CATEGORIES[cat].zh : CAMERA_PRESET_CATEGORIES[cat].en}>
+                                  <optgroup key={cat} label={pickLocaleText(locale, CAMERA_PRESET_CATEGORIES[cat])}>
                                     {CAMERA_PRESETS.filter((p) => p.category === cat).map((p) => (
                                       <option key={p.id} value={p.id}>
-                                        {locale === "zh" ? p.name.zh : p.name.en}
+                                        {pickLocaleText(locale, p.name)}
                                       </option>
                                     ))}
                                   </optgroup>
@@ -1545,7 +1546,7 @@ export default function AssetsPage() {
                                   <option value="">{t("cameraMixPick")}</option>
                                   {candidates.map((p) => (
                                     <option key={p.id} value={p.id}>
-                                      {locale === "zh" ? p.name.zh : p.name.en}
+                                      {pickLocaleText(locale, p.name)}
                                     </option>
                                   ))}
                                 </select>
@@ -1697,7 +1698,7 @@ export default function AssetsPage() {
                               <option value="">{t("retakeDiag")}</option>
                               {RETAKE_SYMPTOMS.map((sym) => (
                                 <option key={sym.id} value={sym.id}>
-                                  {locale === "zh" ? sym.label.zh : sym.label.en}
+                                  {pickLocaleText(locale, sym.label)}
                                 </option>
                               ))}
                             </select>

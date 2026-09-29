@@ -17,6 +17,10 @@ describe("pickLocale（按 Accept-Language 选语言，域内默认中文）", (
     expect(pickLocale(reqWith(""))).toBe("zh");
     expect(pickLocale(reqWith("ja,zh;q=0.8"))).toBe("zh"); // 非英文首选 → 默认中文
   });
+  it("泰语浏览器 → th（不再误判中文）", () => {
+    expect(pickLocale(reqWith("th-TH,th;q=0.9,en;q=0.8"))).toBe("th");
+    expect(pickLocale(reqWith("th"))).toBe("th");
+  });
 });
 
 describe("errText / apiError", () => {
@@ -25,6 +29,13 @@ describe("errText / apiError", () => {
   });
   it("英文客户端返回英文", () => {
     expect(errText(reqWith("en-US"), "无效的项目ID", "Invalid project ID")).toBe("Invalid project ID");
+  });
+  it("泰语客户端默认回落英文（可读、可机翻；不再给中文）", () => {
+    expect(errText(reqWith("th-TH"), "无效的项目ID", "Invalid project ID")).toBe("Invalid project ID");
+  });
+  it("调用方传入泰语专版则优先泰语", () => {
+    expect(errText(reqWith("th-TH"), "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง")).toBe("รหัสโปรเจกต์ไม่ถูกต้อง");
+    expect(errText(reqWith("en-US"), "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง")).toBe("Invalid project ID");
   });
   it("apiError 返回带 error 字段的响应、默认 400", async () => {
     const res = apiError(reqWith("en"), "缺少商品名称", "Missing product name");

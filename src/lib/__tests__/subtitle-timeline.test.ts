@@ -103,6 +103,16 @@ describe("estimateSpeechSeconds（ffprobe 失败时的文本估时兜底）", ()
     // 10 CJK chars at ~4.2 chars/s ≈ 2.38s raw; the 1.15 safety factor must push it above that
     expect(estimateSpeechSeconds("一二三四五六七八九十")).toBeGreaterThan(10 / 4.2);
   });
+
+  it("泰语按基础字符估时（组合元音/声调不占时长），不再被当成单个英文词", () => {
+    const sec = estimateSpeechSeconds("สวัสดีครับเพื่อนๆ");
+    // 旧逻辑：整句无空格 → 1 个 latin 词 ≈0.4s→钳到 1s；新逻辑必须显著更高
+    expect(sec).toBeGreaterThan(1.2);
+    expect(sec).toBeLessThan(4);
+    expect(
+      estimateSpeechSeconds("สวัสดีครับเพื่อนๆ วันนี้มีของดีมาแนะนำเยอะเลย")
+    ).toBeGreaterThan(sec);
+  });
 });
 
 describe("词级时间接入时间轴（卡拉OK真同步 + 卡片吸附词边界）", () => {

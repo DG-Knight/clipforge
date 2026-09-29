@@ -28,3 +28,17 @@ export const FREE_TTS_VOICES: { value: string; label: string; gender: "female" |
 ];
 
 export const DEFAULT_FREE_VOICE = "zh-CN-XiaoxiaoNeural";
+
+/**
+ * Voice name → SSML xml:lang (e.g. "th-TH-PremwadeeNeural" → "th-TH").
+ * Single home for voice→language knowledge: edge-tts SSML, drama casting and batch
+ * rotation all derive from here instead of hardcoding "zh-CN" at each call site.
+ * Unknown names fall back to zh-CN (the historical default — never break old callers).
+ * Pure function.
+ */
+export function langOfVoice(voice: string): string {
+  const m = /^\s*([a-z]{2}-[A-Z]{2})-/.exec(voice || "");
+  if (m) return m[1];
+  const hit = FREE_TTS_VOICES.find((v) => v.value === (voice || "").trim());
+  return hit ? hit.lang : "zh-CN";
+}

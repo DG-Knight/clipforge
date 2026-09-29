@@ -10,7 +10,7 @@ import { buildCreditsManifest } from "@/lib/asset-credits";
 import type { ReadinessReport } from "@/lib/publish-readiness";
 import type { QcReport } from "@/lib/video-composer/qc";
 
-function readiness(overall: ReadinessReport["overall"], items: Array<[string, "pass" | "warn" | "fail"]>, locale: "zh" | "en"): ReadinessReport {
+function readiness(overall: ReadinessReport["overall"], items: Array<[string, "pass" | "warn" | "fail"]>, locale: "zh" | "en" | "th"): ReadinessReport {
   const list = items.map(([key, status]) => ({ key: key as never, status, message: `${locale}:${key}` }));
   return {
     items: list,
@@ -61,6 +61,18 @@ describe("gateItemFromReadiness", () => {
     const pass = gateItemFromReadiness(readiness("ready", [["hook", "pass"]], "zh"), readiness("ready", [["hook", "pass"]], "en"));
     expect(pass.status).toBe("pass");
     expect(pass.problems).toEqual([]);
+  });
+
+  it("可选泰语报告 → message/problems 带 th（不传则保持 zh/en 原样）", () => {
+    const zh = readiness("needsWork", [["compliance", "fail"]], "zh");
+    const en = readiness("needsWork", [["compliance", "fail"]], "en");
+    const th = readiness("needsWork", [["compliance", "fail"]], "th");
+    const item = gateItemFromReadiness(zh, en, th);
+    expect(item.message.th).toContain("ตรวจความพร้อม");
+    expect(item.problems).toEqual([{ zh: "zh:compliance", en: "en:compliance", th: "th:compliance" }]);
+    const legacy = gateItemFromReadiness(zh, en);
+    expect("th" in legacy.message).toBe(false);
+    expect(legacy.problems).toEqual([{ zh: "zh:compliance", en: "en:compliance" }]);
   });
 });
 

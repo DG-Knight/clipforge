@@ -20,7 +20,7 @@
 export interface LookPreset {
   id: string;
   /** Display name (picker label) */
-  name: { zh: string; en: string };
+  name: { zh: string; en: string; th: string };
   /** Appended to the keyframe image-generation prompt */
   image: { zh: string; en: string };
   /** Short lighting anchor appended to the i2v motion prompt */
@@ -45,7 +45,7 @@ export const LOOK_NONE = "none";
 export const LOOK_PRESETS: LookPreset[] = [
   {
     id: "daylight_clean",
-    name: { zh: "清透日光", en: "Clean Daylight" },
+    name: { zh: "清透日光", en: "Clean Daylight", th: "แสงธรรมชาติใสๆ" },
     image: {
       zh: "明亮自然的窗边日光（约5600K日光白平衡），空气感清透，浅色干净背景，f/4 适中景深",
       en: "bright natural window daylight (~5600K daylight white balance), airy and clean, light minimal backdrop, f/4 moderate depth of field",
@@ -57,7 +57,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "warm_life",
-    name: { zh: "暖调生活感", en: "Warm Lifestyle" },
+    name: { zh: "暖调生活感", en: "Warm Lifestyle", th: "โทนอุ่นโฮมมี่" },
     image: {
       zh: "温暖的午后阳光色调（约3000K暖光），橙黄暖光洒落，居家生活氛围，柔和阴影，浅景深 f/2.0",
       en: "warm afternoon sunlight tones (~3000K warm light), golden light spill, cozy home atmosphere, soft shadows, shallow f/2.0 depth of field",
@@ -69,7 +69,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "studio_product",
-    name: { zh: "影棚质感", en: "Studio Product" },
+    name: { zh: "影棚质感", en: "Studio Product", th: "สตูดิโอสินค้า" },
     image: {
       zh: "专业影棚布光（约5000K主光），主体轮廓光清晰，深色渐变背景，f/8 全清晰景深，商品质感锐利高级",
       en: "professional studio lighting (~5000K key light), crisp rim light on the subject, dark gradient backdrop, f/8 deep focus, sharp premium product texture",
@@ -81,7 +81,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "night_neon",
-    name: { zh: "夜景氛围", en: "Night Neon" },
+    name: { zh: "夜景氛围", en: "Night Neon", th: "นีออนกลางคืน" },
     image: {
       zh: "夜晚城市霓虹氛围（约3200K暖光与霓虹冷光混合），冷暖光对比，大光圈 f/1.8 浅景深光斑背景，情绪感强",
       en: "night city neon mood (~3200K tungsten mixed with neon), warm-cool light contrast, wide-open f/1.8 shallow bokeh backdrop, strong atmosphere",
@@ -93,7 +93,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "premium_gray",
-    name: { zh: "高级灰调", en: "Premium Gray" },
+    name: { zh: "高级灰调", en: "Premium Gray", th: "เทาพรีเมียม" },
     image: {
       zh: "低饱和高级灰色调（约4500K柔光），柔和漫射光，极简构图，f/5.6 稳定景深，高端克制的质感",
       en: "desaturated premium gray palette (~4500K soft light), diffused lighting, minimalist composition, f/5.6 steady depth, restrained high-end feel",
@@ -105,7 +105,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "forest_soft",
-    name: { zh: "森系自然", en: "Soft Botanical" },
+    name: { zh: "森系自然", en: "Soft Botanical", th: "ธรรมชาติละมุน" },
     image: {
       zh: "自然绿植环境，清晨柔光带薄雾感（约5000K），f/2.8 浅景深，清新治愈的色调",
       en: "natural greenery setting, soft misty morning light (~5000K), f/2.8 shallow depth, fresh soothing palette",
@@ -117,7 +117,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "food_appetizing",
-    name: { zh: "食欲暖光", en: "Appetizing Warm" },
+    name: { zh: "食欲暖光", en: "Appetizing Warm", th: "อาหารน่ากิน" },
     image: {
       zh: "暖色食欲光（约3500K），食物色泽饱满诱人，f/2.8 浅景深背景虚化，细节油亮",
       en: "warm appetizing light (~3500K), rich saturated food colors, f/2.8 shallow depth of field, glossy details",
@@ -129,7 +129,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "tech_cool",
-    name: { zh: "科技冷调", en: "Tech Cool" },
+    name: { zh: "科技冷调", en: "Tech Cool", th: "เทคโทนเย็น" },
     image: {
       zh: "冷色调科技感光效（约7000K冷调），蓝紫色轮廓光，深色简洁背景，f/5.6 稳定景深，未来感",
       en: "cool-toned tech lighting (~7000K cool tone), blue-violet rim light, dark clean backdrop, f/5.6 steady depth, futuristic feel",
@@ -144,7 +144,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   // Seedance, and flaw-stacking is banned by the two-round real-face A/B lesson.
   {
     id: "phone_raw",
-    name: { zh: "手机直出", en: "Phone Raw" },
+    name: { zh: "手机直出", en: "Phone Raw", th: "กล้องมือถือดิบ" },
     group: "real",
     opener: {
       zh: "UGC 创作者手机手持实拍",
@@ -161,7 +161,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "selfie_front",
-    name: { zh: "前置自拍", en: "Front-cam Selfie" },
+    name: { zh: "前置自拍", en: "Front-cam Selfie", th: "เซลฟี่กล้องหน้า" },
     group: "real",
     opener: {
       zh: "手机前置摄像头手持自拍，握持手机的手臂入画",
@@ -178,7 +178,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "propped_static",
-    name: { zh: "搁置机位", en: "Propped Static" },
+    name: { zh: "搁置机位", en: "Propped Static", th: "ตั้งกล้องนิ่ง" },
     group: "real",
     opener: {
       zh: "手机搁在台面上固定拍摄，画面带极轻微的台面震动",
@@ -195,7 +195,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "dashcam_ride",
-    name: { zh: "行车记录仪", en: "Dashcam" },
+    name: { zh: "行车记录仪", en: "Dashcam", th: "กล้องหน้ารถ" },
     group: "real",
     opener: {
       zh: "行车记录仪广角固定机位实拍画面",
@@ -212,7 +212,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "old_dv",
-    name: { zh: "老 DV 录像", en: "Old DV Tape" },
+    name: { zh: "老 DV 录像", en: "Old DV Tape", th: "เทป DV เก่า" },
     group: "real",
     opener: {
       zh: "老式家用 DV 拍摄的录像画面",
@@ -229,7 +229,7 @@ export const LOOK_PRESETS: LookPreset[] = [
   },
   {
     id: "cctv_store",
-    name: { zh: "店内监控", en: "Store CCTV" },
+    name: { zh: "店内监控", en: "Store CCTV", th: "กล้องวงจรปิดร้าน" },
     group: "real",
     opener: {
       zh: "店内监控摄像头高角度固定俯拍画面",

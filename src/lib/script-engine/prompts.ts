@@ -720,6 +720,18 @@ export interface ScriptGenerationInput {
 }
 
 /**
+ * Script language from free text: Thai (U+0E00–0E7F) → th, CJK → zh, otherwise en.
+ * Single seam for the commerce + topic prompt paths — previously both used a bare
+ * /[一-鿿]/ test, which misclassified Thai input as English and forced English voiceovers.
+ * Pure function.
+ */
+export function detectScriptLanguage(text: string): "zh" | "th" | "en" {
+  if (/[\u0E00-\u0E7F]/.test(text || "")) return "th";
+  if (/[一-鿿]/.test(text || "")) return "zh";
+  return "en";
+}
+
+/**
  * Assembles the full user prompt
  * Combines all templates, strategies, and constraints into a single generation instruction
  */
@@ -857,7 +869,12 @@ export function buildUserPrompt(input: ScriptGenerationInput): string {
   // Placed last for maximum prominence, overrides any "中文" wording in the spec above.
   // Same technique used in the topic path (buildTopicPrompt).
   const productText = `${productName || ""} ${productDescription || ""} ${usageAdvantage || ""}`;
-  if (productText.trim() && !/[一-鿿]/.test(productText)) {
+  const productLang = detectScriptLanguage(productText);
+  if (productText.trim() && productLang === "th") {
+    parts.push(
+      `\n【LANGUAGE — IMPORTANT, overrides any "中文" wording above】The product info is in Thai. Write every "title" and "voiceover" field in natural Thai for a Thai TikTok Shop audience, never Chinese or English. Keep "searchTerms" in English as usual; "description"/"camera" may be concise Thai.`
+    );
+  } else if (productText.trim() && productLang === "en") {
     parts.push(
       `\n【LANGUAGE — IMPORTANT, overrides any "中文" wording above】The product info is NOT in Chinese. Write every "title" and "voiceover" field in the SAME language as the product (e.g. natural English for an overseas TikTok Shop audience), never Chinese. Keep "searchTerms" in English as usual; "description"/"camera" may be concise English.`
     );
@@ -1062,11 +1079,16 @@ export function buildTopicPrompt(input: TopicScriptInput): string {
 
   parts.push(`\n${TOPIC_OUTPUT_FORMAT_PROMPT}`);
 
-  // Language follows the topic language: English topics should produce English voiceovers/titles
-  // (otherwise the "Chinese voiceover" wording in the JSON spec above would cause English topics
-  // to produce Chinese narration — wrong video body). Placed last for maximum prominence,
-  // overrides any "中文" wording in the spec.
-  if (!/[一-鿿]/.test(topic)) {
+  // Language follows the topic language: Thai topics produce Thai voiceovers/titles,
+  // English topics English ones (otherwise the "Chinese voiceover" wording in the JSON spec above
+  // would cause non-Chinese topics to produce Chinese narration — wrong video body).
+  // Placed last for maximum prominence, overrides any "中文" wording in the spec.
+  const topicLang = detectScriptLanguage(topic);
+  if (topicLang === "th") {
+    parts.push(
+      `\n【LANGUAGE — IMPORTANT, overrides any "中文" wording above】The topic is in Thai. Write every "title" and "voiceover" field in natural Thai, never Chinese or English. Keep "searchTerms" in English as usual; "description"/"camera" may be concise Thai.`
+    );
+  } else if (topicLang === "en") {
     parts.push(
       `\n【LANGUAGE — IMPORTANT, overrides any "中文" wording above】The topic is NOT in Chinese. Write every "title" and "voiceover" field in the SAME language as the topic (e.g. natural English), never Chinese. Keep "searchTerms" in English as usual; "description"/"camera" may be concise English.`
     );

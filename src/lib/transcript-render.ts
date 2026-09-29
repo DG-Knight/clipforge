@@ -12,8 +12,8 @@ import {
 } from "@/lib/transcript-editor";
 import {
   escapeSubtitlesPath,
-  resolveChineseFontFamily,
   resolveChineseFontFile,
+  resolveFontFamilyForText,
   withComposeSlot,
 } from "@/lib/video-composer/composer";
 import { buildKaraokeAss } from "@/lib/video-composer/karaoke";
@@ -130,7 +130,7 @@ export async function renderTranscriptEdit(input: RenderTranscriptEditInput): Pr
       const width = Math.max(2, input.sourceWidth || 1080);
       const height = Math.max(2, input.sourceHeight || 1920);
       const ass = buildKaraokeAss(lines, {
-        fontName: resolveChineseFontFamily(),
+        fontName: resolveFontFamilyForText(lines.map((l) => l.text).join("\n")),
         playResX: width,
         playResY: height,
         fontSize: Math.round(Math.max(30, Math.min(72, height * 0.034))),

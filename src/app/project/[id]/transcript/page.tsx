@@ -815,7 +815,7 @@ export default function TranscriptPage() {
               </label>
               <label className="flex-1 text-xs font-medium text-muted-foreground">{t("language")}
                 <select value={language} disabled={busy === "decode" || busy === "transcribe"} onChange={(event) => setLanguage(event.target.value)} className="mt-1.5 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                  <option value="auto">{t("languageAuto")}</option><option value="zh">{t("languageZh")}</option><option value="en">{t("languageEn")}</option>
+                  <option value="auto">{t("languageAuto")}</option><option value="zh">{t("languageZh")}</option><option value="en">{t("languageEn")}</option><option value="th">{t("languageTh")}</option>
                 </select>
               </label>
               {busy === "decode" || busy === "transcribe" ? <Button variant="outline" className="h-11 sm:min-w-36" onClick={() => void cancelTranscription()}><LuCircleStop />{t("cancelTranscribe")}</Button> : <Button className="h-11 sm:min-w-36" disabled={!selected.hasAudio} onClick={() => void startTranscription()}><LuCpu />{selected.checkpoint?.resumable ? t("resumeTranscribe") : transcript ? t("retryTranscribe") : t("startTranscribe")}</Button>}

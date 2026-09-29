@@ -5,6 +5,7 @@ import { LuDownload, LuLoaderCircle, LuSmartphone } from "react-icons/lu";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocale, useT } from "@/lib/i18n";
+import { pickLocaleText } from "@/lib/i18n/config";
 import { PLATFORM_SPECS } from "@/lib/platform-specs";
 import { DEFAULT_VIDEO_FRAMING, type VideoFraming } from "@/lib/video-framing";
 
@@ -14,7 +15,7 @@ export interface ExportComposition {
   label?: string | null;
   createdAt?: string | number | null;
 }
-type Result = { status: "running" | "done" | "error"; url?: string; error?: string; report?: { message: { zh: string; en: string } } };
+type Result = { status: "running" | "done" | "error"; url?: string; error?: string; report?: { message: { zh: string; en: string; th?: string } } };
 const platformKeys = Object.keys(PLATFORM_SPECS);
 const nameKeys: Record<string, string> = { douyin: "platformDouyin", kuaishou: "platformKuaishou", xiaohongshu: "platformXiaohongshu", shipinhao: "platformShipinhao", tiktok: "platformTiktok", reels: "platformReels", shorts: "platformShorts" };
 
@@ -93,7 +94,7 @@ export function PlatformExportPanel({ projectId, compositions }: { projectId: st
         <label className="block text-sm space-y-1.5">
           <span>{t("framingSource")}</span>
           <select className="w-full min-h-11 rounded-md border border-border bg-background px-3" value={compositionId} onChange={(event) => { reset(); setCompositionId(event.target.value); setTime(0); }}>
-            {compositions.map((item, index) => <option key={item.id} value={item.id}>{index + 1}. {item.label || t("historyUnlabeled")} · {item.createdAt ? new Date(item.createdAt).toLocaleString(locale === "en" ? "en-US" : "zh-CN") : item.id}</option>)}
+            {compositions.map((item, index) => <option key={item.id} value={item.id}>{index + 1}. {item.label || t("historyUnlabeled")} · {item.createdAt ? new Date(item.createdAt).toLocaleString(locale === "th" ? "th-TH" : locale === "en" ? "en-US" : "zh-CN") : item.id}</option>)}
           </select>
         </label>
         <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={t("framingMode")}>
@@ -149,7 +150,7 @@ export function PlatformExportPanel({ projectId, compositions }: { projectId: st
             <label className="flex min-h-11 items-center gap-2 text-sm font-medium"><input type="checkbox" checked={selected.includes(key)} disabled={busy !== null} onChange={(event) => setSelected((items) => event.target.checked ? platformKeys.filter((item) => items.includes(item) || item === key) : items.filter((item) => item !== key))} />{t(nameKeys[key])}</label>
             <p className="text-xs text-muted-foreground">{spec.ratio} · {spec.w} × {spec.h}</p>
             {result?.url && <a className="flex min-h-11 items-center justify-center gap-1 rounded-md border border-border text-sm text-primary" href={`${result.url}?download=1`} download><LuDownload aria-hidden="true" className="size-3" />{t("downloadPlatform", { platform: t(nameKeys[key]) })}</a>}
-            {result?.report && <p className="text-xs text-muted-foreground">{result.report.message[locale === "en" ? "en" : "zh"]}</p>}
+            {result?.report && <p className="text-xs text-muted-foreground">{pickLocaleText(locale, result.report.message)}</p>}
             {result?.error && <p role="alert" className="text-xs text-destructive">{result.error}</p>}
             {result?.status !== "done" && <Button variant="outline" className="w-full min-h-11 text-xs" disabled={busy !== null || !source?.url} onClick={() => void exportPlatforms([key])}>{result?.status === "running" ? t("exporting") : result?.status === "error" ? t("retryExport") : t("exportPlatform", { platform: t(nameKeys[key]) })}</Button>}
           </div>;

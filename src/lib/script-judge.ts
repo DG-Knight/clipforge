@@ -30,13 +30,13 @@ import { extractJSON } from "@/lib/script-engine/generator";
 export const JUDGE_IDS = ["pace", "voice", "idea", "structure", "visual"] as const;
 export type JudgeId = (typeof JUDGE_IDS)[number];
 
-/** Judge display metadata (zh/en) for the report UI. */
-export const JUDGE_META: Record<JudgeId, { zh: string; en: string }> = {
-  pace: { zh: "节奏官", en: "Pacing judge" },
-  voice: { zh: "口语官", en: "Voice judge" },
-  idea: { zh: "创意官", en: "Freshness judge" },
-  structure: { zh: "结构官", en: "Structure judge" },
-  visual: { zh: "画面官", en: "Visual judge" },
+/** Judge display metadata (zh/en/th) for the report UI. */
+export const JUDGE_META: Record<JudgeId, { zh: string; en: string; th: string }> = {
+  pace: { zh: "节奏官", en: "Pacing judge", th: "กรรมการจังหวะ" },
+  voice: { zh: "口语官", en: "Voice judge", th: "กรรมการภาษาพูด" },
+  idea: { zh: "创意官", en: "Freshness judge", th: "กรรมการไอเดีย" },
+  structure: { zh: "结构官", en: "Structure judge", th: "กรรมการโครงสร้าง" },
+  visual: { zh: "画面官", en: "Visual judge", th: "กรรมการภาพ" },
 };
 
 /** Adoption tiers: what automation may act on vs. what stays a suggestion. */

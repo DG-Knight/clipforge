@@ -40,18 +40,24 @@ export async function POST(req: NextRequest) {
   try {
     form = await req.formData();
   } catch {
-    return apiError(req, "无效的上传数据", "Invalid upload data", 400);
+    return apiError(req, "无效的上传数据", "Invalid upload data", 400, "ข้อมูลที่อัปโหลดไม่ถูกต้อง");
   }
   const file = form.get("file");
   const config = parseConfig(form.get("llmConfig"));
-  if (!(file instanceof File)) return apiError(req, "请选择图片或视频", "Choose an image or video", 400);
-  if (!config) return apiError(req, "请先配置可看图的视觉模型", "Configure a vision-capable model first", 400);
+  if (!(file instanceof File)) return apiError(req, "请选择图片或视频", "Choose an image or video", 400, "กรุณาเลือกรูปภาพหรือวิดีโอ");
+  if (!config) return apiError(req, "请先配置可看图的视觉模型", "Configure a vision-capable model first", 400, "กรุณาตั้งค่าโมเดลที่ดูรูปได้ (vision) ก่อน");
 
   const mediaType = IMAGE_MIME.has(file.type) ? "image" : VIDEO_MIME.has(file.type) ? "video" : null;
-  if (!mediaType) return apiError(req, "仅支持 JPG、PNG、WebP、MP4、WebM、MOV", "Only JPG, PNG, WebP, MP4, WebM, and MOV are supported", 400);
+  if (!mediaType) return apiError(req, "仅支持 JPG、PNG、WebP、MP4、WebM、MOV", "Only JPG, PNG, WebP, MP4, WebM, and MOV are supported", 400, "รองรับเฉพาะ JPG, PNG, WebP, MP4, WebM และ MOV");
   const limit = mediaType === "image" ? IMAGE_MAX : VIDEO_MAX;
   if (file.size > limit) {
-    return apiError(req, mediaType === "image" ? "图片不能超过 15MB" : "视频不能超过 80MB", mediaType === "image" ? "Images must be 15MB or smaller" : "Videos must be 80MB or smaller", 400);
+    return apiError(
+      req,
+      mediaType === "image" ? "图片不能超过 15MB" : "视频不能超过 80MB",
+      mediaType === "image" ? "Images must be 15MB or smaller" : "Videos must be 80MB or smaller",
+      400,
+      mediaType === "image" ? "รูปภาพต้องไม่เกิน 15MB" : "วิดีโอต้องไม่เกิน 80MB"
+    );
   }
 
   const workingDir = await mkdtemp(join(tmpdir(), "clipforge-media-"));
@@ -65,9 +71,9 @@ export async function POST(req: NextRequest) {
     let cuts: number[] = [];
 
     if (mediaType === "video") {
-      if (!(metadata.duration > 0)) return apiError(req, "无法读取视频，文件可能损坏", "Could not read the video; the file may be damaged", 400);
+      if (!(metadata.duration > 0)) return apiError(req, "无法读取视频，文件可能损坏", "Could not read the video; the file may be damaged", 400, "อ่านวิดีโอไม่ได้ ไฟล์อาจเสียหาย");
       if (metadata.duration > MAX_VIDEO_SECONDS) {
-        return apiError(req, "视频最长支持 3 分钟", "Videos can be up to 3 minutes long", 400);
+        return apiError(req, "视频最长支持 3 分钟", "Videos can be up to 3 minutes long", 400, "รองรับวิดีโอยาวสูงสุด 3 นาที");
       }
       visualPath = join(workingDir, "contact-sheet.png");
       const sheet = await generateContactSheet({ videoPath: mediaPath, outPath: visualPath, frames: 8, thumbWidth: 200, waveHeight: 100 });
@@ -104,7 +110,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Media analysis failed:", error);
     const pair = llmErrorPair(error);
-    return NextResponse.json({ error: errText(req, `媒体解构失败：${pair.zh}`, `Media analysis failed: ${pair.en}`) }, { status: 500 });
+    return NextResponse.json({ error: errText(req, `媒体解构失败：${pair.zh}`, `Media analysis failed: ${pair.en}`, `วิเคราะห์สื่อไม่สำเร็จ: ${pair.th}`) }, { status: 500 });
   } finally {
     await rm(workingDir, { recursive: true, force: true }).catch(() => undefined);
   }

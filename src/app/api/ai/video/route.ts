@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
   const controlPlan = sanitizeGenerationControlSummary(body.controlPlan);
 
   if (!providerName || !model) {
-    return apiError(req, "缺少必要参数", "Missing required parameters");
+    return apiError(req, "缺少必要参数", "Missing required parameters", "ยังไม่ได้ใส่พารามิเตอร์ที่จำเป็น");
   }
 
   if (!apiKey) {
-    return apiError(req, "缺少 API Key，请先在设置中配置对应平台", "Missing API Key, please configure the corresponding platform in settings first");
+    return apiError(req, "缺少 API Key，请先在设置中配置对应平台", "Missing API Key, please configure the corresponding platform in settings first", "ยังไม่ได้ใส่ API Key — กรุณาตั้งค่าแพลตฟอร์มที่ใช้ในหน้าตั้งค่าก่อน");
   }
 
   try {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         }
         const localPath = resolveUploadFilePath(ref);
         if (!localPath || !provider.uploadLocalMedia) {
-          return apiError(req, "参考视频不可用：需要可访问的视频地址", "Reference video unavailable: a reachable video URL is required");
+          return apiError(req, "参考视频不可用：需要可访问的视频地址", "Reference video unavailable: a reachable video URL is required", "วิดีโออ้างอิงใช้ไม่ได้: ต้องเป็นที่อยู่วิดีโอที่เข้าถึงได้");
         }
         refVideos.push(await provider.uploadLocalMedia(localPath));
       }
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         }
         const localPath = resolveUploadFilePath(ref);
         if (!localPath || !provider.uploadLocalMedia) {
-          return apiError(req, "参考音频不可用：需要可访问的音频地址", "Reference audio unavailable: a reachable audio URL is required");
+          return apiError(req, "参考音频不可用：需要可访问的音频地址", "Reference audio unavailable: a reachable audio URL is required", "เสียงอ้างอิงใช้ไม่ได้: ต้องเป็นที่อยู่เสียงที่เข้าถึงได้");
         }
         refAudios.push(await provider.uploadLocalMedia(localPath));
       }
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
       if (!videoUrls || videoUrls.length === 0) {
         await updateAiTask(rowId, { status: "unknown", error: "任务完成但未返回视频地址" });
         return NextResponse.json(
-          { error: errText(req, "任务完成但未返回视频地址", "Task completed but returned no video URL"), taskId, modelId, recoverable: true },
+          { error: errText(req, "任务完成但未返回视频地址", "Task completed but returned no video URL", "งานเสร็จแล้วแต่ไม่ได้คืนที่อยู่วิดีโอ"), taskId, modelId, recoverable: true },
           { status: 502 }
         );
       }
@@ -146,7 +146,8 @@ export async function POST(req: NextRequest) {
             : errText(
                 req,
                 `${message}。任务 ID ${taskId} 已保存，可在素材页恢复查询，请勿重复提交`,
-                `${message}. Task ID ${taskId} has been saved and can be recovered from the assets page — do not resubmit`
+                `${message}. Task ID ${taskId} has been saved and can be recovered from the assets page — do not resubmit`,
+                `${message} บันทึก Task ID ${taskId} ไว้แล้ว กู้คืนได้จากหน้าสื่อ — ห้ามส่งซ้ำ`
               ),
           taskId,
           modelId,
@@ -158,7 +159,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("生视频失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "生视频失败", "Video generation failed") },
+      { error: error instanceof Error ? error.message : errText(req, "生视频失败", "Video generation failed", "สร้างวิดีโอไม่สำเร็จ") },
       { status: 500 }
     );
   }

@@ -93,4 +93,24 @@ describe("2026-07 增补词表（价格绝对化 + 虚假紧迫）", () => {
   it("正常促销文案不误伤（相对表述/真实日期）", () => {
     expect(checkAdCompliance("这款很受欢迎，活动到本周日结束")).toEqual([]);
   });
+
+  it("泰语绝对化：ดีที่สุด/ถูกที่สุด/อันดับ1 → high 级警告", () => {
+    const terms = checkAdCompliance("ครีมที่ดีที่สุด ถูกที่สุด ขายดีอันดับ1").map((x) => x.term);
+    expect(terms).toEqual(expect.arrayContaining(["ดีที่สุด", "ถูกที่สุด", "อันดับ1"]));
+  });
+
+  it("泰语医疗功效：รักษาหาย → high 级警告", () => {
+    const hits = checkAdCompliance("ใช้แล้วรักษาหายขาด ไม่กลับมาเป็นอีก");
+    expect(hits.map((x) => x.term)).toEqual(expect.arrayContaining(["รักษาหาย"]));
+    expect(hits.find((x) => x.term === "รักษาหาย")?.severity).toBe("high");
+  });
+
+  it("泰语虚假紧迫：วันสุดท้าย/กำลังจะขึ้นราคา → med 级警告", () => {
+    const urgency = checkAdCompliance("วันสุดท้าย กำลังจะขึ้นราคา").filter((x) => x.category === "虚假紧迫");
+    expect(urgency.map((x) => x.term)).toEqual(expect.arrayContaining(["วันสุดท้าย", "กำลังจะขึ้นราคา"]));
+  });
+
+  it("泰语正常文案不误伤", () => {
+    expect(checkAdCompliance("ครีมนุ่มชุ่มชื้น ใช้ดีบอกต่อ โปรถึงสิ้นเดือนนี้")).toEqual([]);
+  });
 });

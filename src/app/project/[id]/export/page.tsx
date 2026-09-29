@@ -11,6 +11,7 @@ import { useSettingsStore } from "@/lib/stores/settings-store";
 import { buildPublishPack, buildAiDeclaration, type CommentKit } from "@/lib/publish-pack";
 import { buildShopLink } from "@/lib/shop-link";
 import { useT, useLocale } from "@/lib/i18n";
+import { pickLocaleText } from "@/lib/i18n/config";
 import { ProjectHeader } from "@/components/project-header";
 import { PerformanceFeedback } from "@/components/performance-feedback";
 
@@ -129,7 +130,7 @@ export default function ExportPage() {
   const [more, setMore] = useState<Record<string, ToolState>>({});
   const setTool = (k: string, v: ToolState) => setMore((m) => ({ ...m, [k]: { ...m[k], ...v } }));
   const [coverTitle, setCoverTitle] = useState("");
-  const [dubLang, setDubLang] = useState("en");
+  const [dubLang, setDubLang] = useState("th");
   const hasShopUrl = !!productMeta?.shopUrl;
 
   const genCover = async () => {
@@ -158,7 +159,7 @@ export default function ExportPage() {
       const r = await fetch(`/api/project/${id}/shop-qr`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || t("moreFailed"));
-      setTool("qr", { loading: false, images: [d.qr], shopLink: d.shopLink, warning: d.warning ? (locale === "en" ? d.warning.en : d.warning.zh) : undefined });
+      setTool("qr", { loading: false, images: [d.qr], shopLink: d.shopLink, warning: d.warning ? pickLocaleText(locale, d.warning) : undefined });
     } catch (e) { setTool("qr", { loading: false, error: e instanceof Error ? e.message : t("moreFailed") }); }
   };
   const genEndCard = async () => {
@@ -167,7 +168,7 @@ export default function ExportPage() {
       const r = await fetch(`/api/project/${id}/end-card`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || t("moreFailed"));
-      setTool("endcard", { loading: false, video: d.video, shopLink: d.shopLink, warning: d.warning ? (locale === "en" ? d.warning.en : d.warning.zh) : undefined });
+      setTool("endcard", { loading: false, video: d.video, shopLink: d.shopLink, warning: d.warning ? pickLocaleText(locale, d.warning) : undefined });
     } catch (e) { setTool("endcard", { loading: false, error: e instanceof Error ? e.message : t("moreFailed") }); }
   };
   // composed-video quality check: black frames / silence / loudness / streams (bilingual report from the route)
@@ -184,7 +185,7 @@ export default function ExportPage() {
   };
 
   // release gate: one aggregated pre-publish verdict (script readiness + video QC + asset licenses)
-  type GateUiItem = { id: string; status: "pass" | "warn" | "fail"; message: { zh: string; en: string }; problems: { zh: string; en: string }[] };
+  type GateUiItem = { id: string; status: "pass" | "warn" | "fail"; message: { zh: string; en: string; th?: string }; problems: { zh: string; en: string; th?: string }[] };
   type GateUi = { loading?: boolean; error?: string; status?: "pass" | "warn" | "fail"; verdict?: { zh: string; en: string }; items?: GateUiItem[] };
   const [gate, setGate] = useState<GateUi>({});
   const runGate = async () => {
@@ -272,7 +273,7 @@ export default function ExportPage() {
   };
 
   // platform AI-disclosure kit (static, path-independent: shown with both the template pack and LLM copy)
-  const aiDecl = buildAiDeclaration(locale === "en" ? "en" : "zh");
+  const aiDecl = buildAiDeclaration(locale === "th" ? "th" : locale === "en" ? "en" : "zh");
 
   const generatePublish = async () => {
     // UTM-tagged shop link (only when the project has a shopUrl) — surfaced alongside the copy so the
@@ -284,7 +285,7 @@ export default function ExportPage() {
         productName: productMeta?.productName || projectName,
         category: productMeta?.category,
         sellingPoints: productMeta?.description,
-        locale: locale === "en" ? "en" : "zh", // follow the UI language: English users receive English copy
+        locale: locale === "th" ? "th" : locale === "en" ? "en" : "zh", // follow the UI language: Thai users receive Thai copy
       });
       setPublish({ loading: false, titles: pack.titles, hashtags: pack.hashtags, caption: pack.caption, commentKit: pack.commentKit, template: true, ...(shopLink && { shopLink }) });
       return;
@@ -298,7 +299,7 @@ export default function ExportPage() {
           productName: productMeta?.productName || projectName,
           category: productMeta?.category,
           productDescription: productMeta?.description,
-          locale: locale === "en" ? "en" : "zh", // follow the UI language: English users' LLM also outputs English copy
+          locale: locale === "th" ? "th" : locale === "en" ? "en" : "zh", // follow the UI language: Thai users' LLM also outputs Thai copy
           llmConfig: { baseUrl: llm.baseUrl, apiKey: llm.apiKey, model: llm.model },
         }),
       });
@@ -534,7 +535,7 @@ export default function ExportPage() {
                     </span>
                     {h.createdAt && (
                       <span className="text-muted-foreground/60 shrink-0">
-                        {new Date(h.createdAt).toLocaleString(locale === "zh" ? "zh-CN" : "en-US", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {new Date(h.createdAt).toLocaleString(locale === "th" ? "th-TH" : locale === "zh" ? "zh-CN" : "en-US", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </span>
                     )}
                     {h.url && (
@@ -702,7 +703,7 @@ export default function ExportPage() {
               {gate.error && <p className="text-[11px] text-destructive mt-1">{gate.error}</p>}
               {gate.status && gate.verdict && (
                 <p className={`text-[11px] mt-2 font-medium ${gate.status === "pass" ? "text-emerald-500" : gate.status === "warn" ? "text-amber-500" : "text-destructive"}`}>
-                  {locale === "en" ? gate.verdict.en : gate.verdict.zh}
+                  {pickLocaleText(locale, gate.verdict)}
                 </p>
               )}
               {gate.items && gate.items.length > 0 && (
@@ -711,12 +712,12 @@ export default function ExportPage() {
                     <li key={item.id} className="text-[11px] text-muted-foreground">
                       <div className="flex items-start gap-1.5">
                         {item.status === "pass" ? <LuCircleCheck className="w-3 h-3 mt-0.5 shrink-0 text-emerald-500" /> : item.status === "warn" ? <LuTriangleAlert className="w-3 h-3 mt-0.5 shrink-0 text-amber-500" /> : <LuCircleX className="w-3 h-3 mt-0.5 shrink-0 text-destructive" />}
-                        <span>{locale === "en" ? item.message.en : item.message.zh}</span>
+                        <span>{pickLocaleText(locale, item.message)}</span>
                       </div>
                       {item.problems.length > 0 && (
                         <ul className="mt-0.5 ml-4 space-y-0.5">
                           {item.problems.map((p, i) => (
-                            <li key={i} className="text-[10px] text-muted-foreground/80">· {locale === "en" ? p.en : p.zh}</li>
+                            <li key={i} className="text-[10px] text-muted-foreground/80">· {pickLocaleText(locale, p)}</li>
                           ))}
                         </ul>
                       )}
@@ -745,7 +746,7 @@ export default function ExportPage() {
                   {qc.checks.map((c) => (
                     <li key={c.id} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
                       {c.level === "ok" ? <LuCircleCheck className="w-3 h-3 mt-0.5 shrink-0 text-emerald-500" /> : c.level === "warn" ? <LuTriangleAlert className="w-3 h-3 mt-0.5 shrink-0 text-amber-500" /> : <LuCircleX className="w-3 h-3 mt-0.5 shrink-0 text-destructive" />}
-                      <span>{locale === "en" ? c.message.en : c.message.zh}</span>
+                      <span>{pickLocaleText(locale, c.message)}</span>
                     </li>
                   ))}
                 </ul>
@@ -814,7 +815,7 @@ export default function ExportPage() {
                       </ul>
                     </div>
                   )}
-                  <a href={`/api/project/${id}/credits?format=md&lang=${locale === "en" ? "en" : "zh"}`} download>
+                  <a href={`/api/project/${id}/credits?format=md&lang=${locale === "th" ? "th" : locale === "en" ? "en" : "zh"}`} download>
                     <Button size="sm" variant="outline" className="text-xs h-7 mt-2"><LuDownload className="w-3 h-3 mr-1" />{t("creditsDownloadMd")}</Button>
                   </a>
                 </>
@@ -857,6 +858,7 @@ export default function ExportPage() {
                 <div className="flex items-center gap-2"><LuLanguages className="w-3.5 h-3.5 text-primary" /><span className="text-xs font-medium">{t("moreDub")}</span></div>
                 <div className="flex items-center gap-2">
                   <select className="rounded-md border border-border/50 bg-background/50 px-2 py-1 text-xs" value={dubLang} onChange={(e) => setDubLang(e.target.value)}>
+                    <option value="th">ไทย</option>
                     <option value="en">English</option>
                     <option value="ja">日本語</option>
                     <option value="ko">한국어</option>

@@ -80,32 +80,66 @@ export function assEscapeText(text: string): string {
     .replace(/\r?\n/g, "\\N");
 }
 
-/** Split text into karaoke highlight units: CJK per character, Latin per word (trailing space is absorbed into the preceding word to prevent inter-word collapsing) */
+/** Split text into karaoke highlight units: CJK per character, Latin per word,
+ * Thai per word via Intl.Segmenter (spaceless Thai previously collapsed into a single
+ * Latin unit and never highlighted word-by-word). Trailing space is absorbed into the
+ * preceding word to prevent inter-word collapsing. */
 export function splitKaraokeUnits(text: string): string[] {
   const clean = (text || "").replace(/\s+/g, " ").trim();
   if (!clean) return [];
   const units: string[] = [];
   let latin = "";
+  let thai = "";
   const flushLatin = () => {
     if (latin) {
       units.push(latin);
       latin = "";
     }
   };
+  const flushThai = () => {
+    if (thai) {
+      units.push(...splitThaiWords(thai));
+      thai = "";
+    }
+  };
   for (const ch of Array.from(clean)) {
     const isCjk = /[぀-ヿ㐀-䶿一-鿿豈-﫿가-힯]/.test(ch);
     if (isCjk) {
       flushLatin();
+      flushThai();
       units.push(ch);
     } else if (ch === " ") {
+      flushThai();
       latin += " "; // absorb space into the current Latin word tail; the combined unit is flushed immediately
       flushLatin();
+    } else if (/[\u0E00-\u0E7F]/.test(ch)) {
+      flushLatin();
+      thai += ch;
     } else {
+      flushThai();
       latin += ch;
     }
   }
+  flushThai();
   flushLatin();
   return units.map((u) => u).filter((u) => u.length > 0);
+}
+
+/** Split a Thai run into words (Segmenter when available; whole run as fallback). */
+function splitThaiWords(run: string): string[] {
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    try {
+      const seg = new Intl.Segmenter("th", { granularity: "word" });
+      const words: string[] = [];
+      for (const s of seg.segment(run)) {
+        if (s.isWordLike) words.push(s.segment);
+      }
+      if (words.length > 0) return words;
+    } catch {
+      // fall through to the whole-run fallback below
+    }
+  }
+  return [run];
 }
 
 /** Convert ASS colour &HAABBGGRR to the inline \1c form &HBBGGRR& (strip the alpha component) */

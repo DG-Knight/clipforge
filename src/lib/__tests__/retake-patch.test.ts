@@ -4,7 +4,7 @@ import { applyRetakePatch, RETAKE_SYMPTOMS } from "@/lib/retake-patch";
 describe("applyRetakePatch（废片诊断单变量重投）", () => {
   const zhPrompt = "运镜：镜头缓慢推近主体。画面动态：手部演示动作自然连贯。画面稳定流畅。";
 
-  it("六种症状目录齐全且中英标签完整", () => {
+  it("六种症状目录齐全且中英泰标签完整", () => {
     expect(RETAKE_SYMPTOMS.map((s) => s.id)).toEqual([
       "face_broken",
       "skin_waxy",
@@ -16,7 +16,13 @@ describe("applyRetakePatch（废片诊断单变量重投）", () => {
     for (const s of RETAKE_SYMPTOMS) {
       expect(s.label.zh.length).toBeGreaterThan(0);
       expect(s.label.en.length).toBeGreaterThan(0);
+      expect(s.label.th.length).toBeGreaterThan(0);
     }
+  });
+
+  it("修复说明 change 三语齐全", () => {
+    const r = applyRetakePatch("运镜：镜头缓慢推近主体。", "face_broken");
+    expect(r.change.th.length).toBeGreaterThan(0);
   });
 
   it("补丁只追加一条目标从句，原 prompt 内容原样保留", () => {

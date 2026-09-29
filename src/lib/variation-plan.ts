@@ -59,6 +59,8 @@ export interface VariationPlanOpts {
   styleType?: string;
   /** rotate the free zh voices (default true; set false to keep one brand voice) */
   rotateVoice?: boolean;
+  /** voice catalogue language to rotate (default zh-CN; pass th-TH for Thai batches) */
+  voiceLang?: string;
   /** plan seed — different batches get different starting offsets (default 1) */
   seed?: number;
 }
@@ -69,7 +71,9 @@ export function buildVariationPlan(opts: VariationPlanOpts): VariationSlot[] {
   if (count <= 0) return [];
   const rand = mulberry32(opts.seed ?? 1);
   const hooks = selectHookPatterns(category, 5);
-  const zhVoices = FREE_TTS_VOICES.filter((v) => v.lang === "zh-CN");
+  const langVoices = FREE_TTS_VOICES.filter((v) => v.lang === (opts.voiceLang ?? "zh-CN"));
+  // unknown voiceLang must never yield voiceless slots — fall back to the full catalogue
+  const zhVoices = langVoices.length > 0 ? langVoices : FREE_TTS_VOICES;
   const styleLocked = opts.styleType && opts.styleType !== "auto";
 
   // random starting offset per dimension + coprime strides so adjacent slots differ almost everywhere

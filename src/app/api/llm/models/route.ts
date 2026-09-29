@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   try {
     const { baseUrl, apiKey } = await req.json();
     if (!baseUrl) {
-      return NextResponse.json({ ok: false, error: errText(req, "缺少 baseUrl", "Missing baseUrl") }, { status: 400 });
+      return NextResponse.json({ ok: false, error: errText(req, "缺少 baseUrl", "Missing baseUrl", "ยังไม่ได้ใส่ baseUrl") }, { status: 400 });
     }
     const models = await listModels(String(baseUrl), String(apiKey || ""));
     if (models.length === 0) {
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
           req,
           "读不到模型列表：请检查地址/Key 是否正确，本地 Ollama 需先 `ollama serve` 并 `ollama pull` 至少一个模型",
           "Could not read the model list: check the endpoint/key — a local Ollama needs `ollama serve` plus at least one `ollama pull`",
+          "อ่านรายการโมเดลไม่ได้: ตรวจว่าที่อยู่/Key ถูกต้องหรือไม่ — ถ้าใช้ Ollama ในเครื่องต้องรัน `ollama serve` และ `ollama pull` โมเดลอย่างน้อยหนึ่งตัวก่อน",
         ),
       });
     }
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: false,
       models: [],
-      error: error instanceof Error ? error.message : errText(req, "读取失败", "Request failed"),
+      error: error instanceof Error ? error.message : errText(req, "读取失败", "Request failed", "อ่านข้อมูลไม่สำเร็จ"),
     });
   }
 }

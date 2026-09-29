@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { errText } from "@/lib/api-error";
 import { normalizeChatBase } from "@/lib/llm-models";
 
 /**
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
   }
   const { name, apiKey, baseUrl } = body;
   if (!name || !apiKey) {
-    return NextResponse.json({ status: "unknown", message: "缺少平台或 Key" }, { status: 400 });
+    return NextResponse.json({ status: "unknown", message: errText(req, "缺少平台或 Key", "Missing platform or key", "ยังไม่ได้ระบุแพลตฟอร์มหรือ Key") }, { status: 400 });
   }
 
   const probe = buildProbe(name, apiKey, baseUrl);
@@ -79,16 +80,21 @@ export async function POST(req: NextRequest) {
   try {
     const r = await fetch(probe.url, { method: probe.method ?? "GET", headers: probe.headers, body: probe.body, signal: controller.signal });
     if (r.status === 401 || r.status === 403) {
-      return NextResponse.json({ status: "invalid", message: "Key 无效或无权限" });
+      return NextResponse.json({ status: "invalid", message: errText(req, "Key 无效或无权限", "Key invalid or unauthorized", "Key ไม่ถูกต้องหรือไม่มีสิทธิ์") });
     }
     if (r.ok || probe.authFirst) {
       // authFirst 平台：非 401/403 即视为鉴权通过
-      return NextResponse.json({ status: "ok", message: "连接正常" });
+      return NextResponse.json({ status: "ok", message: errText(req, "连接正常", "Connection OK", "เชื่อมต่อสำเร็จ") });
     }
-    return NextResponse.json({ status: "unknown", message: `无法判定（HTTP ${r.status}），可直接试生成` });
+    return NextResponse.json({ status: "unknown", message: errText(req, `无法判定（HTTP ${r.status}），可直接试生成`, `Cannot determine (HTTP ${r.status}) — try generating directly`, `ระบุไม่ได้ (HTTP ${r.status}) — ลองสร้างได้เลย`) });
   } catch (e) {
     const aborted = e instanceof Error && e.name === "AbortError";
-    return NextResponse.json({ status: "unknown", message: aborted ? "超时，无法判定" : "网络异常，无法判定" });
+    return NextResponse.json({
+      status: "unknown",
+      message: aborted
+        ? errText(req, "超时，无法判定", "Timed out — cannot determine", "หมดเวลา — ระบุผลไม่ได้")
+        : errText(req, "网络异常，无法判定", "Network error — cannot determine", "เครือข่ายมีปัญหา — ระบุผลไม่ได้"),
+    });
   } finally {
     clearTimeout(timer);
   }

@@ -3,25 +3,25 @@ import { buildPublishPack, buildPublishPrompt, pickTitles } from "@/lib/publish-
 
 describe("pickTitles (varied title hooks)", () => {
   it("3 distinct titles, all contain the name, deterministic per product", () => {
-    const t = pickTitles("云柔抽纸", "超柔亲肤", false);
+    const t = pickTitles("云柔抽纸", "超柔亲肤", "zh");
     expect(t).toHaveLength(3);
     expect(new Set(t).size).toBe(3);
     t.forEach((x) => expect(x).toContain("云柔抽纸"));
-    expect(pickTitles("云柔抽纸", "超柔亲肤", false)).toEqual(t); // same product → same titles
+    expect(pickTitles("云柔抽纸", "超柔亲肤", "zh")).toEqual(t); // same product → same titles
   });
   it("hooks vary across products (a pool, not one fixed template)", () => {
     const names = ["红", "绿", "蓝", "黄", "紫"];
-    const shells = new Set(names.map((n) => pickTitles(n, "", false)[0].split(n).join("·")));
+    const shells = new Set(names.map((n) => pickTitles(n, "", "zh")[0].split(n).join("·")));
     expect(shells.size).toBeGreaterThan(1); // multiple distinct hook templates in rotation
   });
   it("drops point-requiring templates when no selling point (no dangling separators)", () => {
-    pickTitles("测试品", "", false).forEach((x) => {
+    pickTitles("测试品", "", "zh").forEach((x) => {
       expect(x.endsWith("｜")).toBe(false);
       expect(x).not.toContain("｜，");
     });
   });
   it("en: no CJK leakage, contains the name", () => {
-    pickTitles("Glow Serum", "hydrating", true).forEach((x) => {
+    pickTitles("Glow Serum", "hydrating", "en").forEach((x) => {
       expect(/[一-鿿]/.test(x)).toBe(false);
       expect(x).toContain("Glow Serum");
     });
@@ -131,6 +131,39 @@ describe("buildPublishPack 英文 locale（出海，避免英文用户拿到中�
   });
 });
 
+describe("buildPublishPack locale=th（泰语发布文案包）", () => {
+  it("标题/文案泰语，CTA 进ตะกร้า，无中文", () => {
+    const p = buildPublishPack({ productName: "เซรั่มหน้าใส", category: "beauty", platform: "tiktok", locale: "th" });
+    const all = p.titles.join(" ") + " " + p.hashtags.join(" ") + " " + p.caption;
+    expect(/[一-鿿]/.test(all)).toBe(false); // no CJK leakage
+    for (const t of p.titles) expect(t).toContain("เซรั่มหน้าใส");
+    expect(p.caption).toContain("เซรั่มหน้าใส");
+    expect(p.caption).toContain("ตะกร้า");
+  });
+
+  it("泰语话题按品类映射（beauty→#ป้ายยา）、Shopee 平台话题", () => {
+    const p = buildPublishPack({ productName: "x", category: "beauty", locale: "th" });
+    expect(p.hashtags).toContain("#ป้ายยา");
+    const s = buildPublishPack({ productName: "x", category: "home", platform: "shopee", locale: "th" });
+    expect(s.hashtags).toContain("#ShopeeTH");
+  });
+
+  it("泰语卖点带进标题/文案", () => {
+    const p = buildPublishPack({ productName: "ไม้ถูพื้น", category: "home", sellingPoints: "ถูครั้งเดียวสะอาด", locale: "th" });
+    expect(p.titles.join(" ") + p.caption).toContain("ถูครั้งเดียวสะอาด");
+  });
+
+  it("泰语标题池独立（与中文池不同模板）", () => {
+    const t = pickTitles("เซรั่มหน้าใส", "ผิวชุ่มชื้น", "th");
+    expect(t).toHaveLength(3);
+    t.forEach((x) => expect(x).toContain("เซรั่มหน้าใส"));
+  });
+
+  it("泰语 AI 声明行", () => {
+    expect(buildPublishPack({ productName: "x", locale: "th" }).aiDeclaration.line).toContain("AI");
+  });
+});
+
 describe("buildPublishPrompt（LLM 发布文案提示词，跟随 locale）", () => {
   it("en：要求英文输出 + 含商品名/平台，不含中文指令", () => {
     const p = buildPublishPrompt({ productName: "Glow Serum", category: "beauty", platform: "tiktok" }, "en");
@@ -152,6 +185,12 @@ describe("buildPublishPrompt（LLM 发布文案提示词，跟随 locale）", ()
   it("hashtags 要求首个为商品专属/品牌标签（2026 商品词搜索发现）", () => {
     expect(buildPublishPrompt({ productName: "云柔抽纸", category: "home" })).toContain("商品专属");
     expect(buildPublishPrompt({ productName: "Glow Serum", category: "beauty" }, "en")).toContain("product-specific/branded hashtag");
+  });
+  it("th：泰语提示词 + 含商品名 + 无中文指令", () => {
+    const p = buildPublishPrompt({ productName: "เซรั่มหน้าใส", category: "beauty", platform: "tiktok" }, "th");
+    expect(p).toContain("ภาษาไทย");
+    expect(p).toContain("เซรั่มหน้าใส");
+    expect(p).not.toContain("开头先点出");
   });
 });
 
@@ -189,6 +228,9 @@ describe("buildAiDeclaration / pack aiDeclaration", () => {
     // pack 内嵌同一声明
     expect(buildPublishPack({ productName: "榨汁杯" }).aiDeclaration.line).toBe(zh.line);
     expect(buildPublishPack({ productName: "juicer", locale: "en" }).aiDeclaration.line).toBe(en.line);
+    const th = buildAiDeclaration("th");
+    expect(th.line).toBe("วิดีโอนี้มีเนื้อหาที่สร้างโดย AI");
+    expect(buildPublishPack({ productName: "เซรั่ม", locale: "th" }).aiDeclaration.line).toBe(th.line);
   });
 });
 

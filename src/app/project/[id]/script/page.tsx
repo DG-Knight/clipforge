@@ -19,6 +19,7 @@ import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useCharacterStore } from "@/lib/stores/project-store";
 import { resolveDefaultModelTarget, buildImageOptions, buildVideoOptions, toEditVariant } from "@/lib/gen-params";
 import { useT, useLocale } from "@/lib/i18n";
+import { pickLocaleText } from "@/lib/i18n/config";
 import { STAGE_LABEL_KEYS } from "@/lib/pipeline-stages";
 import { friendlyError } from "@/lib/friendly-error";
 import { ProjectHeader } from "@/components/project-header";
@@ -1207,7 +1208,7 @@ export default function ScriptPage() {
                       {judgeReport.verdicts.map((v) => (
                         <div key={v.judge} className="rounded-lg border border-border/60 p-2.5">
                           <div className="text-xs font-medium mb-1">
-                            {locale === "zh" ? JUDGE_META[v.judge].zh : JUDGE_META[v.judge].en}
+                            {pickLocaleText(locale, JUDGE_META[v.judge])}
                             {v.issues.length === 0 && <span className="ml-2 text-green-400">✓</span>}
                           </div>
                           {v.issues.length > 0 && (

@@ -40,8 +40,8 @@ const USER_AGENT =
  */
 // Voice catalogue lives in the client-safe tts-voices module (this file imports fs via tts-cache,
 // which would break browser bundles that only need the list); re-exported here for server callers.
-import { DEFAULT_FREE_VOICE } from "./tts-voices";
-export { FREE_TTS_VOICES, DEFAULT_FREE_VOICE } from "./tts-voices";
+import { DEFAULT_FREE_VOICE, langOfVoice } from "./tts-voices";
+export { FREE_TTS_VOICES, DEFAULT_FREE_VOICE, langOfVoice } from "./tts-voices";
 
 export interface FreeTTSOptions {
   /** Voice short name, defaults to zh-CN-XiaoxiaoNeural */
@@ -222,7 +222,7 @@ async function synthesizeOnce(
       // consumer that renders the marker, every other path strips it (see voice-markup.ts)
       const spoken = escapeSsml(clean).replace(/\[pause\]/gi, "<break time='350ms'/>");
       const ssml =
-        `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'>` +
+        `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${langOfVoice(voice)}'>` +
         `<voice name='${escapeSsml(voice)}'><prosody pitch='${escapeSsml(pitch)}' rate='${escapeSsml(rate)}' volume='+0%'>${spoken}</prosody></voice></speak>`;
       const msg =
         `X-RequestId:${uuidNoDash()}\r\nContent-Type:application/ssml+xml\r\n` +

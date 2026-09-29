@@ -46,6 +46,26 @@ export function resolveChineseFontFile(): string | undefined {
 }
 
 /**
+ * Detect an available Thai font file path (Noto Sans Thai).
+ * The bundled Regular/Bold pair in public/fonts keeps Thai subtitles deployment-stable;
+ * system Thai fonts stay as fallback for environments where the bundle is absent.
+ */
+export function resolveThaiFontFile(): string | undefined {
+  const candidates = [
+    join(process.cwd(), "public", "fonts", "NotoSansThai-Regular.ttf"),
+    join(process.cwd(), "public", "fonts", "NotoSansThai-Bold.ttf"),
+    "C:\\Windows\\Fonts\\leelawad.ttf",
+    "C:\\Windows\\Fonts\\tahoma.ttf",
+    "/System/Library/Fonts/Supplemental/Thonburi.ttc",
+    "/System/Library/Fonts/Thonburi.ttc",
+    "/usr/share/fonts/truetype/noto/NotoSansThai-Regular.ttf",
+    "/usr/share/fonts/opentype/noto/NotoSansThai-Regular.ttf",
+    "/usr/share/fonts/truetype/thai/tlwgtypewriter.ttf",
+  ];
+  return candidates.find((p) => existsSync(p));
+}
+
+/**
  * Escape special characters in FFmpeg drawtext filter values.
  * drawtext uses : as the parameter separator, so special characters in text must be escaped.
  */
@@ -107,7 +127,40 @@ export function buildDrawtext(o: DrawtextOpts): string {
 
 /** Infer the ASS Fontname from the detected Chinese font file path (libass resolves by name cross-platform; macOS CoreText usually serves as a fallback) */
 export function resolveChineseFontFamily(): string {
-  const p = (resolveChineseFontFile() || "").toLowerCase();
+  return fontFamilyForPath(resolveChineseFontFile() || "");
+}
+
+/** Thai-script detector for font selection (U+0E00-U+0E7F). */
+const THAI_TEXT_RE = /[\u0E00-\u0E7F]/;
+
+/** True when the copy contains CJK (used to keep mixed Thai+CJK on the CJK font). */
+function hasCjkText(s: string): boolean {
+  for (const ch of s || "") if (isCJK(ch)) return true;
+  return false;
+}
+
+/**
+ * Font file for a subtitle/overlay copy: Thai-only copy renders with the Thai font;
+ * everything else keeps the Chinese resolver. Mixed Thai+CJK stays on the CJK font —
+ * a single drawtext fontfile cannot cover both scripts, and switching the default
+ * would regress mixed copy that renders today.
+ */
+export function resolveFontFileForText(text: string): string | undefined {
+  if (THAI_TEXT_RE.test(text || "") && !hasCjkText(text || "")) {
+    return resolveThaiFontFile() ?? resolveChineseFontFile();
+  }
+  return resolveChineseFontFile();
+}
+
+/** ASS family for a subtitle copy (same Thai-only rule as resolveFontFileForText). */
+export function resolveFontFamilyForText(text?: string): string {
+  const copy = text || "";
+  const file = THAI_TEXT_RE.test(copy) && !hasCjkText(copy) ? resolveThaiFontFile() : undefined;
+  return fontFamilyForPath(file ?? resolveChineseFontFile() ?? "");
+}
+
+function fontFamilyForPath(fontPath: string): string {
+  const p = (fontPath || "").toLowerCase();
   // the bundled CJK subtitle font (public/fonts/subtitle.*) is Noto Sans CJK SC —
   // karaoke uses libass font matching by Fontname, so we must return this internal family name
   // to use the bundled font (otherwise libass looks for system PingFang and Korean glyphs become boxes)
@@ -728,7 +781,9 @@ function assembleComposeGraph(config: ComposeConfig): ComposeGraph {
     const yPos = config.subtitle.position === "top" ? "h*0.08" : config.subtitle.position === "center" ? "(h-text_h)/2" : `h*${bottomY}-text_h`;
     const lineSpacing = Math.round(fontSize * 0.28);
     // Chinese subtitles must have an explicit font file; otherwise they render as boxes
-    const fontFile = config.subtitle.fontFile ?? resolveChineseFontFile();
+    const fontFile =
+      config.subtitle.fontFile ??
+      resolveFontFileForText(config.subtitle.texts.map((t) => t.text).join("\n"));
 
     const drawTexts = config.subtitle.texts
       .map((t) => {
@@ -756,7 +811,9 @@ function assembleComposeGraph(config: ComposeConfig): ComposeGraph {
 
   // text overlays: price / selling-point / title tags (placed in the upper frame area, prominent e-commerce style)
   if (config.overlays?.length) {
-    const ovFont = config.subtitle?.fontFile ?? resolveChineseFontFile();
+    const ovFont =
+      config.subtitle?.fontFile ??
+      resolveFontFileForText((config.overlays ?? []).map((o) => o.text).join("\n"));
     // per-style parameters: font size, text colour, background box colour, vertical position (upper frame)
     const styleOf = (style: "title" | "highlight" | "price" | "badge") => {
       if (style === "price")
@@ -824,7 +881,8 @@ function assembleComposeGraph(config: ComposeConfig): ComposeGraph {
     const start = 0.4;
     const end = Math.min(5, accumulated);
     const en = `enable='between(t,${start},${end})'`;
-    const cardFont = config.subtitle?.fontFile ?? resolveChineseFontFile();
+    const cardFont =
+      config.subtitle?.fontFile ?? resolveFontFileForText(config.productCard?.name || "");
     // 1) unified card background: semi-transparent dark fill wrapping thumbnail and text into a single card
     filterParts.push(`[${currentVideoStream}]drawbox=x=${mx - pad}:y=${cardY - pad}:w=${cardW + 2 * pad}:h=${thumb + 2 * pad}:color=black@0.5:t=fill:${en}[pcard_bg]`);
     currentVideoStream = "pcard_bg";

@@ -34,7 +34,7 @@ const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
 
   let body: Record<string, unknown> = {};
   try {
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const db = getDb();
   const [proj] = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
-  if (!proj) return apiError(req, "项目不存在", "Project not found", 404);
+  if (!proj) return apiError(req, "项目不存在", "Project not found", 404, "ไม่พบโปรเจกต์");
 
   try {
     // Fetch the composition first (or the explicitly requested one): the readiness check below
@@ -89,7 +89,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       // the checker returns single-locale strings — run per locale on identical input and zip
       const zh = checkPublishReadiness(shots, total, { productName, aigcLabel, locale: "zh" });
       const en = checkPublishReadiness(shots, total, { productName, aigcLabel, locale: "en" });
-      readinessItem = gateItemFromReadiness(zh, en);
+      const th = checkPublishReadiness(shots, total, { productName, aigcLabel, locale: "th" });
+      readinessItem = gateItemFromReadiness(zh, en, th);
     }
 
     // 2) composed-video QC — latest successful composition (from the shared query above)
@@ -192,7 +193,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : errText(req, "发布门禁运行失败", "Release gate failed to run") },
+      { error: e instanceof Error ? e.message : errText(req, "发布门禁运行失败", "Release gate failed to run", "รันประตูก่อนเผยแพร่ไม่สำเร็จ") },
       { status: 500 }
     );
   }

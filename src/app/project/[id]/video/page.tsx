@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useT, useLocale } from "@/lib/i18n";
+import { pickLocaleText } from "@/lib/i18n/config";
+import { FREE_TTS_VOICES } from "@/lib/tts-voices";
 import { RENDER_PRESETS, DEFAULT_RENDER_PRESET, type RenderPreset } from "@/lib/compose-presets";
 import { BUILTIN_STYLE_PACKS, parseStylePack, serializeStylePack, STYLE_PACK_FORMAT, type StylePack } from "@/lib/style-packs";
 import { decodeStoredAdTemplate, adTemplateStorageKey, adTemplateAppliedKey } from "@/lib/ad-templates";
@@ -65,15 +67,22 @@ interface ComposeConfig {
   voiceGround: boolean;
 }
 
-// 免费配音音色（微软 Edge keyless TTS，无需 Key）——与后端 FREE_TTS_VOICES 对应
-// label 改为 i18n key，渲染时经 t() 取对应语言文案
-const freeVoiceOptions = [
-  { value: "zh-CN-XiaoxiaoNeural", labelKey: "freeVoiceXiaoxiao" },
-  { value: "zh-CN-XiaoyiNeural", labelKey: "freeVoiceXiaoyi" },
-  { value: "zh-CN-YunxiNeural", labelKey: "freeVoiceYunxi" },
-  { value: "zh-CN-YunyangNeural", labelKey: "freeVoiceYunyang" },
-  { value: "zh-CN-YunjianNeural", labelKey: "freeVoiceYunjian" },
-];
+// 免费配音音色（微软 Edge keyless TTS，无需 Key）——直接取共享目录，新增音色自动出现在下拉框
+// label 走 i18n key（5 个中文音色 + 2 个泰语音色有三语翻译），其余用目录自带 label
+const FREE_VOICE_LABEL_KEYS: Record<string, string> = {
+  "zh-CN-XiaoxiaoNeural": "freeVoiceXiaoxiao",
+  "zh-CN-XiaoyiNeural": "freeVoiceXiaoyi",
+  "zh-CN-YunxiNeural": "freeVoiceYunxi",
+  "zh-CN-YunyangNeural": "freeVoiceYunyang",
+  "zh-CN-YunjianNeural": "freeVoiceYunjian",
+  "th-TH-PremwadeeNeural": "freeVoicePremwadee",
+  "th-TH-NiwatNeural": "freeVoiceNiwat",
+};
+const freeVoiceOptions = FREE_TTS_VOICES.map((v) => ({
+  value: v.value,
+  labelKey: FREE_VOICE_LABEL_KEYS[v.value],
+  fallbackLabel: v.label,
+}));
 
 // 背景音乐选项（label 改为 i18n key）
 const bgmOptions = [
@@ -320,7 +329,7 @@ export default function VideoPage() {
       if (!tpl) return;
       applyStylePack({
         format: STYLE_PACK_FORMAT,
-        name: locale === "zh" ? tpl.name.zh : tpl.name.en,
+        name: pickLocaleText(locale, tpl.name),
         compose: tpl.compose,
       });
       localStorage.setItem(adTemplateAppliedKey(id), "1");
@@ -771,18 +780,19 @@ export default function VideoPage() {
                   <div className="space-y-2">
                     <Select value={config.freeVoice} onValueChange={(v) => setConfig((c) => ({ ...c, freeVoice: v ?? c.freeVoice }))}>
                       <SelectTrigger className="bg-muted/30 border-border/50 text-xs">
-                        {/* Base UI 的 Select.Value 默认显示原始 value，用函数子节点映射为中文标签 */}
+                        {/* Base UI 的 Select.Value 默认显示原始 value，用函数子节点映射为本地化标签 */}
                         <SelectValue>
                           {(value: string) => {
                             const o = freeVoiceOptions.find((o) => o.value === value);
-                            return o ? t(o.labelKey) : value;
+                            if (!o) return value;
+                            return o.labelKey ? t(o.labelKey) : o.fallbackLabel;
                           }}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {freeVoiceOptions.map((o) => (
                           <SelectItem key={o.value} value={o.value}>
-                            {t(o.labelKey)}
+                            {o.labelKey ? t(o.labelKey) : o.fallbackLabel}
                           </SelectItem>
                         ))}
                       </SelectContent>

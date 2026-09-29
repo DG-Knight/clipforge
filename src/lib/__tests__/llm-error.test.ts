@@ -260,8 +260,8 @@ describe("withLLMErrors（只做错误翻译，不做重试——重试是 SDK �
     expect(toLLMRequestError(original, {})).toBe(original);
   });
 
-  it("非 LLM 错误（解析失败等）双语同文，不丢信息", () => {
-    expect(llmErrorPair(new Error("JSON 解析失败"))).toEqual({ zh: "JSON 解析失败", en: "JSON 解析失败" });
+  it("非 LLM 错误（解析失败等）三语同文，不丢信息", () => {
+    expect(llmErrorPair(new Error("JSON 解析失败"))).toEqual({ zh: "JSON 解析失败", en: "JSON 解析失败", th: "JSON 解析失败" });
   });
 });
 

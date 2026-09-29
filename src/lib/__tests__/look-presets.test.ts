@@ -3,13 +3,14 @@ import { LOOK_PRESETS, LOOK_NONE, getLookPreset, lookImageSuffix } from "@/lib/l
 import { buildMotionPrompt } from "@/lib/motion-prompt";
 
 describe("LOOK_PRESETS 库完整性", () => {
-  it("id 唯一且 zh/en 名称、image、motion prompt 均非空", () => {
+  it("id 唯一且 zh/en 名称、image、motion prompt 均非空；名称另有泰语（下拉框三语）", () => {
     const ids = new Set<string>();
     for (const p of LOOK_PRESETS) {
       expect(ids.has(p.id)).toBe(false);
       ids.add(p.id);
       expect(p.name.zh.length).toBeGreaterThan(0);
       expect(p.name.en.length).toBeGreaterThan(0);
+      expect(p.name.th.length).toBeGreaterThan(0);
       expect(p.image.zh.length).toBeGreaterThan(0);
       expect(p.image.en.length).toBeGreaterThan(0);
       expect(p.motion.zh.length).toBeGreaterThan(0);

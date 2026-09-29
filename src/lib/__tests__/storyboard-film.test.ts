@@ -168,6 +168,19 @@ describe("台词密度检查（官方口型漂移预防，只拦极端超载）"
     expect(warns).toHaveLength(1);
     expect(warns[0].limit).toBe(6);
   });
+
+  it("泰语按词切分计密度（无空格整句不再被当成 1 个词）：正常不报警，塞爆报警", () => {
+    // 「สวัสดีครับทุกคน」3 词 vs 3s×2.6=8 上限 → 不报警
+    expect(
+      dialogueDensityWarnings([mkShot({ shotId: 1, duration: 3, voiceover: "สวัสดีครับทุกคน" })])
+    ).toEqual([]);
+    const stuffed = [
+      mkShot({ shotId: 1, duration: 2, voiceover: "วันนี้ผมมีสินค้าดีมากมาแนะนำให้ทุกคนได้ลองใช้กัน" }),
+    ];
+    const warns = dialogueDensityWarnings(stuffed);
+    expect(warns).toHaveLength(1);
+    expect(warns[0].limit).toBe(6);
+  });
 });
 
 describe("超长脚本的时间轴缩放", () => {

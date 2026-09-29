@@ -149,11 +149,11 @@ export async function POST(req: NextRequest) {
   const useInsights = body.insightMode !== false;
 
   if (!productName) {
-    return apiError(req, "请填写商品名称", "Please enter the product name");
+    return apiError(req, "请填写商品名称", "Please enter the product name", "กรุณากรอกชื่อสินค้า");
   }
 
   if (!llmConfig?.baseUrl || !llmConfig?.apiKey || !llmConfig?.model) {
-    return apiError(req, "请配置 LLM 参数（baseUrl、apiKey、model）", "Please configure the LLM parameters (baseUrl, apiKey, model)");
+    return apiError(req, "请配置 LLM 参数（baseUrl、apiKey、model）", "Please configure the LLM parameters (baseUrl, apiKey, model)", "กรุณาตั้งค่าพารามิเตอร์ LLM (baseUrl, apiKey, model)");
   }
 
   try {
@@ -217,7 +217,7 @@ export async function POST(req: NextRequest) {
         .where(eq(projects.id, projectId));
       if (proj.length > 0 && proj[0].contentType === "topic") {
         return NextResponse.json(
-          { error: errText(req, "该项目是一句话主题项目，请勿用带货脚本覆盖", "This project is a one-sentence topic project — do not overwrite it with a commerce script"), projectId },
+          { error: errText(req, "该项目是一句话主题项目，请勿用带货脚本覆盖", "This project is a one-sentence topic project — do not overwrite it with a commerce script", "โปรเจกต์นี้เป็นแบบหัวข้อเดียว ห้ามทับด้วยสคริปต์ขายของ"), projectId },
           { status: 409 }
         );
       }
@@ -259,20 +259,21 @@ export async function POST(req: NextRequest) {
       } catch (e) {
         // DB write failure must surface as an error — returning 200 would let the frontend navigate away thinking it succeeded, then read empty scripts from the DB (which may already have had their old scripts deleted)
         console.error("脚本落库失败:", e);
-        return NextResponse.json({ error: errText(req, "脚本落库失败，请重试", "Failed to save scripts to the database, please try again"), projectId }, { status: 500 });
+        return NextResponse.json({ error: errText(req, "脚本落库失败，请重试", "Failed to save scripts to the database, please try again", "บันทึกสคริปต์ลงฐานข้อมูลไม่สำเร็จ โปรดลองอีกครั้ง"), projectId }, { status: 500 });
       }
     }
 
     return NextResponse.json({ scripts: savedScripts, analysis });
   } catch (error) {
     console.error("脚本生成失败:", error);
-    // LLM failures carry an actionable bilingual message (bad key / dead free endpoint / rate limit)
-    const { zh, en } = llmErrorPair(error);
+    // LLM failures carry an actionable multilingual message (bad key / dead free endpoint / rate limit)
+    const { zh, en, th } = llmErrorPair(error);
     return apiError(
       req,
       `脚本生成失败: ${zh}`,
       `Script generation failed: ${en}`,
-      500
+      500,
+      `สร้างสคริปต์ไม่สำเร็จ: ${th}`
     );
   }
 }

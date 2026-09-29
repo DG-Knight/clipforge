@@ -297,6 +297,7 @@ const FILLER_WORDS = new Set([
   "um", "uh", "erm", "er", "hmm", "mm", "mhm",
   "嗯", "呃", "额", "唔", "嗯嗯", "呃呃",
   "えー", "ええと", "あの", "어", "음",
+  "ครับ", "ค่ะ", "คะ", "เอ่อ", "อืม", "อือ",
 ]);
 
 function normalizedFillerToken(text: string): string {
