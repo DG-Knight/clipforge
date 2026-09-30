@@ -8,7 +8,7 @@
 import { join, dirname } from "path";
 import { mkdir } from "fs/promises";
 import { ffmpegBin } from "@/lib/ffmpeg-path";
-import { buildDrawtext, wrapCaption, resolveChineseFontFile, unshellFilter } from "./composer";
+import { buildDrawtext, wrapCaption, resolveChineseFontFile, resolveFontFileForText, unshellFilter } from "./composer";
 
 export interface CardVfOpts {
   text: string;
@@ -30,6 +30,7 @@ export interface CardVfOpts {
  * filtergraph parse or renders a stray backslash (Chinese card text lacks these chars, hiding the bug).
  */
 export function buildCardVf(o: CardVfOpts): string {
+  const fontFile = o.fontFile ?? resolveFontFileForText(o.text) ?? resolveChineseFontFile();
   const fontSize = o.fontSize ?? Math.round(o.width * 0.055);
   const lines = wrapCaption(o.text, fontSize, o.width).split("\n");
   const lineH = Math.round(fontSize * 1.5);
@@ -38,7 +39,7 @@ export function buildCardVf(o: CardVfOpts): string {
     lines
       .map((line, i) =>
         buildDrawtext({
-          fontFile: o.fontFile,
+          fontFile,
           text: line || " ",
           fontSize,
           fontColor: o.fontColor ?? "white",
@@ -113,7 +114,8 @@ export async function generateCarousel(o: {
   fontFile?: string;
   theme?: string;
 }): Promise<string[]> {
-  const fontFile = o.fontFile ?? resolveChineseFontFile();
+  const sampleText = `${o.title} ${o.shots.map((s) => s.voiceover ?? "").join(" ")}`;
+  const fontFile = o.fontFile ?? resolveFontFileForText(sampleText) ?? resolveChineseFontFile();
   const theme = resolveCardTheme(o.theme);
   const paths: string[] = [];
 

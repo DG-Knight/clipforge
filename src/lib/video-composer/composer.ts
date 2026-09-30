@@ -404,12 +404,26 @@ export function chunkCaption(
   // legacy even split — text without punctuation (short hooks, single phrases)
   const n = Math.max(1, Math.min(Math.round(total / 1.2), MAX_CAPTION_CARDS));
   if (n === 1) return [{ text: clean, startTime, endTime }];
+  const isThai = /[\u0E00-\u0E7F]/.test(clean);
   const cjk = /[぀-ヿ一-鿿가-힯]/.test(clean); // kana / CJK / hangul
-  const units = cjk ? Array.from(clean) : clean.split(/\s+/);
+  let units: string[];
+  if (isThai && typeof Intl !== "undefined" && Intl.Segmenter) {
+    const seg = new Intl.Segmenter("th", { granularity: "word" });
+    units = [];
+    for (const { segment: w } of seg.segment(clean)) {
+      if (w.trim()) units.push(w);
+    }
+    if (units.length === 0) units = [clean];
+  } else if (cjk) {
+    units = Array.from(clean);
+  } else {
+    units = clean.split(/\s+/);
+  }
   if (units.length <= n) return [{ text: clean, startTime, endTime }];
   const per = Math.ceil(units.length / n);
   const chunks: string[] = [];
-  for (let i = 0; i < units.length; i += per) chunks.push(units.slice(i, i + per).join(cjk ? "" : " "));
+  const joiner = isThai || cjk ? "" : " ";
+  for (let i = 0; i < units.length; i += per) chunks.push(units.slice(i, i + per).join(joiner));
   return allocateCardTimes(chunks, startTime, endTime);
 }
 

@@ -120,7 +120,9 @@ export function buildJudgePrompt(
       ? `- shotId ${s.shotId}：台词「${s.voiceover}」｜画面「${desc}」`
       : `- shotId ${s.shotId}：「${s.voiceover}」`;
   });
-  const english = shots.length > 0 && shots.every((s) => !hasCjk(`${s.voiceover}${s.description ?? ""}`));
+  const scriptSample = shots.map((s) => `${s.voiceover} ${s.description ?? ""}`).join(" ");
+  const hasThai = /[\u0E00-\u0E7F]/.test(scriptSample);
+  const english = !hasThai && shots.length > 0 && shots.every((s) => !hasCjk(`${s.voiceover}${s.description ?? ""}`));
   const styleExtra = opts.styleType ? STYLE_CRITERIA[opts.styleType] : undefined;
   return [
     `你是一支短视频「判官团」，由五位只管一件事、脾气很差的审稿人组成。任务：把下面这条${opts.styleLabel ? `（${opts.styleLabel}风格）` : ""}视频的逐镜台词与画面撕碎，再给出重写。`,
@@ -157,7 +159,11 @@ export function buildJudgePrompt(
     `- 重写句必须原样保留原句里出现的所有数字、价格与规格（服务端会逐个校验数字 token，丢一个整条弃用）`,
     `- 重写后的台词必须像「说出来的」，且长度与原句相当（字数差控制在 ±20%，配音时长钉死在分镜槽里）`,
     `- 没毛病的镜头不要出现在 rewrites/descriptionRewrites 里；判官没意见就各自给空 issues`,
-    english ? `- All issues and rewrites in English (the script is English).` : ``,
+    hasThai
+      ? `- All issues, verdicts, summary and rewrites MUST be in natural Thai for Thai audiences (the script is Thai). สคริปต์ต้นฉบับเป็นภาษาไทย ผลการประเมินและบทพากย์ที่เขียนใหม่ (voiceover) ต้องเป็นภาษาไทยที่เป็นธรรมชาติเท่านั้น ห้ามเขียนเป็นภาษาจีนหรืออังกฤษ`
+      : english
+        ? `- All issues and rewrites in English (the script is English).`
+        : ``,
   ]
     .filter((l) => l !== undefined && l !== "")
     .join("\n");

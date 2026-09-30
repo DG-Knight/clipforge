@@ -112,7 +112,7 @@ export function splitKaraokeUnits(text: string): string[] {
       flushThai();
       latin += " "; // absorb space into the current Latin word tail; the combined unit is flushed immediately
       flushLatin();
-    } else if (/[\u0E00-\u0E7F]/.test(ch)) {
+    } else if (/[\u0E00-\u0E7F]/.test(ch) || (/[\d.%]/.test(ch) && thai)) {
       flushLatin();
       thai += ch;
     } else {
@@ -132,7 +132,21 @@ function splitThaiWords(run: string): string[] {
       const seg = new Intl.Segmenter("th", { granularity: "word" });
       const words: string[] = [];
       for (const s of seg.segment(run)) {
-        if (s.isWordLike) words.push(s.segment);
+        const segText = s.segment;
+        if (!segText.trim()) continue;
+        if (s.isWordLike) {
+          // If previous token was a standalone symbol like ฿, merge it with the word/number
+          if (words.length > 0 && !/[\p{L}\p{N}]/u.test(words[words.length - 1])) {
+            words[words.length - 1] += segText;
+          } else {
+            words.push(segText);
+          }
+        } else if (words.length > 0) {
+          // Attach punctuation/symbol to previous word
+          words[words.length - 1] += segText;
+        } else {
+          words.push(segText);
+        }
       }
       if (words.length > 0) return words;
     } catch {

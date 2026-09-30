@@ -53,6 +53,11 @@ describe("splitKaraokeUnits", () => {
     expect(units.join("")).toBe("ลด 50% sale");
     expect(units.length).toBeGreaterThan(2);
   });
+  it("เก็บสัญลักษณ์สกุลเงิน ฿ ไม่ให้หลุดหาย", () => {
+    const units = splitKaraokeUnits("ราคา ฿199 เท่านั้น");
+    expect(units.join(" ")).toContain("฿199");
+    expect(units.join("")).toBe("ราคา ฿199 เท่านั้น");
+  });
 });
 
 describe("buildKaraokeAss", () => {

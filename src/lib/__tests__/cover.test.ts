@@ -27,4 +27,9 @@ describe("buildCoverVf", () => {
     expect(buildCoverVf({ title: "x", width: 1080, position: "lower" })).toContain("h*0.78-");
     expect(buildCoverVf({ title: "x", width: 1080, position: "upper" })).toContain("h*0.2-");
   });
+
+  it("Thai title automatically picks Thai font file", () => {
+    const vf = buildCoverVf({ title: "สินค้าขายดีอันดับหนึ่ง ประจำปี 2026", width: 1080 });
+    expect(vf).toContain("NotoSansThai-Regular.ttf");
+  });
 });

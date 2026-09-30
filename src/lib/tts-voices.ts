@@ -30,6 +30,31 @@ export const FREE_TTS_VOICES: { value: string; label: string; gender: "female" |
 export const DEFAULT_FREE_VOICE = "zh-CN-XiaoxiaoNeural";
 
 /**
+ * คืนค่า Edge voice เริ่มต้นที่เหมาะสมกับภาษาที่ระบุ (เช่น th → th-TH-PremwadeeNeural)
+ */
+export function defaultVoiceForLang(lang?: string): string {
+  const clean = (lang || "").toLowerCase().trim();
+  if (clean === "th" || clean.startsWith("th-")) return "th-TH-PremwadeeNeural";
+  if (clean === "en" || clean.startsWith("en-")) return "en-US-AriaNeural";
+  if (clean === "ja" || clean.startsWith("ja-")) return "ja-JP-NanamiNeural";
+  if (clean === "ko" || clean.startsWith("ko-")) return "ko-KR-SunHiNeural";
+  if (clean === "es" || clean.startsWith("es-")) return "es-ES-ElviraNeural";
+  return DEFAULT_FREE_VOICE;
+}
+
+/**
+ * วิเคราะห์ภาษาจากข้อความสคริปต์เพื่อเลือกเสียงพากย์ที่เหมาะสมอัตโนมัติ
+ * มีอักษรไทย → th-TH-PremwadeeNeural, อักษรจีน → Xiaoxiao, อื่นๆ → Aria
+ */
+export function defaultVoiceForText(text?: string): string {
+  const sample = text || "";
+  if (/[\u0E00-\u0E7F]/.test(sample)) return "th-TH-PremwadeeNeural";
+  if (/[一-鿿]/.test(sample)) return "zh-CN-XiaoxiaoNeural";
+  if (/[a-zA-Z]/.test(sample)) return "en-US-AriaNeural";
+  return "th-TH-PremwadeeNeural"; // ค่าเริ่มต้นสำหรับระบบภาษาไทย
+}
+
+/**
  * Voice name → SSML xml:lang (e.g. "th-TH-PremwadeeNeural" → "th-TH").
  * Single home for voice→language knowledge: edge-tts SSML, drama casting and batch
  * rotation all derive from here instead of hardcoding "zh-CN" at each call site.
@@ -42,3 +67,4 @@ export function langOfVoice(voice: string): string {
   const hit = FREE_TTS_VOICES.find((v) => v.value === (voice || "").trim());
   return hit ? hit.lang : "zh-CN";
 }
+

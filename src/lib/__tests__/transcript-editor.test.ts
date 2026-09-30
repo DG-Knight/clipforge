@@ -113,13 +113,14 @@ describe("transcript edit ranges", () => {
     expect(detectFillerWordIds(fillers)).toEqual(["a", "c"]);
   });
 
-  it("marks Thai fillers (เอ่อ/อืม/ครับ) for review", () => {
+  it("marks Thai hesitation fillers (เอ่อ/อืม) but preserves polite particles (ครับ/ค่ะ)", () => {
     const fillers = { ...document, words: [
       { id: "a", text: "เอ่อ", start: 0, end: 0.2 },
       { id: "b", text: "สินค้า", start: 0.3, end: 0.7 },
       { id: "c", text: "ครับ", start: 0.8, end: 1 },
+      { id: "d", text: "อืม", start: 1.1, end: 1.3 },
     ] };
-    expect(detectFillerWordIds(fillers)).toEqual(["a", "c"]);
+    expect(detectFillerWordIds(fillers)).toEqual(["a", "d"]);
   });
 });
 describe("transcript normalization", () => {

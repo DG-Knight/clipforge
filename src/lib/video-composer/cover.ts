@@ -7,7 +7,7 @@
 import { dirname } from "path";
 import { mkdir } from "fs/promises";
 import { ffmpegBin, ffprobeBin } from "@/lib/ffmpeg-path";
-import { buildDrawtext, wrapCaption, resolveChineseFontFile, unshellFilter } from "./composer";
+import { buildDrawtext, wrapCaption, resolveChineseFontFile, resolveFontFileForText, unshellFilter } from "./composer";
 
 export interface CoverVfOpts {
   title: string;
@@ -32,6 +32,7 @@ export interface CoverVfOpts {
  * which is why this went unnoticed.
  */
 export function buildCoverVf(o: CoverVfOpts): string {
+  const fontFile = o.fontFile ?? resolveFontFileForText(o.title) ?? resolveChineseFontFile();
   const fontSize = Math.round(o.width * 0.09);
   const lines = wrapCaption(o.title, fontSize, o.width).split("\n");
   const lineH = Math.round(fontSize * 1.5);
@@ -47,7 +48,7 @@ export function buildCoverVf(o: CoverVfOpts): string {
     lines
       .map((line, i) =>
         buildDrawtext({
-          fontFile: o.fontFile,
+          fontFile,
           text: line || " ",
           fontSize,
           fontColor: "white",
@@ -92,13 +93,15 @@ export async function generateCover(opts: {
   outPath: string;
   frameAtSec?: number;
   position?: CoverVfOpts["position"];
+  fontFile?: string | null;
 }): Promise<void> {
   const { execFile } = await import("child_process");
   const { promisify } = await import("util");
   const run = promisify(execFile);
   const width = await probeWidth(opts.videoPath);
   const t = Math.max(0, opts.frameAtSec ?? 1);
-  const vf = buildCoverVf({ title: opts.title, width, fontFile: resolveChineseFontFile(), position: opts.position });
+  const fontFile = opts.fontFile ?? resolveFontFileForText(opts.title) ?? resolveChineseFontFile();
+  const vf = buildCoverVf({ title: opts.title, width, fontFile, position: opts.position });
   await mkdir(dirname(opts.outPath), { recursive: true });
   // -ss before -i seeks fast; -frames:v 1 grabs a single frame; -vf applies the title overlay
   await run(ffmpegBin(), ["-y", "-ss", String(t), "-i", opts.videoPath, "-frames:v", "1", "-vf", vf, opts.outPath]);

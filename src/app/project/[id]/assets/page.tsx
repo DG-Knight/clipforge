@@ -753,19 +753,24 @@ export default function AssetsPage() {
       const genModel = useProductSafe ? toEditVariant(modelTarget.model) : modelTarget.model;
       const genMode = useProductSafe ? "image-to-image" : "text-to-image";
       const basePrompt = asset.prompt || asset.description;
+      const isCjk = /[一-鿿]/.test(basePrompt || "");
+      const sep = isCjk ? "。" : ". ";
       // cast shots: pin the anti-"AI face" realism constraint onto the keyframe too,
       // so the person is ordinary-looking from the very first frame the i2v runs on
-      const castSuffix = asset.characterId ? `。${realFaceLine(basePrompt)}` : "";
+      const castSuffix = asset.characterId ? `${sep}${realFaceLine(basePrompt)}` : "";
       // global look: one lighting/palette block across every keyframe keeps shots in one video
       // from drifting between styles (the LLM improvises style words per shot otherwise)
       const lookText = lookImageSuffix(visualLook, basePrompt);
-      const lookSuffix = lookText ? `。${lookText}` : "";
+      const lookSuffix = lookText ? `${sep}${lookText}` : "";
       // frame-position directive: a keyframe is the frozen instant JUST BEFORE the action,
       // holding visible potential energy — gives the i2v pass a beat to play out instead of
       // animating an already-completed pose
-      const frameSuffix = `。${keyframeInstantLine(basePrompt)}`;
+      const frameSuffix = `${sep}${keyframeInstantLine(basePrompt)}`;
+      const productConstraint = isCjk
+        ? "严格保持商品的外观、包装、颜色、logo 和文字完全不变，只重绘符合描述的场景、背景与光线。"
+        : "Strictly preserve the product's appearance, packaging, color, logo, and text completely unchanged, only redraw the scene, background, and lighting matching the description.";
       const shotPrompt = useProductSafe
-        ? `${basePrompt}。严格保持商品的外观、包装、颜色、logo 和文字完全不变，只重绘符合描述的场景、背景与光线。${castSuffix}${lookSuffix}${frameSuffix}`
+        ? `${basePrompt}${sep}${productConstraint}${castSuffix}${lookSuffix}${frameSuffix}`
         : `${basePrompt}${castSuffix}${lookSuffix}${frameSuffix}`;
       const projectDirection = compileCreativePrompt({
         ...projectCreativeIntent,

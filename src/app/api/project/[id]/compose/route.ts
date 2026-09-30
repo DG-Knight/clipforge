@@ -7,12 +7,12 @@ import { mkdir, writeFile } from "fs/promises";
 import { generateSpeech, estimateSpeechSeconds, type TTSConfig } from "@/lib/tts";
 import { stripPauseMarks } from "@/lib/voice-markup";
 import { shotEmotion, EMOTION_TTS } from "@/lib/emotion-acting";
-import { generateSpeechFreeDetailed, DEFAULT_FREE_VOICE, type TTSWord } from "@/lib/edge-tts";
+import { generateSpeechFreeDetailed, DEFAULT_FREE_VOICE, defaultVoiceForText, defaultVoiceForLang, type TTSWord } from "@/lib/edge-tts";
 import { resolveRenderProfile, isRenderPreset } from "@/lib/compose-presets";
 import { isCaptionPreset, captionPresetOverrides, CAPTION_PRESETS } from "@/lib/caption-presets";
 import { getDb } from "@/lib/db";
 import { scripts as scriptsTable, assets as assetsTable, projects, compositions } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { composeVideo, resolveFontFamilyForText, type ClipInput, type ComposeConfig } from "@/lib/video-composer/composer";
 import { extractFirstFrame } from "@/lib/video-composer/frame-extract";
 import { buildSubtitleTimeline, padDurationsForFade, segmentBoundaries, type TimelineSegment } from "@/lib/video-composer/timeline";
@@ -24,8 +24,7 @@ import { resolveBgmMix } from "@/lib/audio-mix";
 import { renderAudioStems } from "@/lib/audio-stems";
 import type { Shot, ScriptCharacter } from "@/lib/db/schema";
 import { assignCharacterVoices } from "@/lib/character-voices";
-import { desc, and } from "drizzle-orm";
-import { errText } from "@/lib/api-error";
+import { errText, pickLocale } from "@/lib/api-error";
 
 type ComposeRequestBody = {
   exportAudioStems?: boolean;
@@ -170,7 +169,12 @@ export async function POST(
     // 可选 TTS 配音配置（前端从设置带入）+ 免费配音嗓音提前解析：
     // 角色嗓池跟随旁白语言（泰语旁白 → 泰语角色嗓，避免一场戏两种语言）
     const freeTts = body.freeTts as { enabled?: boolean; voice?: string; rate?: string } | undefined;
-    const freeVoice = freeTts?.voice || DEFAULT_FREE_VOICE;
+    const sampleVoiceover = shots.map((s) => s.voiceover).filter(Boolean).join(" ");
+    const autoVoice = sampleVoiceover ? defaultVoiceForText(sampleVoiceover) : defaultVoiceForLang(pickLocale(req));
+    // หากไม่ได้ระบุเสียงมาเจาะจง หรือค่าที่ส่งมาเป็นดีฟอลต์ Xiaoxiao แต่สคริปต์เป็นภาษาไทย ให้เลือกเสียงไทยอัตโนมัติ
+    const freeVoice = freeTts?.voice && (freeTts.voice !== DEFAULT_FREE_VOICE || !/[\u0E00-\u0E7F]/.test(sampleVoiceover))
+      ? freeTts.voice
+      : autoVoice;
     // Dialogue-script cast (drama style): deterministic per-character Edge voices, free multi-voice
     // dialogue. Narrator shots (no characterId) keep the default/free voice below.
     const scriptCharacters = (selected.characters ?? []) as ScriptCharacter[];

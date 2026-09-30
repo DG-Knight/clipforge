@@ -66,3 +66,13 @@
   - [x] 10.4 ผูกรวมทรัพยากร Standalone และคอมไพล์ native modules (Better-SQLite3) เข้ากับ Electron ABI
   - [x] 10.5 แพ็กเกจระบบเป็นไฟล์ติดตั้ง Windows NSIS Installer สำเร็จ: `release/ClipForge Setup 0.9.10.exe` (158 MB)
 
+- [x] **11. แก้ไขข้อบกพร่องแกนกลางการสร้างวิดีโอภาษาไทย (Core Thai Video Pipeline Fixes)**
+  - [x] 11.1 เสียงพากย์ดีฟอลต์ภาษาไทยอัตโนมัติ (`src/lib/tts-voices.ts`, `src/app/api/project/[id]/compose/route.ts`, `src/app/project/[id]/video/page.tsx`)
+  - [x] 11.2 กรรมการ AI ตรวจสคริปต์รองรับภาษาไทย (`src/lib/script-judge.ts`)
+  - [x] 11.3 ลบคำลงท้ายสุภาพ "ครับ/ค่ะ/คะ" ออกจากรายการคำฟุ่มเฟือย (`src/lib/transcript-editor.ts`)
+  - [x] 11.4 แก้ไขฟอนต์ภาพหน้าปก (Cover) และการ์ดสรุป (Carousel) ให้แสดงภาษาไทยถูกต้อง (`src/lib/video-composer/cover.ts`, `carousel.ts`)
+  - [x] 11.5 แก้ไขระบบแบ่งท่อนคำบรรยายสั้น `chunkCaption` ภาษาไทย (`src/lib/video-composer/composer.ts`)
+  - [x] 11.6 แก้ไขระบบคาราโอเกะไม่ให้ทิ้งเครื่องหมาย `฿` และสัญลักษณ์ (`src/lib/video-composer/karaoke.ts`)
+  - [x] 11.7 ปรับปรุงข้อจำกัดความสมจริงสินค้าในพรอมต์ภาพให้เป็นสากล (`src/app/project/[id]/assets/page.tsx`)
+  - [x] 11.8 เพิ่มชุดทดสอบอัตโนมัติและรันการทดสอบยืนยันผล 100%
+

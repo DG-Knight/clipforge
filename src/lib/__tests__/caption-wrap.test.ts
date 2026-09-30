@@ -76,6 +76,15 @@ describe("chunkCaption（rapid 短句卡切分）", () => {
     expect(out.map((c) => c.text).join(" ")).toBe("the quick brown fox jumps over the lazy dog now");
   });
 
+  it("ข้อความภาษาไทยตัดคำและแบ่งท่อนอย่างเป็นธรรมชาติ (ไม่แช่ค้างทั้งประโยค)", () => {
+    const txt = "สวัสดีครับทุกคนวันนี้ผมจะมารีวิวเซรั่มผิวใสตัวใหม่ล่าสุดใช้ดีมากๆ";
+    const out = chunkCaption(txt, 0, 6);
+    expect(out.length).toBeGreaterThan(1);
+    expect(out[0].startTime).toBe(0);
+    expect(out[out.length - 1].endTime).toBe(6);
+    expect(out.map((c) => c.text).join("")).toBe(txt);
+  });
+
   it("块数随时长增加（更长的镜头切更多块），且封顶 8", () => {
     const txt = "一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十";
     expect(chunkCaption(txt, 0, 2).length).toBeLessThan(chunkCaption(txt, 0, 10).length);

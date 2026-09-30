@@ -1,5 +1,28 @@
 # บันทึกการเปลี่ยนแปลง (Changelog)
 
+## [v0.9.12] - 2026-09-30
+
+### Fixed (แก้ไขจุดบกพร่องแกนกลางการสร้างวิดีโอภาษาไทย)
+- **ระบบเลือกเสียงพากย์อัตโนมัติตามภาษา (Default Voice Auto-resolution)**:
+  - แก้ไขปัญหาเสียงพากย์ดีฟอลต์ติดค้างเป็นภาษาจีน (`zh-CN-XiaoxiaoNeural`)
+  - เพิ่มฟังก์ชัน `defaultVoiceForLang` และ `defaultVoiceForText` ใน `src/lib/tts-voices.ts` และ re-export ใน `src/lib/edge-tts.ts`
+  - หากสคริปต์วิดีโอเป็นภาษาไทย ระบบจะสลับเป็นเสียง `th-TH-PremwadeeNeural` (เสียงเปรมวดี) อัตโนมัติในฝั่งเซิร์ฟเวอร์และหน้าเลือกเสียง
+- **กรรมการ AI ตรวจประเมินสคริปต์ (Script Judge Thai Support)**:
+  - แก้ไข `src/lib/script-judge.ts` ให้ตรวจจับสคริปต์ภาษาไทย (`hasThai`) และสั่งให้ AI ส่งผลการตัดสินและการเขียนบทใหม่เป็นภาษาไทยที่เป็นธรรมชาติ ไม่บังคับแก้เป็นภาษาอังกฤษ
+- **ปกป้องคำลงท้ายสุภาพภาษาไทย (Polite Particles Preservation)**:
+  - ลบคำว่า `"ครับ", "ค่ะ", "คะ"` ออกจาก `FILLER_WORDS` ใน `src/lib/transcript-editor.ts`
+  - ป้องกันไม่ให้ระบบตัดทิ้งคำสุภาพที่จำเป็นต่อความน่าเชื่อถือและความเป็นธรรมชาติของคลิปขายสินค้า
+- **การเรนเดอร์ภาพหน้าปก (Cover) และการ์ดสรุป (Carousel)**:
+  - แก้ไข `src/lib/video-composer/cover.ts` และ `src/lib/video-composer/carousel.ts` ให้เรียกใช้ `resolveFontFileForText()`
+  - สลับใช้ฟอนต์ `NotoSansThai-Regular.ttf` โดยอัตโนมัติเมื่อข้อความเป็นภาษาไทย ป้องกันตัวอักษรไทยหายหรือเป็นสี่เหลี่ยม
+- **ระบบแบ่งท่อนคำบรรยายการ์ดสั้นภาษาไทย (Caption Chunking)**:
+  - ปรับปรุงฟังก์ชัน `chunkCaption` ใน `src/lib/video-composer/composer.ts` โดยใช้ `Intl.Segmenter` ภาษาไทย
+  - ตัดท่อนประโยคยาวให้เป็นท่อนสั้นตามขอบเขตคำ ไม่ตัดขาดกลางคำ
+- **ระบบซับไตเติลคาราโอเกะและสกุลเงินบาท (Karaoke & Currency Preservation)**:
+  - ปรับปรุง `src/lib/video-composer/karaoke.ts` (`splitThaiWords` และ `splitKaraokeUnits`) ให้คงสัญลักษณ์ทางการเงิน เช่น เครื่องหมายบาท `฿` และเปอร์เซ็นต์ `%` เชื่อมโยงกับคำภาษาไทยอย่างสมบูรณ์
+- **ข้อจำกัดความสมจริงสินค้าในพรอมต์ภาพ AI (Realistic Product Delimiters)**:
+  - แก้ไข `src/app/project/[id]/assets/page.tsx` ไม่ให้ใส่ข้อความกำกับภาษาจีน `"保持商品主体一致"` เมื่อสคริปต์เป็นภาษาไทยหรือภาษาอังกฤษ
+
 ## [v0.9.11] - 2026-09-28
 
 ### Added (เพิ่มฟีเจอร์ใหม่)

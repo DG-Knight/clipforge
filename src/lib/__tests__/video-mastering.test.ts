@@ -81,7 +81,7 @@ describe("video mastering contract", () => {
     expect(() => buildMasteringArgs({
       videoPath: "/tmp/in.mp4", outputPath: "/tmp/out.mp4", contentId: "p", duration: 3,
       hasAudio: false, loudness: null, options: { normalizeAudio: false, deflicker: false },
-    })).toThrow(/至少选择/);
+    })).toThrow(/(至少选择|Select at least one|เลือกอย่างน้อย)/);
   });
 });
 

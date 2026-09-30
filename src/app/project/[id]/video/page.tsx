@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useT, useLocale } from "@/lib/i18n";
 import { pickLocaleText } from "@/lib/i18n/config";
-import { FREE_TTS_VOICES } from "@/lib/tts-voices";
+import { FREE_TTS_VOICES, defaultVoiceForLang } from "@/lib/tts-voices";
 import { RENDER_PRESETS, DEFAULT_RENDER_PRESET, type RenderPreset } from "@/lib/compose-presets";
 import { BUILTIN_STYLE_PACKS, parseStylePack, serializeStylePack, STYLE_PACK_FORMAT, type StylePack } from "@/lib/style-packs";
 import { decodeStoredAdTemplate, adTemplateStorageKey, adTemplateAppliedKey } from "@/lib/ad-templates";
@@ -143,7 +143,7 @@ export default function VideoPage() {
   const [config, setConfig] = useState<ComposeConfig>({
     ttsEnabled: true,
     ttsVoice: "female-gentle",
-    freeVoice: "zh-CN-XiaoxiaoNeural",
+    freeVoice: defaultVoiceForLang(locale),
     bgm: "upbeat",
     subtitleSize: 24,
     subtitlePosition: "bottom",

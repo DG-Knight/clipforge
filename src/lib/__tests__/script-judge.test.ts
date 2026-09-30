@@ -61,6 +61,13 @@ describe("buildJudgePrompt（判官团二期）", () => {
     const p = buildJudgePrompt([{ shotId: 1, voiceover: "I bought this ten times." }]);
     expect(p).toContain("in English");
   });
+
+  it("สคริปต์ภาษาไทย → 附加ไทย output instruction ไม่กลายเป็นภาษาอังกฤษ", () => {
+    const p = buildJudgePrompt([{ shotId: 1, voiceover: "กระดาษทิชชู่นี้ใช้ดีมาก ซื้อซ้ำเกินสิบครั้งแล้ว" }]);
+    expect(p).toContain("Thai");
+    expect(p).toContain("สคริปต์ต้นฉบับเป็นภาษาไทย");
+    expect(p).not.toContain("in English (the script is English)");
+  });
 });
 
 describe("parseJudgeResponse（二期：五判官/tier钳制/事实token校验/画面重写）", () => {

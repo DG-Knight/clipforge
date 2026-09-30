@@ -34,4 +34,8 @@ describe("buildCardVf", () => {
     expect(vf).toContain("fontsize=90");
     expect(vf).toContain("fontcolor=yellow");
   });
+  it("Thai card text automatically picks Thai font file", () => {
+    const vf = buildCardVf({ text: "เคล็ดลับผิวใส สุขภาพดี 3 ขั้นตอนง่ายๆ", width: 1080 });
+    expect(vf).toContain("NotoSansThai-Regular.ttf");
+  });
 });
