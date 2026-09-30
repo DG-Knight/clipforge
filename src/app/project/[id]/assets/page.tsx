@@ -397,10 +397,10 @@ export default function AssetsPage() {
           // fallback transparency: name the shots that got generic filler footage so the user knows
           // exactly which ones to swap, instead of discovering off-topic visuals in the final video
           (Array.isArray(data.universalFallbacks) && data.universalFallbacks.length
-            ? t("stockUniversalFallbackMsg", { shots: data.universalFallbacks.join("、") })
+            ? t("stockUniversalFallbackMsg", { shots: data.universalFallbacks.join(", ") })
             : "") +
           (Array.isArray(data.unmatchedShots) && data.unmatchedShots.length
-            ? t("stockUnmatchedMsg", { shots: data.unmatchedShots.join("、") })
+            ? t("stockUnmatchedMsg", { shots: data.unmatchedShots.join(", ") })
             : "")
       );
     } catch (e) {
@@ -1578,7 +1578,7 @@ export default function AssetsPage() {
                               non-fatal errors (camera save / i2v) that keep status "done" */}
                           {!asset.isVideo && keyframeStaticWarnings(asset.prompt || asset.description).length > 0 && (
                             <p className="text-xs text-amber-600 dark:text-amber-500 mt-2">
-                              {t("keyframeStaticWarn", { words: keyframeStaticWarnings(asset.prompt || asset.description).join("、") })}
+                              {t("keyframeStaticWarn", { words: keyframeStaticWarnings(asset.prompt || asset.description).join(", ") })}
                             </p>
                           )}
                           {asset.error && (

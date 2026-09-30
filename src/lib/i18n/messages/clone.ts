@@ -150,9 +150,9 @@ export const clone: NamespaceMessages = {
     heroTitle: "คัดลอกคลิปดัง",
     heroSubtitle: "วางลิงก์วิดีโอยอดนิยมเป็นตัวอย่าง โหลดโครงสร้างที่มียอดขายสูง และสร้างสคริปต์ใหม่ด้วยสินค้าของคุณ",
     // แบนเนอร์เทรนด์จากหน้าแรก
-    trendBannerTitle: "สร้างตามเทรนด์「{trend}」",
+    trendBannerTitle: "สร้างตามเทรนด์«{trend}»",
     trendBannerDesc: "ค้นหาเทรนด์นี้บนแพลตฟอร์ม เลือกคลิปไวรัลที่คุณต้องการคัดลอกโครงสร้าง — วางลิงก์ด้านล่าง หรืออัปโหลดไฟล์วิดีโอตัวอย่าง",
-    trendBannerSearch: "ไปค้นหา「{trend}」 ↗",
+    trendBannerSearch: "ไปค้นหา«{trend}» ↗",
     trendBannerDismiss: "รับทราบ",
     step1Title: "ใส่วิดีโอต้นแบบ",
     videoUrlLabel: "ลิงก์วิดีโอ",
@@ -190,7 +190,7 @@ export const clone: NamespaceMessages = {
     shot6Desc: "บอกโปรโมชันจำกัดเวลา + กระตุ้นให้กดสั่งซื้อทันที",
     // ข้อผิดพลาดและชื่อโปรเจกต์
     projectNameSuffix: "โคลน {name}",
-    errorNoLlm: "ยังไม่ได้ตั้งค่า LLM โปรดไปที่หน้า「ตั้งค่า」เพื่อใส่ API Key ก่อน",
+    errorNoLlm: "ยังไม่ได้ตั้งค่า LLM โปรดไปที่หน้า«ตั้งค่า»เพื่อใส่ API Key ก่อน",
     errorProjectCreate: "สร้างโปรเจกต์ไม่สำเร็จ",
     errorScriptGen: "สร้างสคริปต์ไม่สำเร็จ โปรดตรวจสอบการตั้งค่า LLM",
     errorCloneFailed: "คัดลอกสร้างไม่สำเร็จ",

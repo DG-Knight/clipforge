@@ -171,7 +171,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         req,
         `分镜 ${missing.join("、")} 还没有关键帧图——先跑「九宫格分镜」或逐镜生图`,
         `Shots ${missing.join(", ")} have no keyframe image yet — run the storyboard grid or per-shot generation first`,
-        `ช็อต ${missing.join(", ")} ยังไม่มีภาพ keyframe — รัน「กริดเรื่องย่อ」หรือสร้างภาพรายช็อตก่อน`,
+        `ช็อต ${missing.join(", ")} ยังไม่มีภาพ keyframe — รัน«กริดเรื่องย่อ»หรือสร้างภาพรายช็อตก่อน`,
         400
       );
     }

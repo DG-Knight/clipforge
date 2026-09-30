@@ -232,7 +232,7 @@ export default function NewProjectPage() {
       if (Array.isArray(data.warnings) && data.warnings.length > 0) {
         // multi-import already says "imported" — use the prefix-free warning to avoid saying it twice
         const warnKey = imported.length > 1 ? "adTemplateWarnOnly" : "adTemplateImportWarn";
-        notices.push(`${t(warnKey)}${data.warnings.join("、")}`);
+        notices.push(`${t(warnKey)}${data.warnings.join(", ")}`);
       }
       if (notices.length > 0) setMineNotice(notices.join(" "));
     } catch (e) {
@@ -305,7 +305,7 @@ export default function NewProjectPage() {
       setEditorDraft(null);
       pickAdTemplate(tpl.id, tpl);
       if (Array.isArray(data.warnings) && data.warnings.length > 0) {
-        setMineNotice(`${t("adTemplateImportWarn")}${data.warnings.join("、")}`);
+        setMineNotice(`${t("adTemplateImportWarn")}${data.warnings.join(", ")}`);
       }
     } catch (e) {
       setMineNotice(e instanceof Error ? e.message : t("adTplEditorSaveFailed"));

@@ -267,7 +267,7 @@ export default function MediaLabPage() {
                     <InfoCell label={t("pacing")} value={result.motion.pacing} />
                     <InfoCell label={t("sceneRhythm")} value={result.motion.sceneRhythm} />
                   </div>
-                  {result.motion.cameraMoves.length > 0 && <p className="mt-2 text-xs leading-5 text-muted-foreground"><span className="font-medium text-foreground">{t("cameraMoves")}：</span>{result.motion.cameraMoves.join(" · ")}</p>}
+                  {result.motion.cameraMoves.length > 0 && <p className="mt-2 text-xs leading-5 text-muted-foreground"><span className="font-medium text-foreground">{t("cameraMoves")}: </span>{result.motion.cameraMoves.join(" · ")}</p>}
                 </div>
               )}
 
@@ -280,7 +280,7 @@ export default function MediaLabPage() {
                   </button>
                 </div>
                 <p className="whitespace-pre-wrap text-sm leading-6">{result.reusablePrompt}</p>
-                {result.negativePrompt && <p className="mt-3 border-t border-primary/15 pt-3 text-xs leading-5 text-muted-foreground"><span className="font-medium text-foreground">{t("negativePrompt")}：</span>{result.negativePrompt}</p>}
+                {result.negativePrompt && <p className="mt-3 border-t border-primary/15 pt-3 text-xs leading-5 text-muted-foreground"><span className="font-medium text-foreground">{t("negativePrompt")}: </span>{result.negativePrompt}</p>}
               </div>
 
               <div className="rounded-xl border border-border/60 bg-background/30 p-4">

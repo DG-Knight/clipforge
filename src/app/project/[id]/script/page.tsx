@@ -881,7 +881,7 @@ export default function ScriptPage() {
               )}
               {filmPreview.dialogueWarnings.length > 0 && (
                 <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-600 dark:text-amber-500">
-                  {t("aiFilmDensityWarn", { shots: filmPreview.dialogueWarnings.map((w) => `#${w.index + 1}`).join("、") })}
+                  {t("aiFilmDensityWarn", { shots: filmPreview.dialogueWarnings.map((w) => `#${w.index + 1}`).join(", ") })}
                 </div>
               )}
               {aiFilmError && (
@@ -1351,7 +1351,7 @@ export default function ScriptPage() {
                               title={v.suggestion}
                               className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs cursor-help"
                             >
-                              「{v.term}」· {v.category}
+                              «{v.term}» · {v.category}
                             </span>
                           ))}
                         </div>

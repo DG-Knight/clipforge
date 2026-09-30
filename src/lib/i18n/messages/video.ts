@@ -289,7 +289,7 @@ export const video: NamespaceMessages = {
     stylePackHint: "นำรูปแบบวิดีโอทั้งชุดมาใช้ในคลิกเดียว (ซับ/เพลง/คุณภาพ/CTA) โดยชุดสไตล์เป็นไฟล์ JSON ที่แชร์ต่อได้",
     stylePackImport: "นำเข้าชุดสไตล์",
     stylePackExport: "ส่งออกการตั้งค่าปัจจุบัน",
-    stylePackApplied: "นำสไตล์「{name}」มาใช้แล้ว",
+    stylePackApplied: "นำสไตล์«{name}»มาใช้แล้ว",
     stylePackInvalid: "ไฟล์ชุดสไตล์ไม่ถูกต้อง รองรับเฉพาะไฟล์ JSON ของ ClipForge เท่านั้น",
     captionStyleLabel: "รูปแบบคำบรรยาย",
     captionPreset_standard: "กล่องข้อความมาตรฐาน",
