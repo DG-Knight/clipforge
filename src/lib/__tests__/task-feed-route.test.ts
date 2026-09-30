@@ -32,7 +32,7 @@ const sameTime = new Date("2026-09-16T00:00:00Z");
 function run(values: Partial<typeof schema.pipelineRuns.$inferInsert> & { id: string }) {
   db.insert(schema.pipelineRuns).values({ projectId: "project-a", createdAt: sameTime, ...values }).run();
 }
-async function feed() { return parseTaskFeed(await (await GET()).json()); }
+async function feed() { return parseTaskFeed(await (await GET(new NextRequest("http://localhost/api/tasks"))).json()); }
 
 describe("任务发现和恢复状态", () => {
   it("中断任务落库后多次刷新仍保留，接替任务成功后移除", async () => {
@@ -81,7 +81,7 @@ describe("任务发现和恢复状态", () => {
       expect.objectContaining({ id: "two", done: 1, failed: 0, total: 2 }),
     ]));
     expect((await feed()).active).toHaveLength(2);
-    expect((await GET()).headers.get("Cache-Control")).toBe("no-store");
+    expect((await GET(new NextRequest("http://localhost/api/tasks"))).headers.get("Cache-Control")).toBe("no-store");
   });
 
   it("项目查询及续跑也使用同秒内最新断点", async () => {

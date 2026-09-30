@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
       const result = finalStatus.result;
       const videoUrls = result && "videoUrls" in result ? result.videoUrls : undefined;
       if (!videoUrls || videoUrls.length === 0) {
-        await updateAiTask(rowId, { status: "unknown", error: "任务完成但未返回视频地址" });
+        await updateAiTask(rowId, { status: "unknown", error: "Task finished but returned no video URL" });
         return NextResponse.json(
           { error: errText(req, "任务完成但未返回视频地址", "Task completed but returned no video URL", "งานเสร็จแล้วแต่ไม่ได้คืนที่อยู่วิดีโอ"), taskId, modelId, recoverable: true },
           { status: 502 }
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
             ? message
             : errText(
                 req,
-                `${message}。任务 ID ${taskId} 已保存，可在素材页恢复查询，请勿重复提交`,
+                `${message}. Task ID ${taskId} has been saved and can be recovered from the assets page — do not resubmit`,
                 `${message}. Task ID ${taskId} has been saved and can be recovered from the assets page — do not resubmit`,
                 `${message} บันทึก Task ID ${taskId} ไว้แล้ว กู้คืนได้จากหน้าสื่อ — ห้ามส่งซ้ำ`
               ),

@@ -120,7 +120,7 @@ export async function searchOpenverseImages(
   opts: { token?: string; perPage?: number; commercialOnly?: boolean } = {}
 ): Promise<StockCandidate[]> {
   const { token, perPage = 10, commercialOnly = true } = opts;
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const params = new URLSearchParams({
     q: query.trim(),
@@ -132,7 +132,7 @@ export async function searchOpenverseImages(
   const res = await fetchWithTimeout(`${OPENVERSE_API}/images/?${params}`, { headers: authHeaders(token) });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Openverse 图片检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Openverse image search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { results?: OpenverseImage[] };
   return (data.results ?? [])
@@ -146,7 +146,7 @@ export async function searchOpenverseAudio(
   opts: { token?: string; perPage?: number; commercialOnly?: boolean; category?: "music" | "sound_effect" } = {}
 ): Promise<StockCandidate[]> {
   const { token, perPage = 10, commercialOnly = true, category } = opts;
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const params = new URLSearchParams({ q: query.trim(), page_size: String(perPage), mature: "false" });
   if (commercialOnly) params.set("license_type", "commercial");
@@ -155,7 +155,7 @@ export async function searchOpenverseAudio(
   const res = await fetchWithTimeout(`${OPENVERSE_API}/audio/?${params}`, { headers: authHeaders(token) });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Openverse 音频检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Openverse audio search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { results?: OpenverseAudio[] };
   return (data.results ?? [])

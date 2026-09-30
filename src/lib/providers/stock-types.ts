@@ -253,7 +253,7 @@ export async function downloadStockFile(
   if (url.startsWith("/") || url.startsWith("file://")) {
     const srcPath = url.startsWith("file://") ? new URL(url).pathname : url;
     const st = await stat(srcPath);
-    if (st.size > MAX_DOWNLOAD_BYTES) throw new Error(`素材体积 ${st.size} 超过上限 ${MAX_DOWNLOAD_BYTES}`);
+    if (st.size > MAX_DOWNLOAD_BYTES) throw new Error(`Asset size ${st.size} exceeds the ${MAX_DOWNLOAD_BYTES} limit`);
     const localExt = inferExtension(srcPath, null, mediaType);
     const destPath = join(destDir, `${safeBaseName}.${localExt}`);
     await copyFile(srcPath, destPath);
@@ -261,17 +261,17 @@ export async function downloadStockFile(
   }
 
   const res = await fetchWithTimeout(url);
-  if (!res.ok) throw new Error(`素材下载失败 ${res.status}: ${url}`);
+  if (!res.ok) throw new Error(`Asset download failed ${res.status}: ${url}`);
 
   const contentType = res.headers.get("content-type");
   const declaredLen = Number(res.headers.get("content-length") || 0);
   if (declaredLen && declaredLen > MAX_DOWNLOAD_BYTES) {
-    throw new Error(`素材体积 ${declaredLen} 超过上限 ${MAX_DOWNLOAD_BYTES}`);
+    throw new Error(`Asset size ${declaredLen} exceeds the ${MAX_DOWNLOAD_BYTES} limit`);
   }
 
   const buffer = Buffer.from(await res.arrayBuffer());
   if (buffer.byteLength > MAX_DOWNLOAD_BYTES) {
-    throw new Error(`素材体积 ${buffer.byteLength} 超过上限 ${MAX_DOWNLOAD_BYTES}`);
+    throw new Error(`Asset size ${buffer.byteLength} exceeds the ${MAX_DOWNLOAD_BYTES} limit`);
   }
 
   const ext = inferExtension(url, contentType, mediaType);

@@ -194,7 +194,7 @@ describe("buildComposeCommand", () => {
   });
 
   it("空 clips 抛可读错误（审计修复，否则 -map [v0] 指向不存在的流致 ffmpeg 晦涩失败）", () => {
-    expect(() => buildComposeCommand({ ...baseConfig, clips: [] })).toThrow(/clips 为空|没有可合成/);
+    expect(() => buildComposeCommand({ ...baseConfig, clips: [] })).toThrow(/clips is empty|No clips to compose/);
   });
 
   it("字体路径用路径转义器（审计修复：Windows C:\\ 路径反斜杠→正斜杠+冒号转义，而非 drawtext 文本转义器毁掉路径）", () => {
@@ -646,12 +646,12 @@ describe("parseScriptResponse", () => {
   });
 
   it("无效 JSON 抛出合适的错误", () => {
-    expect(() => parseScriptResponse("这不是JSON", "pain_point")).toThrow("合法 JSON");
+    expect(() => parseScriptResponse("这不是JSON", "pain_point")).toThrow("invalid JSON");
   });
 
   it("无法识别的 JSON 结构抛出错误", () => {
     const content = JSON.stringify({ foo: "bar" });
-    expect(() => parseScriptResponse(content, "pain_point")).toThrow("无法解析");
+    expect(() => parseScriptResponse(content, "pain_point")).toThrow("Could not parse");
   });
 
   it("批量里只有 title、缺 shots 的残缺条目被丢弃，只保留有分镜的", () => {
@@ -667,7 +667,7 @@ describe("parseScriptResponse", () => {
   });
 
   it("所有脚本都没有分镜 → 抛错（不让零分镜脚本被当成功落库）", () => {
-    expect(() => parseScriptResponse(JSON.stringify({ scripts: [{ title: "空1" }, { title: "空2", shots: [] }] }), "pain_point")).toThrow("有效分镜");
+    expect(() => parseScriptResponse(JSON.stringify({ scripts: [{ title: "空1" }, { title: "空2", shots: [] }] }), "pain_point")).toThrow("no valid shots");
   });
 
   it("把 LLM 的 searchTerms 解析为 stockKeywords（去空、trim、最多3个）", () => {
@@ -909,6 +909,7 @@ describe("completeWithJsonRetry（解析失败带着报错重问一次；能力�
     // 第二轮 messages 追加了 assistant 原文 + 纠错指令
     expect(seen[1]).toHaveLength(3);
     expect(seen[1][1]).toMatchObject({ role: "assistant", content: "这不是JSON" });
+    // model-facing retry instruction stays Chinese by design (hasCjk boundary)
     expect(seen[1][2].content).toContain("无法解析");
   });
 

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { and, desc, eq, gt, inArray } from "drizzle-orm";
 import { reconcileTranscriptRenders } from "@/lib/transcript-render-runner";
 import { getDb } from "@/lib/db";
@@ -6,12 +6,13 @@ import { aiTasks, batchJobItems, batchJobs, compositions, mediaEdits, pipelineRu
 import { isPipelineRunActive } from "@/lib/pipeline-runner";
 import { ACTIVE_AI_TASK_STATUSES } from "@/lib/ai-tasks";
 import { listLatestPipelineRuns } from "@/lib/pipeline-history";
+import { errText } from "@/lib/api-error";
 
 /**
  * 汇总所有项目的运行任务、待恢复任务，以及最近 24 小时的成片。
  * 这里只读取状态；恢复和重新生成由用户在对应项目中发起。
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     reconcileTranscriptRenders();
     const db = getDb();
@@ -143,7 +144,7 @@ export async function GET() {
   } catch (error) {
     console.error("获取任务中心数据失败:", error);
     return NextResponse.json(
-      { error: "获取任务中心数据失败" },
+      { error: errText(req, "获取任务中心数据失败", "Failed to load the task center", "โหลดศูนย์งานไม่สำเร็จ") },
       { status: 500, headers: { "Cache-Control": "no-store" } }
     );
   }

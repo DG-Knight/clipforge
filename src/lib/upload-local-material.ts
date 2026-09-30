@@ -75,7 +75,7 @@ export function uploadLocalMaterial(
           if (xhr.status < 200 || xhr.status >= 300 || !data.materials?.[0])
             throw new Error(
               data.error ||
-                (isTh ? "อัปโหลดไม่สำเร็จ" : isZh ? "上传失败" : "Upload failed"),
+                (isTh ? "อัปโหลดไม่สำเร็จ" : isZh ? "Upload failed" : "Upload failed"),
             );
           resolve({
             material: data.materials[0],

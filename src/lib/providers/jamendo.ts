@@ -82,8 +82,8 @@ export async function searchJamendoTracks(
   opts: { clientId: string; perPage?: number; minSec?: number; maxSec?: number }
 ): Promise<StockCandidate[]> {
   const { clientId, perPage = 10, minSec, maxSec } = opts;
-  if (!clientId) throw new Error("缺少 Jamendo Client ID");
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!clientId) throw new Error("Missing Jamendo client ID");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -99,7 +99,7 @@ export async function searchJamendoTracks(
   const res = await fetchWithTimeout(`${JAMENDO_API}/tracks/?${params}`);
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Jamendo 音乐检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Jamendo music search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { results?: JamendoTrack[] };
   const candidates = (data.results ?? [])

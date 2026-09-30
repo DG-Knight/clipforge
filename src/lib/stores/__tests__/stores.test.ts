@@ -234,10 +234,10 @@ describe("BrandStore", () => {
     useBrandStore.setState({
       brand: {
         id: "test-brand-id",
-        name: "我的店铺",
+        name: "My Store",
         primaryColor: "#6366f1",
         secondaryColor: "#8b5cf6",
-        fontFamily: "默认字体",
+        fontFamily: "default",
         watermark: {
           enabled: false,
           position: "bottom-right",
@@ -252,10 +252,10 @@ describe("BrandStore", () => {
 
   it("默认值正确", () => {
     const { brand } = useBrandStore.getState();
-    expect(brand.name).toBe("我的店铺");
+    expect(brand.name).toBe("My Store");
     expect(brand.primaryColor).toBe("#6366f1");
     expect(brand.secondaryColor).toBe("#8b5cf6");
-    expect(brand.fontFamily).toBe("默认字体");
+    expect(brand.fontFamily).toBe("default");
     expect(brand.introEnabled).toBe(false);
     expect(brand.outroEnabled).toBe(false);
   });
@@ -283,7 +283,7 @@ describe("BrandStore", () => {
     expect(brand.outroText).toBe("感谢观看");
     // fields not updated must remain unchanged
     expect(brand.secondaryColor).toBe("#8b5cf6");
-    expect(brand.fontFamily).toBe("默认字体");
+    expect(brand.fontFamily).toBe("default");
   });
 
   it("更新品牌信息不应覆盖水印配置", () => {

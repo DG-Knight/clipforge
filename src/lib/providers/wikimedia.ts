@@ -119,7 +119,7 @@ async function searchWikimedia(
   mediaType: StockMediaType,
   opts: { perPage?: number } = {}
 ): Promise<StockCandidate[]> {
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!query?.trim()) throw new Error("Search term is empty");
   const { perPage = 10 } = opts;
   const isVideo = mediaType === "video";
   const filetype =
@@ -148,7 +148,7 @@ async function searchWikimedia(
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Wikimedia 检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Wikimedia search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { query?: { pages?: Record<string, CommonsPage> } };
   const pages = data.query?.pages ? Object.values(data.query.pages) : [];

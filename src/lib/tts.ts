@@ -98,7 +98,7 @@ export async function generateSpeech(text: string, config: TTSConfig): Promise<B
   // paid engines would try to SPEAK the [pause] breath marker — only the free Edge
   // path renders it (as a real SSML break); everyone else gets clean text
   const clean = stripPauseMarks((text || "").trim());
-  if (!clean) throw new Error("配音文本为空");
+  if (!clean) throw new Error("Voiceover text is empty");
   const provider = config.provider || "openai";
   // Content-addressed cache: identical text + voice params reuse the previously synthesized
   // audio, so a re-compose (e.g. after a BGM tweak) doesn't re-bill the paid TTS provider.
@@ -121,7 +121,7 @@ export async function generateSpeech(text: string, config: TTSConfig): Promise<B
   if (cached) return cached;
   const breaker = ttsBreaker(provider);
   if (breaker.isOpen()) {
-    throw new Error(`配音服务(${provider})连续失败已暂时熔断——请检查对应平台 Key/服务，约 30 秒后自动重试`);
+    throw new Error(`TTS provider (${provider}) failed repeatedly and is circuit-broken — check its key/service; auto-retry in ~30 s`);
   }
   try {
     // Retries live INSIDE one breaker-accounted call: the breaker judges the final outcome, so a
@@ -203,14 +203,14 @@ async function audioToBuffer(input: string): Promise<Buffer> {
     // 30s timeout: prevents indefinite blocking when a remote audio server is slow or hung,
     // which would stall the entire TTS → compose pipeline
     const resp = await fetch(s, { signal: AbortSignal.timeout(30000) });
-    if (!resp.ok) throw new Error(`下载音频失败: ${resp.status}`);
+    if (!resp.ok) throw new Error(`Audio download failed: ${resp.status}`);
     return Buffer.from(await resp.arrayBuffer());
   }
   if (s.startsWith("data:")) {
     const comma = s.indexOf(",");
     // A well-formed data URI always has a comma before the payload; without it, slice(0) would
     // feed the "data:...;base64" header into the base64 decoder and yield garbage/empty audio.
-    if (comma === -1) throw new Error("音频 data URI 格式错误（缺少逗号分隔符）");
+    if (comma === -1) throw new Error("Malformed audio data URI (missing comma separator)");
     return Buffer.from(s.slice(comma + 1), "base64");
   }
   // Pure hex (only 0-9a-f and even length): decode as hex; otherwise decode as base64
@@ -240,7 +240,7 @@ async function generateSpeechOpenAI(text: string, config: TTSConfig): Promise<Bu
   });
   if (!resp.ok) {
     const errText = await resp.text().catch(() => "");
-    throw new Error(`TTS 请求失败: ${resp.status} ${resp.statusText} - ${clipErr(errText)}`);
+    throw new Error(`TTS request failed: ${resp.status} ${resp.statusText} - ${clipErr(errText)}`);
   }
   return Buffer.from(await resp.arrayBuffer());
 }
@@ -276,11 +276,11 @@ async function generateSpeechAtlas(text: string, config: TTSConfig): Promise<Buf
   });
   if (!submit.ok) {
     const t = await submit.text().catch(() => "");
-    throw new Error(`Atlas TTS 提交失败: ${submit.status} - ${clipErr(t)}`);
+    throw new Error(`Atlas TTS submit failed: ${submit.status} - ${clipErr(t)}`);
   }
   const sj = (await submit.json()) as { data?: { id?: string }; id?: string };
   const taskId = sj?.data?.id ?? sj?.id;
-  if (!taskId) throw new Error("Atlas TTS 未返回任务 id");
+  if (!taskId) throw new Error("Atlas TTS returned no task id");
 
   // Poll for prediction result (TTS usually completes within a few seconds)
   for (let i = 0; i < 60; i++) {
@@ -307,14 +307,14 @@ async function generateSpeechAtlas(text: string, config: TTSConfig): Promise<Buf
         p.outputs?.[0] ??
         (typeof p.output === "string" ? p.output : p.output?.url || p.output?.audio) ??
         p.audio;
-      if (!audio) throw new Error("Atlas TTS 完成但未返回音频");
+      if (!audio) throw new Error("Atlas TTS finished but returned no audio");
       return audioToBuffer(audio);
     }
     if (status === "failed" || status === "error") {
-      throw new Error(`Atlas TTS 失败: ${p.error || status}`);
+      throw new Error(`Atlas TTS failed: ${p.error || status}`);
     }
   }
-  throw new Error("Atlas TTS 轮询超时");
+  throw new Error("Atlas TTS polling timed out");
 }
 
 // ==================== MiniMax 海螺 T2A v2（hex 解码） ====================
@@ -347,20 +347,20 @@ async function generateSpeechMiniMax(text: string, config: TTSConfig): Promise<B
   });
   if (!resp.ok) {
     const t = await resp.text().catch(() => "");
-    throw new Error(`MiniMax TTS 请求失败: ${resp.status} - ${clipErr(t)}`);
+    throw new Error(`MiniMax TTS request failed: ${resp.status} - ${clipErr(t)}`);
   }
   let j: { data?: { audio?: string }; base_resp?: { status_code?: number; status_msg?: string } };
   try {
     j = await resp.json();
   } catch (e) {
-    throw new Error(`MiniMax TTS 响应解析失败（非合法 JSON）: ${e instanceof Error ? e.message : String(e)}`);
+    throw new Error(`MiniMax TTS response parse failed (invalid JSON): ${e instanceof Error ? e.message : String(e)}`);
   }
   const code = j?.base_resp?.status_code;
   if (code != null && code !== 0) {
-    throw new Error(`MiniMax TTS 失败: ${j?.base_resp?.status_msg || "未知错误"} (code=${code})`);
+    throw new Error(`MiniMax TTS failed: ${j?.base_resp?.status_msg || "unknown error"} (code=${code})`);
   }
   const hex = j?.data?.audio;
-  if (!hex) throw new Error("MiniMax TTS 未返回音频（检查 Key / GroupId / 音色 id）");
+  if (!hex) throw new Error("MiniMax TTS returned no audio (check key / GroupId / voice id)");
   return Buffer.from(hex, "hex");
 }
 
@@ -388,10 +388,10 @@ async function generateSpeechFal(text: string, config: TTSConfig): Promise<Buffe
   });
   if (!submit.ok) {
     const t = await submit.text().catch(() => "");
-    throw new Error(`fal TTS 提交失败: ${submit.status} - ${clipErr(t)}`);
+    throw new Error(`fal TTS submit failed: ${submit.status} - ${clipErr(t)}`);
   }
   const sj = (await submit.json()) as { request_id?: string; status_url?: string; response_url?: string };
-  if (!sj?.request_id) throw new Error("fal TTS 未返回 request_id");
+  if (!sj?.request_id) throw new Error("fal TTS returned no request_id");
   // Prefer the returned status_url / response_url (most reliable); fall back to constructing queue URLs by convention
   const statusUrl = sj.status_url || `${base}/${model}/requests/${sj.request_id}/status`;
   const resultUrl = sj.response_url || `${base}/${model}/requests/${sj.request_id}`;
@@ -411,15 +411,15 @@ async function generateSpeechFal(text: string, config: TTSConfig): Promise<Buffe
     }
     if (status === "COMPLETED") {
       const rr = await fetch(resultUrl, { headers, signal: AbortSignal.timeout(10000) });
-      if (!rr.ok) throw new Error(`fal TTS 取结果失败: ${rr.status}`);
+      if (!rr.ok) throw new Error(`fal TTS result fetch failed: ${rr.status}`);
       const result = (await rr.json()) as { audio?: { url?: string } };
       const audioUrl = result?.audio?.url;
-      if (!audioUrl) throw new Error("fal TTS 完成但未返回音频 URL");
+      if (!audioUrl) throw new Error("fal TTS finished but returned no audio URL");
       return audioToBuffer(audioUrl);
     }
     if (status === "FAILED" || status === "ERROR") {
-      throw new Error("fal TTS 任务失败");
+      throw new Error("fal TTS task failed");
     }
   }
-  throw new Error("fal TTS 轮询超时");
+  throw new Error("fal TTS polling timed out");
 }

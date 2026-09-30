@@ -277,7 +277,7 @@ describe("LLM_PRESETS（预设是新装用户的唯一入口，指向死端点�
   });
 
   it("只有真正免 Key 的本地 Ollama 才预填占位 Key", () => {
-    expect(LLM_PRESETS.filter((p) => p.apiKey).map((p) => p.label)).toEqual(["Ollama 本地"]);
+    expect(LLM_PRESETS.filter((p) => p.apiKey).map((p) => p.label)).toEqual(["Ollama (local)"]);
   });
 
   it("每个 tipKey 在中英文案里都存在（设置页是客户端渲染，缺键只会在用户点开时露出）", () => {

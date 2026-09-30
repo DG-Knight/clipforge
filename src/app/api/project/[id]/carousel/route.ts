@@ -40,7 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const outDir = join(getDataDir(), "uploads", id, "carousel");
   try {
     const files = await generateCarousel({
-      title: script.title || "图文",
+      title: script.title || "Image-text",
       shots,
       outDir,
       prefix,

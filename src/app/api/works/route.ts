@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { desc, eq } from "drizzle-orm";
 import { existsSync } from "fs";
 import { getDb } from "@/lib/db";
 import { compositions, projects } from "@/lib/db/schema";
 import { fileNameOf } from "@/lib/paths";
+import { errText } from "@/lib/api-error";
 import { extractFirstFrame } from "@/lib/video-composer/frame-extract";
 
 /** Poster backfill budget per request — keeps the first works-page load snappy on old libraries. */
@@ -17,7 +18,7 @@ const BACKFILL_MAX = 6;
  * Rows rendered before the thumbnail column existed are backfilled lazily here
  * (first-frame extraction, a few per request) so history gains posters over time.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const db = getDb();
     const rows = await db
@@ -73,7 +74,7 @@ export async function GET() {
   } catch (error) {
     console.error("获取作品流失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "获取作品流失败" },
+      { error: error instanceof Error ? error.message : errText(req, "获取作品流失败", "Failed to load the works feed", "โหลดผลงานไม่สำเร็จ") },
       { status: 500 }
     );
   }

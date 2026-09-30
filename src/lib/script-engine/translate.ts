@@ -105,7 +105,7 @@ export async function translateVoiceovers(voiceovers: string[], targetLang: stri
   );
   const text = res.choices?.[0]?.message?.content ?? "";
   const out = parseTranslations(text, voiceovers.length);
-  if (!out) throw new Error("翻译结果解析失败（LLM 未返回等长 JSON 数组），可换模型或重试");
+  if (!out) throw new Error("Could not parse translation (LLM did not return a same-length JSON array) — try another model or retry");
   return out;
 }
 

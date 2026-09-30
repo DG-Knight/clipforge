@@ -7,12 +7,12 @@
  * generateSpeechFree already accepts any Edge voice name — this list simply makes voices discoverable.
  */
 export const FREE_TTS_VOICES: { value: string; label: string; gender: "female" | "male"; lang: string }[] = [
-  // Chinese (default market)
-  { value: "zh-CN-XiaoxiaoNeural", label: "晓晓 · 温柔女声", gender: "female", lang: "zh-CN" },
-  { value: "zh-CN-XiaoyiNeural", label: "晓伊 · 活泼女声", gender: "female", lang: "zh-CN" },
-  { value: "zh-CN-YunxiNeural", label: "云希 · 阳光男声", gender: "male", lang: "zh-CN" },
-  { value: "zh-CN-YunyangNeural", label: "云扬 · 专业播报男声", gender: "male", lang: "zh-CN" },
-  { value: "zh-CN-YunjianNeural", label: "云健 · 沉稳解说男声", gender: "male", lang: "zh-CN" },
+  // Chinese market (labels shown to all locales; zh voice names kept recognizable in English)
+  { value: "zh-CN-XiaoxiaoNeural", label: "Xiaoxiao · gentle female (zh-CN)", gender: "female", lang: "zh-CN" },
+  { value: "zh-CN-XiaoyiNeural", label: "Xiaoyi · lively female (zh-CN)", gender: "female", lang: "zh-CN" },
+  { value: "zh-CN-YunxiNeural", label: "Yunxi · bright male (zh-CN)", gender: "male", lang: "zh-CN" },
+  { value: "zh-CN-YunyangNeural", label: "Yunyang · professional male (zh-CN)", gender: "male", lang: "zh-CN" },
+  { value: "zh-CN-YunjianNeural", label: "Yunjian · calm narrator male (zh-CN)", gender: "male", lang: "zh-CN" },
   // English (primary overseas market)
   { value: "en-US-AriaNeural", label: "Aria · US English (female)", gender: "female", lang: "en-US" },
   { value: "en-US-GuyNeural", label: "Guy · US English (male)", gender: "male", lang: "en-US" },
@@ -21,10 +21,10 @@ export const FREE_TTS_VOICES: { value: string; label: string; gender: "female" |
   { value: "th-TH-PremwadeeNeural", label: "Premwadee · เปรมวดี (female/หญิง)", gender: "female", lang: "th-TH" },
   { value: "th-TH-NiwatNeural", label: "Niwat · นิวัฒน์ (male/ชาย)", gender: "male", lang: "th-TH" },
   // Japanese / Korean markets (bundled Noto CJK subtitle font public/fonts/subtitle.otf covers kana + hangul, so subtitles render correctly)
-  { value: "ja-JP-NanamiNeural", label: "Nanami · 日本語 (female)", gender: "female", lang: "ja-JP" },
-  { value: "ko-KR-SunHiNeural", label: "SunHi · 한국어 (female)", gender: "female", lang: "ko-KR" },
+  { value: "ja-JP-NanamiNeural", label: "Nanami · Japanese (female)", gender: "female", lang: "ja-JP" },
+  { value: "ko-KR-SunHiNeural", label: "SunHi · Korean (female)", gender: "female", lang: "ko-KR" },
   // Spanish market (Latin glyphs are covered by the CJK font)
-  { value: "es-ES-ElviraNeural", label: "Elvira · Español (female)", gender: "female", lang: "es-ES" },
+  { value: "es-ES-ElviraNeural", label: "Elvira · Spanish (female)", gender: "female", lang: "es-ES" },
 ];
 
 export const DEFAULT_FREE_VOICE = "zh-CN-XiaoxiaoNeural";

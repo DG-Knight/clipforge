@@ -31,10 +31,10 @@ export const useBrandStore = create<BrandState>()(
     (set) => ({
       brand: {
         id: crypto.randomUUID(),
-        name: "我的店铺",
+        name: "My Store",
         primaryColor: "#6366f1",
         secondaryColor: "#8b5cf6",
-        fontFamily: "默认字体",
+        fontFamily: "default",
         watermark: {
           enabled: false,
           position: "bottom-right",
@@ -60,6 +60,14 @@ export const useBrandStore = create<BrandState>()(
     }),
     {
       name: "daihuo-jianshou-brand",
+      // v1: default store name/font migrated from Chinese (我的店铺/默认字体) to locale-neutral text
+      version: 1,
+      migrate: (persistedState: unknown) => {
+        const state = persistedState as { brand?: BrandConfig } & Record<string, unknown>;
+        if (state.brand?.name === "我的店铺") state.brand.name = "My Store";
+        if (state.brand?.fontFamily === "默认字体") state.brand.fontFamily = "default";
+        return state;
+      },
     }
   )
 );

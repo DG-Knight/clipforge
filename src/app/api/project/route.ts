@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
+import { errText } from "@/lib/api-error";
 
 // fetch project list, most recently edited first (the /start "continue" cards rely on this order)
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const db = getDb();
     const result = await db.select().from(projects).orderBy(desc(projects.updatedAt));
@@ -12,7 +13,7 @@ export async function GET() {
   } catch (error) {
     console.error("获取项目列表失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "获取项目列表失败" },
+      { error: error instanceof Error ? error.message : errText(req, "获取项目列表失败", "Failed to load projects", "โหลดรายการโปรเจกต์ไม่สำเร็จ") },
       { status: 500 }
     );
   }
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     const newProject = await db
       .insert(projects)
       .values({
-        name: body.name || "未命名项目",
+        name: body.name || "Untitled project",
         productName: body.productName,
         productCategory: body.productCategory,
         productDescription: body.productDescription,
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("创建项目失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "创建项目失败" },
+      { error: error instanceof Error ? error.message : errText(req, "创建项目失败", "Failed to create the project", "สร้างโปรเจกต์ไม่สำเร็จ") },
       { status: 500 }
     );
   }

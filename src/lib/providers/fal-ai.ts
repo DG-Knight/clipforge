@@ -121,7 +121,7 @@ export class FalAIProvider extends BaseProvider {
     // guard: submit occasionally returns no request_id; without this, taskId becomes "model::undefined",
     // parseTaskId does not throw, but the subsequent status endpoint returns 404
     if (!submitResponse.request_id) {
-      throw new ProviderError('未返回请求ID', 'NO_REQUEST_ID', this.name)
+      throw new ProviderError('No request ID returned', 'NO_REQUEST_ID', this.name)
     }
     // getTaskStatus needs the "modelId::requestId" format to locate the query endpoint; assemble it here before polling
     const taskId = `${options.modelId}::${submitResponse.request_id}`
@@ -179,7 +179,7 @@ export class FalAIProvider extends BaseProvider {
     // guard: submit occasionally returns no request_id; without this, taskId becomes "model::undefined",
     // parseTaskId does not throw, but the subsequent status endpoint returns 404
     if (!submitResponse.request_id) {
-      throw new ProviderError('未返回请求ID', 'NO_REQUEST_ID', this.name)
+      throw new ProviderError('No request ID returned', 'NO_REQUEST_ID', this.name)
     }
     // getTaskStatus needs the "modelId::requestId" format to locate the query endpoint; assemble it here before polling
     const taskId = `${options.modelId}::${submitResponse.request_id}`
@@ -488,7 +488,7 @@ export class FalAIProvider extends BaseProvider {
     const separatorIndex = taskId.indexOf('::')
     if (separatorIndex === -1) {
       throw new ProviderError(
-        '无效的任务 ID 格式，应为 "modelId::requestId"',
+        'Invalid task ID format, expected "modelId::requestId"',
         'INVALID_TASK_ID',
         this.name
       )
@@ -536,6 +536,6 @@ export class FalAIProvider extends BaseProvider {
       }
     }
 
-    throw new ProviderError('无法解析返回结果', 'PARSE_ERROR', this.name)
+    throw new ProviderError('Could not parse the response', 'PARSE_ERROR', this.name)
   }
 }

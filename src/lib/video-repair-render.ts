@@ -84,12 +84,12 @@ export async function renderVideoRepair(input: {
   contentId: string;
 }): Promise<string> {
   const source = await probeMedia(input.sourcePath);
-  if (source.duration <= 0 || source.width <= 0 || source.height <= 0) throw new Error("原镜头无法读取，不能执行精准修复");
+  if (source.duration <= 0 || source.width <= 0 || source.height <= 0) throw new Error("Original shot unreadable; cannot run precise repair");
   const replacement = await probeMedia(input.replacementPath);
-  if (replacement.duration <= 0 || replacement.width <= 0 || replacement.height <= 0) throw new Error("替换片段无效，未修改原镜头");
+  if (replacement.duration <= 0 || replacement.width <= 0 || replacement.height <= 0) throw new Error("Replacement clip invalid; original shot unchanged");
   const start = Math.max(0, Math.min(source.duration - 0.01, input.window.start));
   const end = Math.max(start + 0.01, Math.min(source.duration, input.window.end));
-  if (replacement.duration + 0.1 < end - start) throw new Error("替换片段短于修复区间，未修改原镜头");
+  if (replacement.duration + 0.1 < end - start) throw new Error("Replacement clip is shorter than the repair range; original shot unchanged");
   await mkdir(dirname(input.outputPath), { recursive: true });
   const invocation = buildVideoRepairInvocation({
     ...input,
@@ -107,7 +107,7 @@ export async function renderVideoRepair(input: {
       timeout: COMPOSE_TIMEOUT_MS,
       maxBuffer: 50 * 1024 * 1024,
     }));
-    if (!(await validateMediaFile(input.outputPath, "video"))) throw new Error("修复成片校验失败，原镜头保持不变");
+    if (!(await validateMediaFile(input.outputPath, "video"))) throw new Error("Repaired video failed validation; the original shot is unchanged");
     return input.outputPath;
   } catch (error) {
     await rm(input.outputPath, { force: true }).catch(() => undefined);

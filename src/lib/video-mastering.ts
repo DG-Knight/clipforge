@@ -201,7 +201,7 @@ async function measureLoudness(videoPath: string): Promise<LoudnessMeasurement |
 
 export async function analyzeMastering(videoPath: string): Promise<MasteringAnalysis> {
   const media = await probeMedia(videoPath);
-  if (media.duration <= 0 || media.width <= 0 || media.height <= 0) throw new Error("成片无法读取，不能执行连续性分析");
+  if (media.duration <= 0 || media.width <= 0 || media.height <= 0) throw new Error("Final video unreadable; cannot run continuity analysis");
   const boundaryTimes = await readBoundaryTimes(videoPath, media.duration);
   const [boundaries, loudness] = await Promise.all([
     analyzeBoundaries(videoPath, boundaryTimes.times, media.duration),
@@ -242,7 +242,7 @@ export function buildMasteringArgs(input: {
   options: MasteringOptions;
 }): string[] {
   const normalizeAudio = input.options.normalizeAudio && input.hasAudio && Boolean(input.loudness);
-  if (!normalizeAudio && !input.options.deflicker) throw new Error("请至少选择一项本地精修操作");
+  if (!normalizeAudio && !input.options.deflicker) throw new Error("Select at least one local refinement operation");
   const args = ["-nostdin", "-v", "error", "-y", "-i", input.videoPath, "-map", "0:v:0", ...(input.hasAudio ? ["-map", "0:a:0"] : [])];
   if (input.options.deflicker) {
     args.push("-vf", "deflicker=size=5:mode=median,format=yuv420p", "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p");
@@ -289,7 +289,7 @@ export async function renderMastering(input: {
       timeout: COMPOSE_TIMEOUT_MS,
       maxBuffer: 32 * 1024 * 1024,
     }));
-    if (!(await validateMediaFile(input.outputPath, "video"))) throw new Error("本地精修结果校验失败，原成片保持不变");
+    if (!(await validateMediaFile(input.outputPath, "video"))) throw new Error("Refined result failed validation; the original video is unchanged");
     await Promise.all([
       copyFile(`${input.videoPath}.timeline.json`, `${input.outputPath}.timeline.json`).catch(() => undefined),
       writeFile(`${input.outputPath}.mastering.json`, JSON.stringify({ version: 1, analysis: input.analysis, options: input.options }, null, 2), "utf8"),

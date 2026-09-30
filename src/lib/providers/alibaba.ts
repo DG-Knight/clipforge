@@ -112,7 +112,7 @@ export class AlibabaProvider extends BaseProvider {
 
     // guard: async submission occasionally returns 200 but without output/task_id; accessing .task_id would throw TypeError
     if (!response.output?.task_id) {
-      throw new ProviderError('未返回任务ID', 'NO_TASK_ID', this.name)
+      throw new ProviderError('No task ID returned', 'NO_TASK_ID', this.name)
     }
     const taskId = response.output.task_id
 
@@ -179,7 +179,7 @@ export class AlibabaProvider extends BaseProvider {
 
     // guard: async submission occasionally returns 200 but without output/task_id; accessing .task_id would throw TypeError
     if (!response.output?.task_id) {
-      throw new ProviderError('未返回任务ID', 'NO_TASK_ID', this.name)
+      throw new ProviderError('No task ID returned', 'NO_TASK_ID', this.name)
     }
     const taskId = response.output.task_id
 

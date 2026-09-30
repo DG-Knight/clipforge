@@ -320,7 +320,7 @@ describe("文案：400 要能区分「模型名写错」和「模型写不下」
 
 describe("Ollama 预设与迁移（Windows 上 localhost 会先解析到 ::1，而 Ollama 只监听 127.0.0.1）", () => {
   it("预设用 127.0.0.1，不用 localhost", () => {
-    const p = LLM_PRESETS.find((x) => x.label === "Ollama 本地");
+    const p = LLM_PRESETS.find((x) => x.label === "Ollama (local)");
     expect(p?.baseUrl).toBe("http://127.0.0.1:11434/v1");
   });
 

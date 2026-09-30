@@ -109,7 +109,7 @@ export async function persistCandidate(
   // Real decode-level check: a CDN that cut the stream or answered with an HTML error page would
   // otherwise fail the whole single-pass compose later with no hint of which asset broke.
   if (!(await validateOrDelete(filePath, c.mediaType === "video" ? "video" : "image"))) {
-    throw new Error(`素材文件校验失败（下载损坏或非媒体内容）: ${c.source}/${c.id}`);
+    throw new Error(`Asset validation failed (corrupted download or non-media content): ${c.source}/${c.id}`);
   }
   const publicUrl = `/api/files/${projectId}/stock/${basename(filePath)}`;
 

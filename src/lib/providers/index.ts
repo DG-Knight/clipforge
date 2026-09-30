@@ -104,7 +104,7 @@ export function createProvider(config: ProviderConfig): AIProvider {
   if (!registration) {
     const available = Array.from(providerRegistry.keys()).join(', ')
     throw new Error(
-      `未找到名为 "${config.name}" 的 Provider。可用的 Provider: ${available}`
+      `Unknown provider "${config.name}". Available providers: ${available}`
     )
   }
 

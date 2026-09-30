@@ -96,7 +96,7 @@ export class SiliconFlowProvider extends BaseProvider {
 
     // guard: the API occasionally returns HTTP 200 but with a missing or empty images array (rate-limited / error body); calling .map directly would throw a TypeError, so surface a clear ProviderError instead
     if (!Array.isArray(response.images) || response.images.length === 0) {
-      throw new ProviderError('未返回图片结果', 'NO_IMAGES', this.name)
+      throw new ProviderError('No image results returned', 'NO_IMAGES', this.name)
     }
     return {
       taskId: `sf-img-${Date.now()}`,
@@ -134,7 +134,7 @@ export class SiliconFlowProvider extends BaseProvider {
 
     // guard: submit occasionally does not return a requestId; without this check, undefined would be used to poll /video/status/undefined and the error would only surface after the polling timeout
     if (!response.requestId) {
-      throw new ProviderError('未返回任务ID', 'NO_REQUEST_ID', this.name)
+      throw new ProviderError('No task ID returned', 'NO_REQUEST_ID', this.name)
     }
     // poll until the result is ready
     const finalStatus = await this.pollTaskStatus(response.requestId, {
@@ -167,7 +167,7 @@ export class SiliconFlowProvider extends BaseProvider {
     if (status === 'completed' && response.results) {
       // guard: if results is present but videos is missing or empty, .map would crash and hang the polling loop; throw explicitly
       if (!Array.isArray(response.results.videos) || response.results.videos.length === 0) {
-        throw new ProviderError('任务完成但未返回视频', 'NO_VIDEOS', this.name)
+        throw new ProviderError('Task finished but returned no video', 'NO_VIDEOS', this.name)
       }
       taskStatus.result = {
         taskId,
@@ -180,7 +180,7 @@ export class SiliconFlowProvider extends BaseProvider {
 
     // failure details
     if (status === 'failed') {
-      taskStatus.error = response.reason ?? '生成失败'
+      taskStatus.error = response.reason ?? 'Generation failed'
       taskStatus.errorCode = 'GENERATION_FAILED'
     }
 

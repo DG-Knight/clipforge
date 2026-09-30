@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     );
 
     const content = resp.choices[0]?.message?.content;
-    if (!content) throw new Error("LLM 未返回内容");
+    if (!content) throw new Error("LLM returned no content");
 
     const parsed = JSON.parse(extractJSON(content)) as {
       titles?: string[];

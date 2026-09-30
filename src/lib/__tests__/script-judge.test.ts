@@ -129,7 +129,7 @@ describe("parseJudgeResponse（二期：五判官/tier钳制/事实token校验/�
   it("markdown 包裹的 JSON 可解析；彻底非法 JSON 抛可读错误", () => {
     const wrapped = "```json\n" + JSON.stringify({ verdicts: [], rewrites: [] }) + "\n```";
     expect(parseJudgeResponse(wrapped, SHOTS).verdicts.length).toBe(5);
-    expect(() => parseJudgeResponse("这不是 JSON", SHOTS)).toThrow("判官团返回的不是合法 JSON");
+    expect(() => parseJudgeResponse("这不是 JSON", SHOTS)).toThrow("Judge panel returned invalid JSON");
   });
 });
 

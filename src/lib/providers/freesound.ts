@@ -84,8 +84,8 @@ export async function searchFreesoundSounds(
   opts: { apiKey: string; perPage?: number; minSec?: number; maxSec?: number }
 ): Promise<StockCandidate[]> {
   const { apiKey, perPage = 10, minSec, maxSec } = opts;
-  if (!apiKey) throw new Error("缺少 Freesound API Key");
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!apiKey) throw new Error("Missing Freesound API key");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const params = new URLSearchParams({
     query: query.trim(),
@@ -97,7 +97,7 @@ export async function searchFreesoundSounds(
   const res = await fetchWithTimeout(`${FREESOUND_API}/search/text/?${params}`);
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Freesound 音效检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Freesound SFX search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { results?: FreesoundSound[] };
   const candidates = (data.results ?? [])

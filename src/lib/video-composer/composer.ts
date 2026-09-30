@@ -560,7 +560,7 @@ interface ComposeGraph {
 function assembleComposeGraph(config: ComposeConfig): ComposeGraph {
   // empty clips would cause the subsequent -map "[v0]" to reference a stream that was never created, producing a cryptic ffmpeg error; fail early with a readable message instead
   if (!config.clips || config.clips.length === 0) {
-    throw new Error("没有可合成的片段（clips 为空）——请先为分镜配好画面素材再合成");
+    throw new Error("No clips to compose (clips is empty) — generate visuals for the shots first");
   }
   const { width, height } = RESOLUTIONS[config.output.aspectRatio][config.output.resolution];
   const outputDir = join(getDataDir(), "output", config.projectId);

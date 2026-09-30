@@ -130,10 +130,10 @@ export async function generateSpeechFreeDetailed(
   opts: FreeTTSOptions = {}
 ): Promise<{ audio: Buffer; words: TTSWord[] }> {
   if (typeof WebSocket === "undefined") {
-    throw new Error("当前运行时不支持 WebSocket（需 Node 18+ 的 Node 运行时）");
+    throw new Error("The current runtime does not support WebSocket (requires a Node 18+ runtime)");
   }
   const clean = (text || "").trim();
-  if (!clean) throw new Error("配音文本为空");
+  if (!clean) throw new Error("Voiceover text is empty");
 
   const voice = opts.voice || DEFAULT_FREE_VOICE;
   const rate = opts.rate || "+0%";
@@ -207,7 +207,7 @@ async function synthesizeOnce(
       try { ws.close(); } catch { /* ignore close errors */ }
       fn();
     };
-    const timer = setTimeout(() => finish(() => reject(new Error("Edge TTS 超时"))), timeoutMs);
+    const timer = setTimeout(() => finish(() => reject(new Error("Edge TTS timed out"))), timeoutMs);
 
     ws.onopen = () => {
       // wordBoundaryEnabled:true — the service then streams Path:audio.metadata frames carrying
@@ -238,7 +238,7 @@ async function synthesizeOnce(
           const sep = data.indexOf("\r\n\r\n");
           if (sep !== -1) words.push(...parseWordBoundaryFrame(data.slice(sep + 4)));
         } else if (data.includes("Path:turn.end")) {
-          finish(() => (chunks.length ? resolve(Buffer.concat(chunks)) : reject(new Error("Edge TTS 未返回音频"))));
+          finish(() => (chunks.length ? resolve(Buffer.concat(chunks)) : reject(new Error("Edge TTS returned no audio"))));
         }
       } else {
         // Binary frame: first 2 bytes big-endian = header length; payload after header is audio when header contains Path:audio
@@ -250,10 +250,10 @@ async function synthesizeOnce(
       }
     };
 
-    ws.onerror = () => finish(() => reject(new Error("Edge TTS 连接失败（可能是网络或令牌版本过期）")));
+    ws.onerror = () => finish(() => reject(new Error("Edge TTS connection failed — check your network, or the Edge TTS token version may be outdated")));
     ws.onclose = (ev: CloseEvent) => {
       // On a clean close the promise is usually already resolved at turn.end; this is the fallback
-      finish(() => (chunks.length ? resolve(Buffer.concat(chunks)) : reject(new Error(`Edge TTS 连接关闭(code=${ev?.code ?? "?"})`))));
+      finish(() => (chunks.length ? resolve(Buffer.concat(chunks)) : reject(new Error(`Edge TTS connection closed (code=${ev?.code ?? "?"})`))));
     };
   });
 

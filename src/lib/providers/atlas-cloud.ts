@@ -340,11 +340,11 @@ export class AtlasCloudProvider extends BaseProvider {
     })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
-      throw new ProviderError(`参考素材上传失败: ${res.status} ${text.slice(0, 200)}`, 'UPLOAD_FAILED', this.name, res.status)
+      throw new ProviderError(`Reference asset upload failed: ${res.status} ${text.slice(0, 200)}`, 'UPLOAD_FAILED', this.name, res.status)
     }
     const data = (await res.json()) as { data?: { download_url?: string } }
     const url = data.data?.download_url
-    if (!url) throw new ProviderError('参考素材上传成功但未返回地址', 'UPLOAD_FAILED', this.name)
+    if (!url) throw new ProviderError('Reference asset uploaded but no URL returned', 'UPLOAD_FAILED', this.name)
     return url
   }
 
@@ -487,7 +487,7 @@ export class AtlasCloudProvider extends BaseProvider {
         taskStatus.error = prediction.error.message
         taskStatus.errorCode = prediction.error.code
       } else {
-        taskStatus.error = '生成失败'
+        taskStatus.error = 'Generation failed'
       }
     }
 
@@ -578,7 +578,7 @@ export class AtlasCloudProvider extends BaseProvider {
     if (options.mode === 'video-to-video') {
       if (!options.referenceVideoUrls?.length && !options.referenceImageUrls?.length) {
         throw new ProviderError(
-          `参考生视频缺少参考素材：至少需要一条参考视频或一张参考图（模型 ${modelId} 未提交，未产生费用）`,
+          `Reference video generation needs reference assets: at least one reference video or one image (model ${modelId} not submitted, no charge)`,
           'MISSING_REFERENCE',
           this.name
         )
@@ -587,7 +587,7 @@ export class AtlasCloudProvider extends BaseProvider {
       const sibling = modelId.replace(/\/(?:text|image)-to-video$/, '/reference-to-video')
       if (sibling !== modelId && knows(sibling)) return sibling
       throw new ProviderError(
-        `模型 ${modelId} 不支持参考生视频。请选择支持参考生视频的模型（Seedance 2.0 / MiniMax H3 / 万相 2.7 / Kling O3 系列；任务未提交，未产生费用）`,
+        `Model ${modelId} does not support reference video generation. Pick a model marked with reference-video support (Seedance 2.0 / MiniMax H3 / Wanxiang 2.7 / Kling O3 series; task not submitted, no charge)`,
         'MODEL_MODE_MISMATCH',
         this.name
       )
@@ -597,7 +597,7 @@ export class AtlasCloudProvider extends BaseProvider {
     // submitting anyway would bill a video unrelated to the user's image
     if (options.mode === 'image-to-video' && !firstFrameUrl) {
       throw new ProviderError(
-        `图生视频缺少首帧图片：请确认图片已生成且可访问（模型 ${modelId} 未提交，未产生费用）`,
+        `Image-to-video needs a first-frame image: make sure the image is generated and accessible (model ${modelId} not submitted, no charge)`,
         'MISSING_FIRST_FRAME',
         this.name
       )
@@ -616,7 +616,7 @@ export class AtlasCloudProvider extends BaseProvider {
         if (sibling !== modelId && knows(sibling)) return sibling
       }
       throw new ProviderError(
-        `模型 ${modelId} 不支持图生视频，且没有对应的图生视频变体。请在设置中选择带「图生视频」标识的模型（任务未提交，未产生费用）`,
+        `Model ${modelId} does not support image-to-video and has no image-to-video variant. Pick a model marked with "image-to-video" in Settings (task not submitted, no charge)`,
         'MODEL_MODE_MISMATCH',
         this.name
       )
@@ -624,7 +624,7 @@ export class AtlasCloudProvider extends BaseProvider {
 
     if (!firstFrameUrl && !modes.includes('text-to-video')) {
       throw new ProviderError(
-        `模型 ${modelId} 是图生视频模型，需要首帧图片才能生成（任务未提交，未产生费用）`,
+        `Model ${modelId} is an image-to-video model and needs a first-frame image (task not submitted, no charge)`,
         'MODEL_MODE_MISMATCH',
         this.name
       )
@@ -645,7 +645,7 @@ export class AtlasCloudProvider extends BaseProvider {
     const taskId = response.data?.id ?? response.id
     if (!taskId) {
       throw new ProviderError(
-        `Atlas Cloud 未返回任务 ID: ${JSON.stringify(response).slice(0, 200)}`,
+        `Atlas Cloud returned no task ID: ${JSON.stringify(response).slice(0, 200)}`,
         'NO_TASK_ID',
         this.name
       )
@@ -658,7 +658,7 @@ export class AtlasCloudProvider extends BaseProvider {
     const result = this.requireResult(finalStatus.result)
     const urls = 'imageUrls' in result ? result.imageUrls : result.videoUrls
     if (!urls || urls.length === 0) {
-      throw new ProviderError('任务完成但输出为空', 'EMPTY_OUTPUT', this.name)
+      throw new ProviderError('Task finished but output is empty', 'EMPTY_OUTPUT', this.name)
     }
     return urls
   }

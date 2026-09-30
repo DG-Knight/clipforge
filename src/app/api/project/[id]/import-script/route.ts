@@ -47,7 +47,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const title =
     typeof body.title === "string" && body.title.trim()
       ? body.title.trim().slice(0, 80)
-      : (shots[0]?.voiceover ?? "导入脚本").slice(0, 30);
+      : (shots[0]?.voiceover ?? "Imported script").slice(0, 30);
 
   const [row] = await db
     .insert(scriptsTable)

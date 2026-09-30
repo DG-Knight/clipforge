@@ -118,7 +118,7 @@ async function runComposeStage(input: StartPipelineInput, runId: string): Promis
     body: JSON.stringify({ freeTts: { enabled: true } }),
   });
   const data = (await res.json().catch(() => ({}))) as { compositionId?: string; error?: string };
-  if (!res.ok) throw new Error(data.error || "合成启动失败 / compose failed to start");
+  if (!res.ok) throw new Error(data.error || "Compose failed to start");
   const compositionId = data.compositionId;
   if (compositionId) await setRun(runId, { compositionId });
 
@@ -130,9 +130,9 @@ async function runComposeStage(input: StartPipelineInput, runId: string): Promis
       : [];
     const st = rows[0]?.status;
     if (st === "done") return;
-    if (st === "failed") throw new Error("视频合成失败 / video composition failed");
+    if (st === "failed") throw new Error("Video composition failed");
   }
-  throw new Error("合成超时 / composition timed out");
+  throw new Error("Composition timed out");
 }
 
 /**

@@ -43,9 +43,9 @@ export async function assertPublicUrl(rawUrl: string): Promise<void> {
   try {
     u = new URL(rawUrl);
   } catch {
-    throw new Error("非法 URL");
+    throw new Error("Invalid URL");
   }
-  if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error("仅支持 http/https");
+  if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error("Only http/https is supported");
   // Strip brackets from IPv6 literals (URL.hostname keeps brackets for [::1], which causes net.isIP to fail and fall through to DNS)
   const host = u.hostname.replace(/^\[/, "").replace(/\]$/, "");
   let ips: string[];
@@ -55,9 +55,9 @@ export async function assertPublicUrl(rawUrl: string): Promise<void> {
     const records = await lookup(host, { all: true });
     ips = records.map((r) => r.address);
   }
-  if (ips.length === 0) throw new Error("无法解析主机");
+  if (ips.length === 0) throw new Error("Could not resolve host");
   for (const ip of ips) {
-    if (isBlockedIp(ip)) throw new Error(`目标地址被拒绝（内网/保留地址 ${ip}）`);
+    if (isBlockedIp(ip)) throw new Error(`Target address rejected (private/reserved IP ${ip})`);
   }
 }
 
@@ -76,5 +76,5 @@ export async function safeFetch(url: string, init: RequestInit = {}, maxRedirect
     }
     return res;
   }
-  throw new Error("重定向次数过多");
+  throw new Error("Too many redirects");
 }

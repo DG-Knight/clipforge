@@ -41,7 +41,7 @@ export interface BuildTranscriptRenderInput {
 }
 
 export function buildTranscriptRenderInvocation(input: BuildTranscriptRenderInput): TranscriptRenderInvocation {
-  if (!input.keepRanges.length) throw new Error("没有可输出的视频片段");
+  if (!input.keepRanges.length) throw new Error("No video clips to export");
   const seek = input.seekInput === false ? 0 : Math.max(0, Math.min(...input.keepRanges.map((range) => range.start)) - 0.25);
   const decodeDuration = Math.max(...input.keepRanges.map((range) => range.end)) - seek + 0.25;
   const filters: string[] = [];
@@ -113,7 +113,7 @@ export interface RenderTranscriptEditInput {
 
 export async function renderTranscriptEdit(input: RenderTranscriptEditInput): Promise<string> {
   const duration = outputDuration(input.keepRanges);
-  if (duration < 0.5) throw new Error("保留内容不足 0.5 秒，无法输出");
+  if (duration < 0.5) throw new Error("Kept range is under 0.5 s; cannot export");
   await Promise.all([
     mkdir(dirname(input.outputPath), { recursive: true }),
     mkdir(join(getOutputDir(), input.projectId), { recursive: true }),
@@ -159,13 +159,13 @@ export async function renderTranscriptEdit(input: RenderTranscriptEditInput): Pr
       return runTranscriptFfmpeg(args, { duration, timeoutMs: TRANSCRIPT_RENDER_TIMEOUT_MS, signal: input.signal, onProgress: input.onProgress });
     }, input.signal);
     input.signal?.throwIfAborted();
-    if (!(await validateMediaFile(input.outputPath, "video"))) throw new Error("剪辑结果校验失败，请重试");
+    if (!(await validateMediaFile(input.outputPath, "video"))) throw new Error("Edited result failed validation — retry");
     return input.outputPath;
   } catch (error) {
     await rm(input.outputPath, { force: true }).catch(() => {});
     const details = error as { killed?: boolean; signal?: string; stderr?: string; message?: string };
-    if (details.killed || details.signal === "SIGTERM") throw new Error("文字剪辑超时，请缩短素材后重试");
-    if (/no space left|ENOSPC/i.test(`${details.stderr || ""} ${details.message || ""}`)) throw new Error("磁盘空间不足，无法输出剪辑版本");
+    if (details.killed || details.signal === "SIGTERM") throw new Error("Text-based edit timed out — shorten the source and retry");
+    if (/no space left|ENOSPC/i.test(`${details.stderr || ""} ${details.message || ""}`)) throw new Error("Not enough disk space to export the cut");
     throw error;
   } finally {
     await Promise.all([

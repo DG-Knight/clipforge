@@ -308,7 +308,7 @@ export async function completeWithJsonRetry<T>(
       cfg,
     );
     const content = response.choices[0]?.message?.content;
-    if (!content) throw new Error("LLM 未返回有效内容");
+    if (!content) throw new Error("LLM returned no valid content");
     try {
       return parse(content);
     } catch (err) {
@@ -423,7 +423,7 @@ export async function generateSingleScript(input: ScriptInput): Promise<Generate
       try {
         parsed = JSON.parse(jsonStr);
       } catch {
-        throw new Error(`LLM 返回的内容不是合法 JSON${truncationHint(jsonStr)}: ${jsonStr.substring(0, 200)}`);
+        throw new Error(`LLM returned invalid JSON${truncationHint(jsonStr)}: ${jsonStr.substring(0, 200)}`);
       }
       return validateScript(parsed, input.styleType);
     },
@@ -617,7 +617,7 @@ export async function analyzeProductStructured(
     return parsed;
   } catch (e) {
     if (e instanceof SyntaxError) {
-      throw new Error(`商品分析结果不是合法 JSON${truncationHint(jsonStr)}: ${jsonStr.substring(0, 200)}`);
+      throw new Error(`Product analysis returned invalid JSON${truncationHint(jsonStr)}: ${jsonStr.substring(0, 200)}`);
     }
     throw e;
   }
@@ -650,7 +650,7 @@ export function parseScriptResponse(content: string, fallbackStyleType: string):
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    throw new Error(`LLM 返回的内容不是合法 JSON${truncationHint(jsonStr)}: ${jsonStr.substring(0, 200)}`);
+    throw new Error(`LLM returned invalid JSON${truncationHint(jsonStr)}: ${jsonStr.substring(0, 200)}`);
   }
 
   // Handle different return formats
@@ -666,7 +666,7 @@ export function parseScriptResponse(content: string, fallbackStyleType: string):
     // single script object
     rawScripts = [parsed];
   } else {
-    throw new Error("无法解析 LLM 返回的脚本格式");
+    throw new Error("Could not parse the LLM script format");
   }
 
   // Discard scripts with no shots (LLM occasionally returns entries with only a title and no shots);
@@ -679,7 +679,7 @@ export function parseScriptResponse(content: string, fallbackStyleType: string):
     .map((raw) => validateScript(raw, fallbackStyleType))
     .filter((s) => s.shots.length > 0);
   if (scripts.length === 0) {
-    throw new Error("LLM 未生成有效分镜（脚本为空），请重试或调整输入");
+    throw new Error("LLM produced no valid shots (empty script) — retry or adjust the input");
   }
 
   // Same reasoning one step further: a script whose shots carry no voiceover at all renders as a

@@ -121,7 +121,7 @@ export abstract class BaseProvider implements AIProvider {
           // 5xx may have side effects on the server, so only idempotent requests retry
           if ((response.status === 429 || (response.status >= 500 && idempotent)) && attempt < maxRetries) {
             lastError = new ProviderError(
-              `API 请求失败: ${response.status} ${response.statusText}`,
+              `API request failed: ${response.status} ${response.statusText}`,
               'API_ERROR',
               this.name,
               response.status
@@ -130,7 +130,7 @@ export abstract class BaseProvider implements AIProvider {
             continue
           }
           throw new ProviderError(
-            `API 请求失败: ${response.status} ${response.statusText} - ${errorBody}`,
+            `API request failed: ${response.status} ${response.statusText} - ${errorBody}`,
             'API_ERROR',
             this.name,
             response.status
@@ -154,7 +154,7 @@ export abstract class BaseProvider implements AIProvider {
           ? new ProviderError(timeoutMessage, 'TIMEOUT', this.name)
           : error instanceof ProviderError
             ? error
-            : new ProviderError(`网络请求异常: ${error instanceof Error ? error.message : String(error)}`, 'NETWORK_ERROR', this.name)
+            : new ProviderError(`Network request failed: ${error instanceof Error ? error.message : String(error)}`, 'NETWORK_ERROR', this.name)
         // network/timeout errors: only idempotent requests may back off and retry
         // (a non-idempotent POST could have reached the server — retrying risks duplicate paid tasks)
         if (idempotent && attempt < maxRetries) {
@@ -167,7 +167,7 @@ export abstract class BaseProvider implements AIProvider {
       }
     }
     // should never reach here — fallback guard
-    throw lastError instanceof Error ? lastError : new ProviderError('请求失败', 'UNKNOWN', this.name)
+    throw lastError instanceof Error ? lastError : new ProviderError('Request failed', 'UNKNOWN', this.name)
   }
 
   /**
@@ -219,7 +219,7 @@ export abstract class BaseProvider implements AIProvider {
         consecutiveErrors++
         if (consecutiveErrors >= maxConsecutiveErrors) {
           const err = new ProviderError(
-            `任务状态查询连续失败 ${consecutiveErrors} 次（任务 ${taskId} 可能仍在云端执行，未必失败）: ${error instanceof Error ? error.message : String(error)}`,
+            `Task status polling failed ${consecutiveErrors} times in a row (task ${taskId} may still be running remotely, not necessarily failed): ${error instanceof Error ? error.message : String(error)}`,
             'STATUS_UNKNOWN',
             this.name
           )
@@ -233,7 +233,7 @@ export abstract class BaseProvider implements AIProvider {
       if (isTerminal(status.status)) {
         if (status.status === 'failed') {
           const err = new ProviderError(
-            `任务失败: ${status.error ?? '未知错误'}`,
+            `Task failed: ${status.error ?? 'unknown error'}`,
             status.errorCode ?? 'TASK_FAILED',
             this.name
           )
@@ -248,7 +248,7 @@ export abstract class BaseProvider implements AIProvider {
     }
 
     const err = new ProviderError(
-      `任务轮询超时，已尝试 ${maxAttempts} 次（任务 ${taskId} 可能仍在云端执行）`,
+      `Task polling timed out after ${maxAttempts} attempts (task ${taskId} may still be running remotely)`,
       'POLL_TIMEOUT',
       this.name
     )

@@ -177,7 +177,7 @@ export async function POST(
     const characterVoices = assignCharacterVoices(scriptCharacters, freeVoice);
     if (characterVoices.size > 0) {
       console.info(
-        `[compose] 剧情多音色：${scriptCharacters.map((c) => `${c.name}→${characterVoices.get(c.id)}`).join("、")}`
+        `[compose] drama multi-voice: ${scriptCharacters.map((c) => `${c.name}→${characterVoices.get(c.id)}`).join(", ")}`
       );
     }
 
@@ -413,7 +413,7 @@ export async function POST(
       rendered.push({ shot, clip, duration, voiceSec, ...(vo?.words ? { words: vo.words } : {}) });
     }
 
-    if (rendered.length === 0) throw new Error("没有可用素材");
+    if (rendered.length === 0) throw new Error("No usable assets");
 
     // acrossfade for ffmpeg_fade transitions consumes the previous clip's last FADE_DURATION:
     // pad voiced clips followed by a fade so the cross-fade only ever eats tail silence,

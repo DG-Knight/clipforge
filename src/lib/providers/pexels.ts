@@ -171,8 +171,8 @@ export async function searchPexelsVideos(
   }
 ): Promise<StockCandidate[]> {
   const { apiKey, perPage = 10, orientation = "portrait", minShortSide, minSec, maxSec } = opts;
-  if (!apiKey) throw new Error("缺少 Pexels API Key");
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!apiKey) throw new Error("Missing Pexels API key");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const params = new URLSearchParams({ query: query.trim(), per_page: String(perPage), orientation });
   const res = await fetchWithTimeout(`${PEXELS_API}/videos/search?${params}`, {
@@ -180,7 +180,7 @@ export async function searchPexelsVideos(
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Pexels 视频检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Pexels video search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { videos?: PexelsVideo[] };
   const candidates = (data.videos ?? [])
@@ -195,8 +195,8 @@ export async function searchPexelsPhotos(
   opts: { apiKey: string; perPage?: number; orientation?: StockOrientation }
 ): Promise<StockCandidate[]> {
   const { apiKey, perPage = 10, orientation = "portrait" } = opts;
-  if (!apiKey) throw new Error("缺少 Pexels API Key");
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!apiKey) throw new Error("Missing Pexels API key");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const params = new URLSearchParams({ query: query.trim(), per_page: String(perPage), orientation });
   const res = await fetchWithTimeout(`${PEXELS_API}/v1/search?${params}`, {
@@ -204,7 +204,7 @@ export async function searchPexelsPhotos(
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Pexels 图片检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Pexels image search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { photos?: PexelsPhoto[] };
   return (data.photos ?? []).map((p) => toPhotoCandidate(p, orientation));

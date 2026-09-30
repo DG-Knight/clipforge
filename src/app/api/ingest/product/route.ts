@@ -17,12 +17,12 @@ const MAX_IMAGES = 3;
 /** Download a single product image to local disk with SSRF protection (safeFetch validates each redirect hop to block og:image pointing to internal addresses). */
 async function safeDownloadImage(url: string, destDir: string, base: string): Promise<string> {
   const res = await safeFetch(url, { headers: { "User-Agent": UA } });
-  if (!res.ok) throw new Error(`图片下载失败 ${res.status}`);
+  if (!res.ok) throw new Error(`Image download failed (${res.status})`);
   const ct = res.headers.get("content-type");
   const declared = Number(res.headers.get("content-length") || 0);
-  if (declared && declared > MAX_DOWNLOAD_BYTES) throw new Error("图片体积超限");
+  if (declared && declared > MAX_DOWNLOAD_BYTES) throw new Error("Image exceeds size limit");
   const buf = Buffer.from(await res.arrayBuffer());
-  if (buf.byteLength > MAX_DOWNLOAD_BYTES) throw new Error("图片体积超限");
+  if (buf.byteLength > MAX_DOWNLOAD_BYTES) throw new Error("Image exceeds size limit");
   const filePath = join(destDir, `${base}.${inferExtension(url, ct, "image")}`);
   await writeFile(filePath, buf);
   return filePath;
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
 
   // Create a commerce project + download the first few product images and persist them
   const db = getDb();
-  const name = (product.title || "导入的商品").slice(0, 60);
+  const name = (product.title || "Imported product").slice(0, 60);
   const [proj] = await db
     .insert(projects)
     .values({

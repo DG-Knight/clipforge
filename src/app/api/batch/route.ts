@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { batchJobItems, batchJobs } from "@/lib/db/schema";
-import { apiError } from "@/lib/api-error";
+import { apiError, errText } from "@/lib/api-error";
 
 /**
  * Batch job persistence (batch_jobs / batch_job_items).
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("创建批量任务失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "创建批量任务失败" },
+      { error: error instanceof Error ? error.message : errText(req, "创建批量任务失败", "Failed to create the batch job", "สร้างงานแบบชุดไม่สำเร็จ") },
       { status: 500 }
     );
   }
@@ -95,7 +95,7 @@ export async function PATCH(req: NextRequest) {
   } catch (error) {
     console.error("更新批量任务失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "更新批量任务失败" },
+      { error: error instanceof Error ? error.message : errText(req, "更新批量任务失败", "Failed to update the batch job", "อัปเดตงานแบบชุดไม่สำเร็จ") },
       { status: 500 }
     );
   }
@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("查询批量任务失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "查询批量任务失败" },
+      { error: error instanceof Error ? error.message : errText(req, "查询批量任务失败", "Failed to load the batch job", "โหลดงานแบบชุดไม่สำเร็จ") },
       { status: 500 }
     );
   }

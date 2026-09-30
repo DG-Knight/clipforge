@@ -24,7 +24,7 @@ async function persistGridImage(projectId: string, sourceUrl: string): Promise<{
   let ext = "png";
   if (sourceUrl.startsWith("data:")) {
     const comma = sourceUrl.indexOf(",");
-    if (comma === -1) throw new Error("无法解析 data URI 图片");
+    if (comma === -1) throw new Error("Could not parse data URI image");
     const meta = sourceUrl.slice(5, comma);
     buf = /;base64/i.test(meta)
       ? Buffer.from(sourceUrl.slice(comma + 1), "base64")
@@ -33,13 +33,13 @@ async function persistGridImage(projectId: string, sourceUrl: string): Promise<{
     else if (meta.includes("jpeg") || meta.includes("jpg")) ext = "jpg";
   } else if (/^https?:\/\//.test(sourceUrl)) {
     const resp = await fetch(sourceUrl);
-    if (!resp.ok) throw new Error(`下载九宫格图失败: ${resp.status}`);
+    if (!resp.ok) throw new Error(`Storyboard grid download failed: ${resp.status}`);
     buf = Buffer.from(await resp.arrayBuffer());
     const ct = resp.headers.get("content-type") || "";
     if (ct.includes("webp")) ext = "webp";
     else if (ct.includes("jpeg") || ct.includes("jpg")) ext = "jpg";
   } else {
-    throw new Error("不支持的图片来源");
+    throw new Error("Unsupported image source");
   }
   const fileName = `storyboard-grid-${Date.now()}.${ext}`;
   const absPath = join(dir, fileName);
@@ -126,12 +126,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       prompt,
     });
     const gridUrl = result.imageUrls?.[0];
-    if (!gridUrl) throw new Error("生图未返回图片");
+    if (!gridUrl) throw new Error("Image generation returned no image");
 
     // 2) persist the grid, then crop each cell into that shot's keyframe
     const { absPath, publicPath } = await persistGridImage(id, gridUrl);
     const probe = await probeMedia(absPath);
-    if (!probe.width || !probe.height) throw new Error("无法读取九宫格图片尺寸");
+    if (!probe.width || !probe.height) throw new Error("Could not read storyboard grid dimensions");
     const cells = computeGridCells(probe.width, probe.height);
 
     const dir = join(getDataDir(), "uploads", id);

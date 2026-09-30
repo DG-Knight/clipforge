@@ -149,8 +149,8 @@ export async function searchPixabayVideos(
   }
 ): Promise<StockCandidate[]> {
   const { apiKey, perPage = 10, minShortSide, orientation, minSec, maxSec } = opts;
-  if (!apiKey) throw new Error("缺少 Pixabay API Key");
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!apiKey) throw new Error("Missing Pixabay API key");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const params = new URLSearchParams({
     key: apiKey,
@@ -161,7 +161,7 @@ export async function searchPixabayVideos(
   const res = await fetchWithTimeout(`${PIXABAY_API}/videos/?${params}`);
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Pixabay 视频检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Pixabay video search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { hits?: PixabayVideoHit[] };
   let candidates = (data.hits ?? [])
@@ -182,8 +182,8 @@ export async function searchPixabayImages(
   opts: { apiKey: string; perPage?: number; orientation?: StockOrientation }
 ): Promise<StockCandidate[]> {
   const { apiKey, perPage = 10, orientation = "portrait" } = opts;
-  if (!apiKey) throw new Error("缺少 Pixabay API Key");
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!apiKey) throw new Error("Missing Pixabay API key");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const pixOrientation = orientation === "portrait" ? "vertical" : orientation === "landscape" ? "horizontal" : "all";
   const params = new URLSearchParams({
@@ -197,7 +197,7 @@ export async function searchPixabayImages(
   const res = await fetchWithTimeout(`${PIXABAY_API}/?${params}`);
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Pixabay 图片检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Pixabay image search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { hits?: PixabayImageHit[] };
   return (data.hits ?? []).map(toPixabayImageCandidate);

@@ -103,6 +103,6 @@ export async function rerankShotCandidates(shots: RerankShot[], cfg: SemanticLLM
     cfg,
   );
   const picks = parseRerankPicks(res.choices?.[0]?.message?.content ?? "", rankable);
-  if (!picks) throw new Error("语义配片解析失败（LLM 未返回可用的 JSON picks）");
+  if (!picks) throw new Error("Semantic matching failed (LLM returned no usable JSON picks)");
   return picks;
 }

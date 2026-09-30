@@ -27,7 +27,7 @@ export interface ShopQrOptions extends ShopLinkOpts {
  */
 export async function generateShopQr(shopUrl: string, outPath: string, opts: ShopQrOptions = {}): Promise<string> {
   const link = buildShopLink(shopUrl, opts);
-  if (!link) throw new Error("无效的商品链接，无法生成二维码");
+  if (!link) throw new Error("Invalid product link; cannot generate QR code");
   const width = Math.min(2048, Math.max(128, Math.round(opts.size ?? 512)));
   await mkdir(dirname(outPath), { recursive: true });
   await QRCode.toFile(outPath, link, {

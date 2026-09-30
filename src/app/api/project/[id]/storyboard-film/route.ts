@@ -259,7 +259,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const result = finalStatus.result;
       const videoUrl = result && "videoUrls" in result ? result.videoUrls?.[0] : undefined;
       if (!videoUrl) {
-        await updateAiTask(rowId, { status: "unknown", error: "任务完成但未返回视频地址" });
+        await updateAiTask(rowId, { status: "unknown", error: "Task finished but returned no video URL" });
         return NextResponse.json(
           { error: errText(req, "任务完成但未返回视频地址", "Task completed but returned no video URL", "งานเสร็จแล้วแต่ไม่ได้คืนที่อยู่วิดีโอ"), taskId, modelId, recoverable: true },
           { status: 502 }
@@ -278,7 +278,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             ? message
             : errText(
                 req,
-                `${message}。任务 ID ${taskId} 已保存，请勿重复提交`,
+                `${message}. Task ID ${taskId} has been saved — do not resubmit`,
                 `${message}. Task ID ${taskId} has been saved — do not resubmit`,
                 `${message} รหัสงาน ${taskId} บันทึกไว้แล้ว — ไม่ต้องส่งซ้ำ`
               ),
@@ -313,9 +313,9 @@ async function unitPriceUsd(modelId: string, baseUrl?: string): Promise<number |
 
 /** Download the generated film into the project's output dir and register it as a composition. */
 async function persistFilm(projectId: string, videoUrl: string | undefined, model: string) {
-  if (!videoUrl) throw new Error("生成完成但未返回视频地址");
+  if (!videoUrl) throw new Error("Generation finished but returned no video URL");
   const resp = await fetch(videoUrl);
-  if (!resp.ok) throw new Error(`下载成片失败: ${resp.status}`);
+  if (!resp.ok) throw new Error(`Final video download failed: ${resp.status}`);
   const buf = Buffer.from(await resp.arrayBuffer());
   const outputDir = join(getDataDir(), "output", projectId);
   await mkdir(outputDir, { recursive: true });
@@ -335,7 +335,7 @@ async function persistFilm(projectId: string, videoUrl: string | undefined, mode
       ...(probe?.duration ? { duration: Math.round(probe.duration * 1000) } : {}),
       // one-call native generation: no badge burned in — the release gate reports this honestly
       aigcBadge: false,
-      label: `九宫格整片 · ${model.split("/").slice(0, 2).pop() ?? model}`.slice(0, 60),
+      label: `Storyboard film · ${model.split("/").slice(0, 2).pop() ?? model}`.slice(0, 60),
       status: "done",
     })
     .returning();

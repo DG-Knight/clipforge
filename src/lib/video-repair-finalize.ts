@@ -20,7 +20,7 @@ export async function finalizeVideoRepair(input: {
   thumbnailPath?: string | null;
 }) {
   const summary = sanitizeVideoRepairSummary(input.summary);
-  if (!summary) throw new Error("修复计划已失效，请重新预演");
+  if (!summary) throw new Error("Repair plan is stale — run the dry-run again");
   const db = getDb();
   const existingRows = await db.select().from(assets).where(eq(assets.projectId, input.projectId));
   const existing = existingRows.find((row) => row.generationPlan && "kind" in row.generationPlan
@@ -29,9 +29,9 @@ export async function finalizeVideoRepair(input: {
   if (existing) return existing;
 
   const source = existingRows.find((row) => row.id === summary.sourceAssetId);
-  if (!source?.filePath || source.status !== "done") throw new Error("原镜头不存在或尚未就绪");
+  if (!source?.filePath || source.status !== "done") throw new Error("Original shot missing or not ready");
   const sourcePath = resolveUploadFilePath(source.filePath);
-  if (!sourcePath || !existsSync(sourcePath)) throw new Error("原镜头文件不存在");
+  if (!sourcePath || !existsSync(sourcePath)) throw new Error("Original shot file not found");
 
   const replacementUrl = await persistAssetSource(
     input.projectId,
@@ -40,7 +40,7 @@ export async function finalizeVideoRepair(input: {
     `repair-segment-${summary.operationId}`,
   );
   const replacementPath = resolveUploadFilePath(replacementUrl);
-  if (!replacementPath) throw new Error("替换片段无法落到本地");
+  if (!replacementPath) throw new Error("Replacement clip could not be written locally");
   const outputFileName = `repair-${summary.operationId}.mp4`;
   const outputPath = join(getDataDir(), "uploads", input.projectId, outputFileName);
   try {

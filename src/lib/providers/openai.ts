@@ -68,7 +68,7 @@ export class OpenAIProvider extends BaseProvider {
    */
   async generateVideo(): Promise<VideoResult> {
     throw new ProviderError(
-      'OpenAI 暂未接入视频生成（Sora），请改用 fal.ai / Replicate / 火山引擎 / 阿里百炼 等视频平台',
+      'OpenAI does not offer video generation (Sora) yet — use a video provider such as fal.ai / Replicate / Volcengine / Alibaba instead',
       'NOT_SUPPORTED',
       this.name
     )
@@ -79,7 +79,7 @@ export class OpenAIProvider extends BaseProvider {
    * 图片为同步生成，无异步任务可查
    */
   async getTaskStatus(): Promise<TaskStatus> {
-    throw new ProviderError('OpenAI 图片为同步生成，无需查询任务状态', 'NOT_SUPPORTED', this.name)
+    throw new ProviderError('OpenAI image generation is synchronous; no task status to query', 'NOT_SUPPORTED', this.name)
   }
 
   /**
@@ -142,10 +142,10 @@ export class OpenAIProvider extends BaseProvider {
   private async editImage(options: ImageOptions): Promise<ImageResult> {
     const model = options.modelId
     if (model.startsWith('dall-e-3')) {
-      throw new ProviderError('DALL·E 3 不支持图生图（图片编辑），请改用 gpt-image-1', 'NOT_SUPPORTED', this.name)
+      throw new ProviderError('DALL·E 3 does not support image-to-image (editing); use gpt-image-1 instead', 'NOT_SUPPORTED', this.name)
     }
     if (!options.referenceImageUrl) {
-      throw new ProviderError('图生图缺少参考图', 'BAD_REFERENCE', this.name)
+      throw new ProviderError('Image-to-image is missing the reference image', 'BAD_REFERENCE', this.name)
     }
 
     const isDalle2 = model.startsWith('dall-e-2')
@@ -172,7 +172,7 @@ export class OpenAIProvider extends BaseProvider {
       .filter((u): u is string => Boolean(u))
 
     if (imageUrls.length === 0) {
-      throw new ProviderError('生成成功但未返回图片数据', 'NO_RESULT', this.name)
+      throw new ProviderError('Generation succeeded but returned no image data', 'NO_RESULT', this.name)
     }
 
     return {
@@ -188,13 +188,13 @@ export class OpenAIProvider extends BaseProvider {
   private async fetchReferenceImage(ref: string): Promise<{ blob: Blob; filename: string }> {
     if (ref.startsWith('data:')) {
       const comma = ref.indexOf(',')
-      if (comma === -1) throw new ProviderError('参考图 data URI 解析失败', 'BAD_REFERENCE', this.name)
+      if (comma === -1) throw new ProviderError('Could not parse the reference image data URI', 'BAD_REFERENCE', this.name)
       const mime = ref.slice(5, comma).split(';')[0] || 'image/png'
       const buf = Buffer.from(ref.slice(comma + 1), 'base64')
       return { blob: new Blob([new Uint8Array(buf)], { type: mime }), filename: `image.${this.extFromMime(mime)}` }
     }
     const resp = await fetch(ref)
-    if (!resp.ok) throw new ProviderError(`参考图下载失败: ${resp.status}`, 'BAD_REFERENCE', this.name)
+    if (!resp.ok) throw new ProviderError(`Reference image download failed: ${resp.status}`, 'BAD_REFERENCE', this.name)
     const blob = await resp.blob()
     const mime = blob.type || resp.headers.get('content-type') || 'image/png'
     return { blob, filename: `image.${this.extFromMime(mime)}` }
@@ -215,7 +215,7 @@ export class OpenAIProvider extends BaseProvider {
       if (!resp.ok) {
         const errBody = await resp.text().catch(() => '')
         throw new ProviderError(
-          `API 请求失败: ${resp.status} ${resp.statusText} - ${errBody}`,
+          `API request failed: ${resp.status} ${resp.statusText} - ${errBody}`,
           'API_ERROR',
           this.name,
           resp.status
@@ -226,7 +226,7 @@ export class OpenAIProvider extends BaseProvider {
       if (e instanceof ProviderError) throw e
       const isTimeout = e instanceof DOMException && e.name === 'AbortError'
       throw new ProviderError(
-        isTimeout ? `请求超时（${timeoutMs}ms）` : `网络请求异常: ${e instanceof Error ? e.message : String(e)}`,
+        isTimeout ? `Request timed out (${timeoutMs}ms)` : `Network request failed: ${e instanceof Error ? e.message : String(e)}`,
         isTimeout ? 'TIMEOUT' : 'NETWORK_ERROR',
         this.name
       )

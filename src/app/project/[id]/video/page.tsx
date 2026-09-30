@@ -719,7 +719,12 @@ export default function VideoPage() {
                       title={p.description}
                       className="h-9 rounded-md text-xs border border-border/50 bg-muted/20 text-muted-foreground hover:border-primary/40 hover:text-primary transition-all px-1 truncate"
                     >
-                      {p.name.split(" / ")[0]}
+                      {(() => {
+                        // name is stored as "English / ไทย" (pack data is locale-agnostic strings);
+                        // show the segment matching the UI locale, falling back to the first segment
+                        const parts = p.name.split(" / ");
+                        return locale === "th" ? (parts[1] ?? parts[0]) : parts[0];
+                      })()}
                     </button>
                   ))}
                 </div>

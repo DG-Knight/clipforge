@@ -39,8 +39,8 @@ export function runTranscriptFfmpeg(args: string[], options: {
     child.once("close", (code) => {
       clean();
       if (options.signal?.aborted) reject(options.signal.reason);
-      else if (timedOut) reject(new Error(options.timeoutMessage ?? "文字剪辑超时，请缩短素材后重试"));
-      else if (code !== 0) reject(new Error(/no space left|ENOSPC/i.test(stderr) ? "磁盘空间不足，无法输出剪辑版本" : `FFmpeg render failed (${code}): ${stderr.slice(-1500)}`));
+      else if (timedOut) reject(new Error(options.timeoutMessage ?? "Text-based edit timed out — shorten the source and retry"));
+      else if (code !== 0) reject(new Error(/no space left|ENOSPC/i.test(stderr) ? "Not enough disk space to export the cut" : `FFmpeg render failed (${code}): ${stderr.slice(-1500)}`));
       else resolve();
     });
   });

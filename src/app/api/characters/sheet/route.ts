@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       prompt,
     });
     const sourceUrl = result.imageUrls?.[0];
-    if (!sourceUrl) throw new Error("生图未返回图片");
+    if (!sourceUrl) throw new Error("Image generation returned no image");
 
     // persist into uploads/characters — served via /api/files/characters/<file>
     const dir = join(getDataDir(), "uploads", "characters");
@@ -55,20 +55,20 @@ export async function POST(req: NextRequest) {
     let ext = "png";
     if (sourceUrl.startsWith("data:")) {
       const comma = sourceUrl.indexOf(",");
-      if (comma === -1) throw new Error("无法解析 data URI 图片");
+      if (comma === -1) throw new Error("Could not parse data URI image");
       buf = Buffer.from(sourceUrl.slice(comma + 1), "base64");
       const meta = sourceUrl.slice(5, comma);
       if (meta.includes("webp")) ext = "webp";
       else if (meta.includes("jpeg") || meta.includes("jpg")) ext = "jpg";
     } else if (/^https?:\/\//.test(sourceUrl)) {
       const resp = await fetch(sourceUrl);
-      if (!resp.ok) throw new Error(`下载定妆图失败: ${resp.status}`);
+      if (!resp.ok) throw new Error(`Character sheet download failed: ${resp.status}`);
       buf = Buffer.from(await resp.arrayBuffer());
       const ct = resp.headers.get("content-type") || "";
       if (ct.includes("webp")) ext = "webp";
       else if (ct.includes("jpeg") || ct.includes("jpg")) ext = "jpg";
     } else {
-      throw new Error("不支持的图片来源");
+      throw new Error("Unsupported image source");
     }
     const fileName = `sheet-${Date.now()}.${ext}`;
     await writeFile(join(dir, fileName), buf);

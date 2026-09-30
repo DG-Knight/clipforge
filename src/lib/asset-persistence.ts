@@ -23,15 +23,15 @@ function extensionForMime(mime: string): "png" | "webp" | "mp4" | "jpg" {
 
 async function assertValidMedia(absPath: string, ext: string): Promise<void> {
   const kind = ext === "mp4" ? "video" : "image";
-  if (!(await validateOrDelete(absPath, kind))) throw new Error("素材文件校验失败（下载内容损坏或非媒体文件），请重新生成");
+  if (!(await validateOrDelete(absPath, kind))) throw new Error("Asset validation failed (download corrupted or not a media file) — regenerate it");
 }
 
 /** Persist an expiring provider URL or data URI under the project's uploads directory. */
 export async function persistAssetSource(projectId: string, sourceUrl: string, shotId: number, prefix = "asset"): Promise<string> {
-  if (!SAFE_ID.test(projectId)) throw new Error("无效的项目ID");
+  if (!SAFE_ID.test(projectId)) throw new Error("Invalid project ID");
   if (sourceUrl.startsWith("/api/files/")) {
     const local = resolveUploadFilePath(sourceUrl);
-    if (!local || !existsSync(local)) throw new Error("本地素材文件不存在");
+    if (!local || !existsSync(local)) throw new Error("Local asset file not found");
     return sourceUrl;
   }
 
@@ -39,23 +39,23 @@ export async function persistAssetSource(projectId: string, sourceUrl: string, s
   let mime = "image/jpeg";
   if (sourceUrl.startsWith("data:")) {
     const comma = sourceUrl.indexOf(",");
-    if (comma === -1) throw new Error("无法解析 data URI 素材");
+    if (comma === -1) throw new Error("Could not parse data URI asset");
     const meta = sourceUrl.slice(5, comma);
     const payload = sourceUrl.slice(comma + 1);
     mime = meta.split(";")[0] || "image/png";
     bytes = /;base64/i.test(meta) ? Buffer.from(payload, "base64") : Buffer.from(decodeURIComponent(payload), "utf8");
   } else if (/^https?:\/\//.test(sourceUrl)) {
     const response = await fetch(sourceUrl);
-    if (!response.ok) throw new Error(`下载素材失败: ${response.status}`);
+    if (!response.ok) throw new Error(`Asset download failed: ${response.status}`);
     const declared = Number(response.headers.get("content-length"));
-    if (Number.isFinite(declared) && declared > MAX_DOWNLOAD_BYTES) throw new Error(`素材体积 ${declared} 超过上限 ${MAX_DOWNLOAD_BYTES}`);
+    if (Number.isFinite(declared) && declared > MAX_DOWNLOAD_BYTES) throw new Error(`Asset size ${declared} exceeds the ${MAX_DOWNLOAD_BYTES} limit`);
     bytes = Buffer.from(await response.arrayBuffer());
     mime = response.headers.get("content-type") || mime;
   } else {
-    throw new Error("不支持的素材来源");
+    throw new Error("Unsupported asset source");
   }
 
-  if (bytes.byteLength > MAX_DOWNLOAD_BYTES) throw new Error(`素材体积 ${bytes.byteLength} 超过上限 ${MAX_DOWNLOAD_BYTES}`);
+  if (bytes.byteLength > MAX_DOWNLOAD_BYTES) throw new Error(`Asset size ${bytes.byteLength} exceeds the ${MAX_DOWNLOAD_BYTES} limit`);
   const ext = extensionForMime(mime);
   const directory = join(getDataDir(), "uploads", projectId);
   await mkdir(directory, { recursive: true });
@@ -81,12 +81,12 @@ export interface SaveAssetCandidateInput {
 
 /** Insert a validated take and atomically make it the active composition input. */
 export async function saveAssetCandidate(input: SaveAssetCandidateInput) {
-  if (!SAFE_ID.test(input.projectId)) throw new Error("无效的项目ID");
+  if (!SAFE_ID.test(input.projectId)) throw new Error("Invalid project ID");
   const db = getDb();
   let lastFrameUrl: string | undefined;
   if (VIDEO_EXT.test(input.filePath) && input.filePath.startsWith(`/api/files/${input.projectId}/`)) {
     const absolutePath = resolveUploadFilePath(input.filePath);
-    if (!absolutePath || !existsSync(absolutePath)) throw new Error("本地素材文件不存在");
+    if (!absolutePath || !existsSync(absolutePath)) throw new Error("Local asset file not found");
     const frame = await extractLastFrame(absolutePath);
     if (frame) lastFrameUrl = `${input.filePath}${LAST_FRAME_SUFFIX}`;
   }

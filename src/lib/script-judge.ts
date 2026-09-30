@@ -250,7 +250,7 @@ export function parseJudgeResponse(content: string, shots: JudgeShotInput[]): Ju
   try {
     raw = JSON.parse(extractJSON(content));
   } catch {
-    throw new Error("判官团返回的不是合法 JSON");
+    throw new Error("Judge panel returned invalid JSON");
   }
 
   const rawVerdicts = Array.isArray((raw as { verdicts?: unknown })?.verdicts)

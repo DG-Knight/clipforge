@@ -115,7 +115,7 @@ worker.addEventListener("message", async (event: MessageEvent<AsrWorkerRequest>)
       post({ type: "complete", transcript });
     }
   } catch (error) {
-    post({ type: "error", error: error instanceof Error ? error.message : "本地转写失败" });
+    post({ type: "error", error: error instanceof Error ? error.message : "Local transcription failed" });
   }
 });
 

@@ -125,7 +125,7 @@ export class VolcEngineProvider extends BaseProvider {
 
     if (resp.error) {
       throw new ProviderError(
-        `火山方舟图像生成失败: ${resp.error.message ?? resp.error.code}`,
+        `Volcengine Ark image generation failed: ${resp.error.message ?? resp.error.code}`,
         resp.error.code ?? 'ARK_IMAGE_ERROR',
         this.name
       )
@@ -137,7 +137,7 @@ export class VolcEngineProvider extends BaseProvider {
       urls.push(...resp.images)
     }
     if (urls.length === 0) {
-      throw new ProviderError('图像生成成功但未返回 URL', 'NO_RESULT', this.name)
+      throw new ProviderError('Image generation succeeded but returned no URL', 'NO_RESULT', this.name)
     }
 
     return {
@@ -205,7 +205,7 @@ export class VolcEngineProvider extends BaseProvider {
     )
     if (created.error || !created.id) {
       throw new ProviderError(
-        `火山方舟视频任务创建失败: ${created.error?.message ?? '未返回任务 ID'}`,
+        `Volcengine Ark video task creation failed: ${created.error?.message ?? 'no task ID returned'}`,
         created.error?.code ?? 'ARK_TASK_ERROR',
         this.name
       )

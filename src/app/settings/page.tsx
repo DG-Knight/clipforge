@@ -170,6 +170,13 @@ const PROVIDER_NAME_KEYS: Record<string, string> = {
   alibaba: "providerAlibabaName",
   siliconflow: "providerSiliconflowName",
 };
+// Legacy: AI_PROVIDERS entries above hard-code Chinese vendor names (火山引擎/阿里百炼/硅基流动).
+// When no i18n name key exists, strip the Chinese copy so non-zh users never see it (e.g. "MiniMax 海螺" → "MiniMax").
+function providerDisplayName(platform: { key: string; name: string }, t: (k: string) => string): string {
+  const key = PROVIDER_NAME_KEYS[platform.key];
+  if (key) return t(key);
+  return platform.name.replace(/[\u4E00-\u9FFF][\u4E00-\u9FFF\u3000-\u303F\uFF00-\uFFEF\u3001\u3002 ]*/g, "").trim() || platform.name;
+}
 
 // password input field with show/hide toggle
 function PasswordInput({
@@ -515,7 +522,7 @@ export default function SettingsPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="font-semibold text-sm">
-                                {PROVIDER_NAME_KEYS[platform.key] ? t(PROVIDER_NAME_KEYS[platform.key]) : platform.name}
+                                {providerDisplayName(platform, t)}
                               </h3>
                               {provider.enabled && (
                                 <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-400">

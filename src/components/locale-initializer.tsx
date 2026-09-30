@@ -30,5 +30,14 @@ export function LocaleInitializer() {
     }
   }, [locale]);
 
+  // mirror the UI locale into a cookie so src/proxy.ts can forward it as Accept-Language
+  // on every /api request — server error messages then follow the language the user chose
+  // in the app instead of their browser's language
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.cookie = `clipforge_locale=${locale}; path=/; max-age=31536000; samesite=lax`;
+    }
+  }, [locale]);
+
   return null;
 }

@@ -80,8 +80,8 @@ export async function searchCoverrVideos(
   }
 ): Promise<StockCandidate[]> {
   const { apiKey, perPage = 10, minSec, maxSec } = opts;
-  if (!apiKey) throw new Error("缺少 Coverr API Key");
-  if (!query?.trim()) throw new Error("检索词为空");
+  if (!apiKey) throw new Error("Missing Coverr API key");
+  if (!query?.trim()) throw new Error("Search term is empty");
 
   const params = new URLSearchParams({ query: query.trim(), page_size: String(perPage), urls: "true" });
   const res = await fetchWithTimeout(`${COVERR_API}/videos?${params}`, {
@@ -89,7 +89,7 @@ export async function searchCoverrVideos(
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Coverr 视频检索失败 ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Coverr video search failed ${res.status}: ${body.slice(0, 200)}`);
   }
   const data = (await res.json()) as { hits?: CoverrVideo[] };
   const candidates = (data.hits ?? [])

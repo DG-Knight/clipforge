@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { pipelineRuns } from "@/lib/db/schema";
-import { apiError } from "@/lib/api-error";
+import { apiError, errText } from "@/lib/api-error";
 import { startPipelineRun, isPipelineRunActive, type PipelineLlmConfig } from "@/lib/pipeline-runner";
 import { isPipelineStage } from "@/lib/pipeline-stages";
 import { getLatestPipelineRun } from "@/lib/pipeline-history";
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   } catch (error) {
     console.error("启动流水线失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "启动流水线失败" },
+      { error: error instanceof Error ? error.message : errText(req, "启动流水线失败", "Failed to start the pipeline", "เริ่มไปป์ไลน์ไม่สำเร็จ") },
       { status: 500 }
     );
   }
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   } catch (error) {
     console.error("查询流水线失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "查询流水线失败" },
+      { error: error instanceof Error ? error.message : errText(req, "查询流水线失败", "Failed to load the pipeline", "โหลดไปป์ไลน์ไม่สำเร็จ") },
       { status: 500 }
     );
   }
