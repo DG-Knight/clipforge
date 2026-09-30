@@ -29,6 +29,21 @@ describe("AD_TEMPLATES 库完整性", () => {
     }
   });
 
+  it("每个模板与分组的名称/卖点都有泰语（th），且不与 zh/en 雷同 — Thai localization parity", () => {
+    for (const tpl of AD_TEMPLATES) {
+      expect(tpl.name.th, `${tpl.id} 的 name 缺少 th`).toBeTruthy();
+      expect(tpl.tagline.th, `${tpl.id} 的 tagline 缺少 th`).toBeTruthy();
+      expect(tpl.name.th, `${tpl.id} name.th 与 en 相同`).not.toBe(tpl.name.en);
+      expect(tpl.name.th, `${tpl.id} name.th 与 zh 相同`).not.toBe(tpl.name.zh);
+      expect(tpl.tagline.th, `${tpl.id} tagline.th 与 en 相同`).not.toBe(tpl.tagline.en);
+      expect(tpl.tagline.th, `${tpl.id} tagline.th 与 zh 相同`).not.toBe(tpl.tagline.zh);
+    }
+    for (const group of AD_TEMPLATE_GROUPS) {
+      expect(group.name.th, `分组「${group.id}」的 name 缺少 th`).toBeTruthy();
+      expect(group.name.th, `分组「${group.id}」name.th 与 en 相同`).not.toBe(group.name.en);
+    }
+  });
+
   it("每个模板的分组与适配类目都在词表内", () => {
     for (const tpl of AD_TEMPLATES) {
       expect(GROUP_IDS.has(tpl.group), `${tpl.id} 的分组「${tpl.group}」不存在`).toBe(true);

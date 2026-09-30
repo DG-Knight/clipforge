@@ -15,7 +15,7 @@ const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
 
   let body: Record<string, unknown> = {};
   try {
@@ -24,14 +24,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     /* allow empty body; validated below */
   }
   const text = typeof body.script === "string" ? body.script.trim() : "";
-  if (text.length < 2) return apiError(req, "请提供脚本文案", "Please provide script copy");
+  if (text.length < 2) return apiError(req, "请提供脚本文案", "Please provide script copy", "กรุณาวางเนื้อสคริปต์");
 
   const db = getDb();
   const [project] = await db.select().from(projects).where(eq(projects.id, id));
-  if (!project) return apiError(req, "项目不存在", "Project not found", 404);
+  if (!project) return apiError(req, "项目不存在", "Project not found", 404, "ไม่พบโปรเจกต์");
 
   const shots = splitNarrationIntoShots(text);
-  if (!shots.length) return apiError(req, "脚本无法切分出分镜（缺少有效文案）", "Could not split the script into shots (no valid copy)", 422);
+  if (!shots.length) return apiError(req, "脚本无法切分出分镜（缺少有效文案）", "Could not split the script into shots (no valid copy)", 422, "แบ่งสคริปต์เป็นช็อตไม่ได้ (ไม่มีเนื้อหาที่ใช้ได้)");
   const totalDuration = shots.reduce((sum, s) => sum + s.duration, 0);
 
   // Get the next version number; deselect old scripts and mark the newly imported script as current

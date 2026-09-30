@@ -38,12 +38,12 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return apiError(req, "请求体不是合法 JSON", "Request body is not valid JSON");
+    return apiError(req, "请求体不是合法 JSON", "Request body is not valid JSON", "ตัวคำขอ (body) ไม่ใช่ JSON ที่ถูกต้อง");
   }
 
   const url = typeof body.url === "string" ? body.url.trim() : "";
   if (!/^https?:\/\/.+/i.test(url)) {
-    return apiError(req, "请填写合法的商品链接（http/https）", "Please provide a valid product link (http/https)");
+    return apiError(req, "请填写合法的商品链接（http/https）", "Please provide a valid product link (http/https)", "กรุณากรอกลิงก์สินค้าที่ถูกต้อง (http/https)");
   }
   const createProject = body.createProject !== false;
 
@@ -57,21 +57,21 @@ export async function POST(req: NextRequest) {
       headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml,*/*" },
       signal: ctrl.signal,
     }).finally(() => clearTimeout(timer));
-    if (!res.ok) return apiError(req, `抓取商品页失败：HTTP ${res.status}`, `Failed to fetch product page: HTTP ${res.status}`, 502);
+    if (!res.ok) return apiError(req, `抓取商品页失败：HTTP ${res.status}`, `Failed to fetch product page: HTTP ${res.status}`, `ดึงหน้าสินค้าไม่สำเร็จ: HTTP ${res.status}`, 502);
     const ct = res.headers.get("content-type") || "";
     if (!/text\/html|application\/xhtml/i.test(ct)) {
-      return apiError(req, "该链接不是网页（非 HTML），无法解析", "This link is not a web page (not HTML) and cannot be parsed", 415);
+      return apiError(req, "该链接不是网页（非 HTML），无法解析", "This link is not a web page (not HTML) and cannot be parsed", 415, "ลิงก์นี้ไม่ใช่หน้าเว็บ (ไม่ใช่ HTML) จึงวิเคราะห์ไม่ได้");
     }
     const buf = Buffer.from(await res.arrayBuffer());
     html = buf.subarray(0, MAX_HTML_BYTES).toString("utf8");
   } catch (e) {
-    const msg = e instanceof Error && e.name === "AbortError" ? errText(req, "抓取超时", "Fetch timed out") : e instanceof Error ? e.message : String(e);
-    return apiError(req, `抓取商品页失败：${msg}`, `Failed to fetch product page: ${msg}`, 502);
+    const msg = e instanceof Error && e.name === "AbortError" ? errText(req, "抓取超时", "Fetch timed out", "หมดเวลาดึงข้อมูลหน้าเว็บ") : e instanceof Error ? e.message : String(e);
+    return apiError(req, `抓取商品页失败：${msg}`, `Failed to fetch product page: ${msg}`, `ดึงหน้าสินค้าไม่สำเร็จ: ${msg}`, 502);
   }
 
   const product = parseProductFromHtml(html, url);
   if (!product.title && product.images.length === 0) {
-    return NextResponse.json({ error: errText(req, "没能从该链接解析出商品信息，请改用手动填写", "Could not parse product info from this link; please fill it in manually"), product }, { status: 422 });
+    return NextResponse.json({ error: errText(req, "没能从该链接解析出商品信息，请改用手动填写", "Could not parse product info from this link; please fill it in manually", "ดึงข้อมูลสินค้าจากลิงก์นี้ไม่สำเร็จ กรุณากรอกเองแทน"), product }, { status: 422 });
   }
 
   // Library-import mode: no project — download the product images into the product-library

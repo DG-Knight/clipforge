@@ -23,7 +23,7 @@ const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+    if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
     const body = (await req.json().catch(() => ({}))) as {
       scriptId?: unknown;
       llmConfig?: { baseUrl?: unknown; apiKey?: unknown; model?: unknown };
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+    if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
     const db = getDb();
     const latest = getLatestPipelineRun(id);
     if (!latest) return NextResponse.json({ run: null });

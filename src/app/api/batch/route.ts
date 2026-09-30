@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const items = Array.isArray(body.items)
       ? body.items.filter((i) => typeof i?.productId === "string" && typeof i?.productName === "string")
       : [];
-    if (items.length === 0) return apiError(req, "缺少批量条目", "Missing batch items");
+    if (items.length === 0) return apiError(req, "缺少批量条目", "Missing batch items", "ยังไม่มีรายการสำหรับประมวลผลเป็นชุด");
 
     const db = getDb();
     // one live job at a time: starting a new batch settles any stale running job
@@ -91,7 +91,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    return apiError(req, "无效的更新请求", "Invalid update request");
+    return apiError(req, "无效的更新请求", "Invalid update request", "คำขออัปเดตไม่ถูกต้อง");
   } catch (error) {
     console.error("更新批量任务失败:", error);
     return NextResponse.json(

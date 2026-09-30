@@ -62,7 +62,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     if (!/^[a-zA-Z0-9-]+$/.test(id)) {
-      return apiError(req, "无效的项目ID", "Invalid project id", 400);
+      return apiError(req, "无效的项目ID", "Invalid project id", 400, "รหัสโปรเจกต์ไม่ถูกต้อง");
     }
     const body = await req.json();
     const { scriptId, provider: providerName, model, apiKey, baseUrl, options, characterSheetUrl, productImageUrl } = body as {
@@ -78,10 +78,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       productImageUrl?: string;
     };
     if (!scriptId || !providerName || !model) {
-      return apiError(req, "缺少 scriptId / provider / model", "Missing scriptId / provider / model", 400);
+      return apiError(req, "缺少 scriptId / provider / model", "Missing scriptId / provider / model", 400, "ยังไม่ได้ระบุ scriptId / provider / model");
     }
     if (!apiKey) {
-      return apiError(req, "缺少 API Key，请先在设置中配置生图平台", "Missing API key — configure an image provider in settings first", 400);
+      return apiError(req, "缺少 API Key，请先在设置中配置生图平台", "Missing API key — configure an image provider in settings first", 400, "ยังไม่ได้ใส่ API Key — กรุณาตั้งค่าแพลตฟอร์มสร้างภาพในหน้าตั้งค่าก่อน");
     }
 
     const db = getDb();
@@ -89,16 +89,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .select()
       .from(scripts)
       .where(and(eq(scripts.id, scriptId), eq(scripts.projectId, id)));
-    if (!script) return apiError(req, "脚本不存在", "Script not found", 404);
+    if (!script) return apiError(req, "脚本不存在", "Script not found", 404, "ไม่พบสคริปต์");
     const shots = Array.isArray(script.shots) ? script.shots : [];
     if (shots.length < 2) {
-      return apiError(req, "分镜太少，九宫格至少需要 2 个分镜", "Too few shots — the grid needs at least 2", 400);
+      return apiError(req, "分镜太少，九宫格至少需要 2 个分镜", "Too few shots — the grid needs at least 2", 400, "ช็อตน้อยไป — กริดเรื่องย่อต้องมีอย่างน้อย 2 ช็อต");
     }
     if (shots.length > GRID_MAX_SHOTS) {
       return apiError(
         req,
         `九宫格最多放 ${GRID_MAX_SHOTS} 个分镜（当前 ${shots.length} 个）——适合短脚本；长脚本请用逐镜生成+链式首尾帧`,
         `The grid holds at most ${GRID_MAX_SHOTS} shots (this script has ${shots.length}) — use per-shot generation with keyframe chaining for longer scripts`,
+        `กริดวางช็อตได้สูงสุด ${GRID_MAX_SHOTS} ช็อต (สคริปต์นี้มี ${shots.length}) — เหมาะกับสคริปต์สั้น; สคริปต์ยาวใช้สร้างรายช็อต+ต่อเฟรมหัวท้ายแทน`,
         400
       );
     }
@@ -167,7 +168,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   } catch (error) {
     console.error("九宫格分镜生成失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "九宫格分镜生成失败", "Storyboard grid failed") },
+      { error: error instanceof Error ? error.message : errText(req, "九宫格分镜生成失败", "Storyboard grid failed", "สร้างกริดเรื่องย่อไม่สำเร็จ") },
       { status: 500 }
     );
   }

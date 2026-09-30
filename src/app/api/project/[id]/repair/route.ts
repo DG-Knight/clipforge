@@ -205,17 +205,17 @@ async function executeRepair(projectId: string, body: RepairRequest) {
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", 400);
+  if (!SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", 400, "รหัสโปรเจกต์ไม่ถูกต้อง");
   let body: RepairRequest;
   try {
     body = await req.json();
   } catch {
-    return apiError(req, "无效的修复参数", "Invalid repair payload", 400);
+    return apiError(req, "无效的修复参数", "Invalid repair payload", 400, "พารามิเตอร์ซ่อมแซมไม่ถูกต้อง");
   }
   try {
     if (body.action === "finalize") {
       const summary = sanitizeVideoRepairSummary(body.plan);
-      if (!summary || !body.resultUrl) return apiError(req, "修复结果或计划无效", "Invalid repair result or plan", 400);
+      if (!summary || !body.resultUrl) return apiError(req, "修复结果或计划无效", "Invalid repair result or plan", 400, "ผลหรือแผนซ่อมแซมไม่ถูกต้อง");
       const { preview, context } = await compilePreview(id, {
         ...body,
         assetId: summary.sourceAssetId,
@@ -228,7 +228,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         region: summary.region,
         keyframes: summary.keyframes,
       }, summary.operationId);
-      if (preview.summary.planHash !== summary.planHash) return apiError(req, "修复计划已变化，请重新预演", "The repair plan changed; preview it again", 409);
+      if (preview.summary.planHash !== summary.planHash) return apiError(req, "修复计划已变化，请重新预演", "The repair plan changed; preview it again", 409, "แผนซ่อมแซมเปลี่ยนไปแล้ว กรุณาพรีวิวใหม่");
       const asset = await finalizeVideoRepair({ projectId: id, summary, resultUrl: body.resultUrl, prompt: preview.prompt, thumbnailPath: context.asset.thumbnailPath });
       return NextResponse.json({ asset, plan: summary });
     }
@@ -241,6 +241,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json(preview);
   } catch (error) {
     console.error("Video repair failed:", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : errText(req, "精准修复失败", "Video repair failed") }, { status: 400 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : errText(req, "精准修复失败", "Video repair failed", "ซ่อมแซมวิดีโอไม่สำเร็จ") }, { status: 400 });
   }
 }

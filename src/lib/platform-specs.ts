@@ -53,7 +53,7 @@ export type OffSiteQrLevel = "block" | "warn" | "ok";
 
 export interface OffSiteQrPolicy {
   level: OffSiteQrLevel;
-  reason: { zh: string; en: string };
+  reason: { zh: string; en: string; th: string };
 }
 
 const QR_BLOCK_DOUYIN: OffSiteQrPolicy = {
@@ -61,6 +61,7 @@ const QR_BLOCK_DOUYIN: OffSiteQrPolicy = {
   reason: {
     zh: "抖音 2026-07 起严打站外导流：成片内出现二维码/联系方式，首违关闭橱窗 7 天，二违永久收回带货权限并冻结佣金。默认拒绝烧录，确认自担风险可用 force 强制",
     en: "Douyin's 2026-07 enforcement treats any in-video QR/contact info as off-site diversion: 1st offense closes the shop window for 7 days, 2nd permanently revokes commerce rights and freezes commissions. Refused by default; pass force to proceed at your own risk",
+    th: "Douyin เข้มงวดเรื่องการชวนผู้ชมออกนอกแพลตฟอร์มตั้งแต่ 2026-07: หากมี QR/ช่องทางติดต่อในคลิป ครั้งแรกปิดหน้าร้าน 7 วัน ครั้งที่สองถอนสิทธิ์ขายของถาวรและระงับค่าคอมมิชชัน ค่าเริ่มต้นปฏิเสธการเผา QR ลงคลิป — หากยอมรับความเสี่ยงเอง ให้ส่ง force เพื่อบังคับสร้าง",
   },
 };
 
@@ -69,12 +70,13 @@ const QR_WARN_DOMESTIC: OffSiteQrPolicy = {
   reason: {
     zh: "国内平台普遍处罚站外导流，成片内二维码有限流/处罚风险，建议仅在私域分发（微信群/朋友圈）使用带码版本",
     en: "Chinese platforms generally punish off-site diversion; an in-video QR risks throttling/penalties. Use the QR version only for private-channel distribution (WeChat groups/Moments)",
+    th: "แพลตฟอร์มจีนโดยทั่วไปลงโทษการชวนผู้ชมออกนอกแพลตฟอร์ม; QR ในคลิปเสี่ยงถูกจำกัดการมองเห็น/ถูกลงโทษ แนะนำใช้เวอร์ชันมี QR เฉพาะช่องทางส่วนตัว (กลุ่ม WeChat/Moments)",
   },
 };
 
 const QR_OK: OffSiteQrPolicy = {
   level: "ok",
-  reason: { zh: "该平台无站外导流处罚风险记录", en: "No known off-site-diversion enforcement on this platform" },
+  reason: { zh: "该平台无站外导流处罚风险记录", en: "No known off-site-diversion enforcement on this platform", th: "ไม่มีประวัติแพลตฟอร์มนี้ลงโทษการชวนผู้ชมออกนอกแพลตฟอร์ม" },
 };
 
 const OFFSITE_QR_POLICIES: Record<string, OffSiteQrPolicy> = {
@@ -98,6 +100,7 @@ export function getOffSiteQrPolicy(platform?: string | null): OffSiteQrPolicy {
       reason: {
         zh: "未指定目标平台：若发抖音等国内平台，成片内二维码属站外导流（抖音首违关橱窗 7 天）。发国内平台请传 platform 以便按平台把关",
         en: "No target platform given: on Chinese platforms an in-video QR counts as off-site diversion (Douyin: 1st offense closes the shop window for 7 days). Pass platform so the risk can be gated per platform",
+        th: "ยังไม่ได้ระบุแพลตฟอร์มปลายทาง: หากโพสต์บนแพลตฟอร์มจีนอย่าง Douyin QR ในคลิปถือเป็นการชวนผู้ชมออกนอกแพลตฟอร์ม (Douyin ครั้งแรกปิดหน้าร้าน 7 วัน) กรุณาส่ง platform เพื่อให้ตรวจตามแพลตฟอร์ม",
       },
     };
   }

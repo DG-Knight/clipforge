@@ -28,13 +28,13 @@ export async function POST(req: NextRequest) {
       options?: Record<string, unknown>;
     };
     if (!appearance?.trim()) {
-      return apiError(req, "缺少外观描述——先给主播写一段外观", "Missing appearance — describe the presenter first", 400);
+      return apiError(req, "缺少外观描述——先给主播写一段外观", "Missing appearance — describe the presenter first", 400, "ยังไม่มีคำอธิบายหน้าตา — เขียนลักษณะผู้นำเสนอก่อน");
     }
     if (!providerName || !model) {
-      return apiError(req, "缺少 provider / model", "Missing provider / model", 400);
+      return apiError(req, "缺少 provider / model", "Missing provider / model", 400, "ยังไม่ได้ระบุ provider / model");
     }
     if (!apiKey) {
-      return apiError(req, "缺少 API Key，请先在设置中配置生图平台", "Missing API key — configure an image provider in settings first", 400);
+      return apiError(req, "缺少 API Key，请先在设置中配置生图平台", "Missing API key — configure an image provider in settings first", 400, "ยังไม่ได้ใส่ API Key — กรุณาตั้งค่าแพลตฟอร์มสร้างภาพในหน้าตั้งค่าก่อน");
     }
 
     const prompt = buildCharacterSheetPrompt(appearance.trim(), name);
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("多视图定妆生成失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "多视图定妆生成失败", "Character sheet generation failed") },
+      { error: error instanceof Error ? error.message : errText(req, "多视图定妆生成失败", "Character sheet generation failed", "สร้างภาพเซ็ตท่าหลายมุมไม่สำเร็จ") },
       { status: 500 }
     );
   }

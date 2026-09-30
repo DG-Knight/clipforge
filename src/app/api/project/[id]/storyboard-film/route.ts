@@ -51,7 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     if (!/^[a-zA-Z0-9-]+$/.test(id)) {
-      return apiError(req, "无效的项目ID", "Invalid project id", 400);
+      return apiError(req, "无效的项目ID", "Invalid project id", 400, "รหัสโปรเจกต์ไม่ถูกต้อง");
     }
     const body = await req.json();
     const { scriptId, provider: providerName, model, apiKey, baseUrl, options, characterSheetUrl, dryRun, spendCapUsd, acknowledgeOverCap } = body as {
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       acknowledgeOverCap?: boolean;
     };
     if (!scriptId) {
-      return apiError(req, "缺少 scriptId", "Missing scriptId", 400);
+      return apiError(req, "缺少 scriptId", "Missing scriptId", 400, "ยังไม่ได้ระบุ scriptId");
     }
 
     const db = getDb();
@@ -79,16 +79,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .select()
       .from(scripts)
       .where(and(eq(scripts.id, scriptId), eq(scripts.projectId, id)));
-    if (!script) return apiError(req, "脚本不存在", "Script not found", 404);
+    if (!script) return apiError(req, "脚本不存在", "Script not found", 404, "ไม่พบสคริปต์");
     const shots = Array.isArray(script.shots) ? script.shots : [];
     if (shots.length < 2) {
-      return apiError(req, "分镜太少，一键整片至少需要 2 个分镜", "Too few shots — the film pass needs at least 2", 400);
+      return apiError(req, "分镜太少，一键整片至少需要 2 个分镜", "Too few shots — the film pass needs at least 2", 400, "ช็อตน้อยไป — สร้างทั้งเรื่องต้องมีอย่างน้อย 2 ช็อต");
     }
     if (shots.length > GRID_MAX_SHOTS) {
       return apiError(
         req,
         `一键整片最多 ${GRID_MAX_SHOTS} 个分镜（当前 ${shots.length} 个）——长脚本请用逐镜生成+成片合成`,
         `The film pass holds at most ${GRID_MAX_SHOTS} shots (this script has ${shots.length}) — use per-shot generation + compose for longer scripts`,
+        `สร้างทั้งเรื่องวางได้สูงสุด ${GRID_MAX_SHOTS} ช็อต (ปัจจุบัน ${shots.length} ช็อต) — สคริปต์ยาวใช้สร้างรายช็อต+รวมวิดีโอแทน`,
         400
       );
     }
@@ -98,6 +99,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         req,
         `脚本总时长 ${Math.round(totalSec)} 秒超过单次生成上限 ${FILM_MAX_SECONDS} 秒——请缩短脚本，或用逐镜生成+成片合成`,
         `Total script duration ${Math.round(totalSec)}s exceeds the ${FILM_MAX_SECONDS}s single-generation cap — shorten the script or use per-shot generation + compose`,
+        `สคริปต์รวม ${Math.round(totalSec)} วินาที เกินขีดสร้างครั้งเดียว ${FILM_MAX_SECONDS} วินาที — ย่นสคริปต์ หรือใช้สร้างรายช็อต+รวมวิดีโอแทน`,
         400
       );
     }
@@ -140,6 +142,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         req,
         `脚本总时长 ${fit.scriptSeconds} 秒超过 ${choice.model} 的单次上限 ${fit.cap} 秒——继续会把后半段截掉。请缩短脚本，或换一个支持更长时长的模型`,
         `The ${fit.scriptSeconds}s script exceeds ${choice.model}'s ${fit.cap}s single-generation ceiling — generating would silently cut the tail. Shorten the script or pick a longer-form model`,
+        `สคริปต์ยาว ${fit.scriptSeconds} วินาที เกินขีดครั้งเดียวของ ${choice.model} (${fit.cap} วินาที) — ถ้าสร้างต่อจะถูกตัดหางเงียบ ๆ กรุณาย่นสคริปต์หรือเลือกโมเดลที่รับคลิปยาวกว่า`,
         400
       );
     }
@@ -147,10 +150,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // past the dryRun branch money moves — provider and key become mandatory
     // (dryRun spends nothing, so it needs neither)
     if (!providerName) {
-      return apiError(req, "缺少 provider", "Missing provider", 400);
+      return apiError(req, "缺少 provider", "Missing provider", 400, "ยังไม่ได้ระบุ provider");
     }
     if (!apiKey) {
-      return apiError(req, "缺少 API Key，请先在设置中配置视频平台", "Missing API key — configure a video provider in settings first", 400);
+      return apiError(req, "缺少 API Key，请先在设置中配置视频平台", "Missing API key — configure a video provider in settings first", 400, "ยังไม่ได้ใส่ API Key — กรุณาตั้งค่าแพลตฟอร์มวิดีโอในหน้าตั้งค่าก่อน");
     }
 
     // every shot needs a keyframe IMAGE (grid cells or per-shot stills) to cite as @ImageN
@@ -168,6 +171,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         req,
         `分镜 ${missing.join("、")} 还没有关键帧图——先跑「九宫格分镜」或逐镜生图`,
         `Shots ${missing.join(", ")} have no keyframe image yet — run the storyboard grid or per-shot generation first`,
+        `ช็อต ${missing.join(", ")} ยังไม่มีภาพ keyframe — รัน「กริดเรื่องย่อ」หรือสร้างภาพรายช็อตก่อน`,
         400
       );
     }
@@ -182,6 +186,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         req,
         `参考图 ${quota.count} 张超过该模型上限 ${quota.limit} 张——减少分镜数${characterSheetUrl ? "，或去掉定妆照（少一张参考位）" : ""}后再试`,
         `${quota.count} reference images exceed this model's limit of ${quota.limit} — reduce the shot count${characterSheetUrl ? " or drop the presenter sheet (frees one slot)" : ""} and retry`,
+        `รูปอ้างอิง ${quota.count} รูปเกินขีดจำกัดของโมเดลนี้ (${quota.limit} รูป) — ลดจำนวนช็อต${characterSheetUrl ? " หรือตัดภาพเซ็ตท่าออก (ว่างให้หนึ่งสล็อต)" : ""} แล้วลองใหม่`,
         400
       );
     }
@@ -197,6 +202,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           req,
           `预估花费最高 $${estimate.maxUsd.toFixed(2)}（${choice.model} $${estimate.unitUsd}/秒 × ${estimate.seconds} 秒；当前分辨率档实测约为基准价的 ${estimate.tierMultiplier} 倍）超过你设置的单次上限 $${cap}——请调高上限、调低分辨率、换更便宜的模型，或缩短脚本`,
           `Estimated up to $${estimate.maxUsd.toFixed(2)} (${choice.model} at $${estimate.unitUsd}/s x ${estimate.seconds}s; this resolution tier measured about ${estimate.tierMultiplier}x the base rate) exceeds your per-run cap of $${cap} — raise the cap, lower the resolution, pick a cheaper model, or shorten the script`,
+          `ค่าใช้จ่ายโดยประมาณสูงสุด $${estimate.maxUsd.toFixed(2)} (${choice.model} $${estimate.unitUsd}/วินาที × ${estimate.seconds} วินาที; ความละเอียดระดับนี้วัดได้ราว ${estimate.tierMultiplier} เท่าของราคาฐาน) เกินเพดานต่อรอบที่ตั้งไว้ $${cap} — เพิ่มเพดาน ลดความละเอียด เปลี่ยนโมเดลที่ถูกกว่า หรือย่นสคริปต์`,
           400
         );
       }
@@ -255,7 +261,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!videoUrl) {
         await updateAiTask(rowId, { status: "unknown", error: "任务完成但未返回视频地址" });
         return NextResponse.json(
-          { error: errText(req, "任务完成但未返回视频地址", "Task completed but returned no video URL"), taskId, modelId, recoverable: true },
+          { error: errText(req, "任务完成但未返回视频地址", "Task completed but returned no video URL", "งานเสร็จแล้วแต่ไม่ได้คืนที่อยู่วิดีโอ"), taskId, modelId, recoverable: true },
           { status: 502 }
         );
       }
@@ -273,7 +279,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             : errText(
                 req,
                 `${message}。任务 ID ${taskId} 已保存，请勿重复提交`,
-                `${message}. Task ID ${taskId} has been saved — do not resubmit`
+                `${message}. Task ID ${taskId} has been saved — do not resubmit`,
+                `${message} รหัสงาน ${taskId} บันทึกไว้แล้ว — ไม่ต้องส่งซ้ำ`
               ),
           taskId,
           modelId,
@@ -285,7 +292,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   } catch (error) {
     console.error("一键整片生成失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "一键整片生成失败", "Storyboard film failed") },
+      { error: error instanceof Error ? error.message : errText(req, "一键整片生成失败", "Storyboard film failed", "สร้างวิดีโอทั้งเรื่องไม่สำเร็จ") },
       { status: 500 }
     );
   }

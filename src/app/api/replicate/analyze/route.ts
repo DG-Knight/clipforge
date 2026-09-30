@@ -26,15 +26,15 @@ export async function POST(req: NextRequest) {
   try {
     formData = await req.formData();
   } catch {
-    return apiError(req, "无效的表单数据", "Invalid form data", 400);
+    return apiError(req, "无效的表单数据", "Invalid form data", 400, "ข้อมูลฟอร์มไม่ถูกต้อง");
   }
   const file = formData.get("file") as File | null;
-  if (!file) return apiError(req, "请上传参考视频文件", "Please upload a reference video file", 400);
+  if (!file) return apiError(req, "请上传参考视频文件", "Please upload a reference video file", 400, "กรุณาอัปโหลดไฟล์วิดีโออ้างอิง");
   if (file.size > MAX_FILE_SIZE) {
-    return apiError(req, "参考视频超过 80MB 大小限制", "Reference video exceeds the 80MB size limit", 400);
+    return apiError(req, "参考视频超过 80MB 大小限制", "Reference video exceeds the 80MB size limit", 400, "วิดีโออ้างอิงใหญ่เกิน 80MB");
   }
   if (!ALLOWED_MIME.has(file.type)) {
-    return apiError(req, "仅支持 mp4/webm/mov 视频", "Only mp4/webm/mov videos are supported", 400);
+    return apiError(req, "仅支持 mp4/webm/mov 视频", "Only mp4/webm/mov videos are supported", 400, "รองรับเฉพาะวิดีโอ mp4/webm/mov");
   }
 
   try {
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     const probe = await probeMedia(filePath);
     if (!probe.duration) {
-      return apiError(req, "无法读取视频时长，文件可能损坏", "Could not read the video duration — the file may be corrupt", 400);
+      return apiError(req, "无法读取视频时长，文件可能损坏", "Could not read the video duration — the file may be corrupt", 400, "อ่านความยาววิดีโอไม่ได้ ไฟล์อาจเสียหาย");
     }
     const cuts = await detectSceneTimes(filePath);
     const shots = shotPlanFromCuts(cuts, probe.duration);
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Reference video analysis failed:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "参考视频分析失败", "Reference video analysis failed") },
+      { error: error instanceof Error ? error.message : errText(req, "参考视频分析失败", "Reference video analysis failed", "วิเคราะห์วิดีโออ้างอิงไม่สำเร็จ") },
       { status: 500 }
     );
   }

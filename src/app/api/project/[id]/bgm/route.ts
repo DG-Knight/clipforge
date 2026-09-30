@@ -14,19 +14,19 @@ export async function POST(
   try {
     const { id } = await params;
     if (!/^[a-zA-Z0-9-]+$/.test(id)) {
-      return apiError(req, "无效的项目ID", "Invalid project ID", 400);
+      return apiError(req, "无效的项目ID", "Invalid project ID", 400, "รหัสโปรเจกต์ไม่ถูกต้อง");
     }
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    if (!file) return apiError(req, "未收到音频文件", "No audio file received", 400);
+    if (!file) return apiError(req, "未收到音频文件", "No audio file received", 400, "ไม่ได้รับไฟล์เสียง");
     const ext = file.name.split(".").pop()?.toLowerCase() || "mp3";
     const ALLOWED_EXT = ["mp3", "wav", "aac", "m4a"];
     // Accept if either MIME type or extension matches (some uploads lack an accurate MIME type)
     if (!ALLOWED.includes(file.type) && !ALLOWED_EXT.includes(ext)) {
-      return apiError(req, "仅支持 mp3/wav/aac/m4a 音频", "Only mp3/wav/aac/m4a audio is supported", 400);
+      return apiError(req, "仅支持 mp3/wav/aac/m4a 音频", "Only mp3/wav/aac/m4a audio is supported", 400, "รองรับเฉพาะไฟล์เสียง mp3/wav/aac/m4a");
     }
     if (file.size > 20 * 1024 * 1024) {
-      return apiError(req, "音频不超过 20MB", "Audio must not exceed 20MB", 400);
+      return apiError(req, "音频不超过 20MB", "Audio must not exceed 20MB", 400, "ไฟล์เสียงต้องไม่เกิน 20MB");
     }
 
     const dir = join(getDataDir(), "uploads", id);
@@ -38,7 +38,7 @@ export async function POST(
   } catch (error) {
     console.error("BGM 上传失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "上传失败", "Upload failed") },
+      { error: error instanceof Error ? error.message : errText(req, "上传失败", "Upload failed", "อัปโหลดไม่สำเร็จ") },
       { status: 500 }
     );
   }

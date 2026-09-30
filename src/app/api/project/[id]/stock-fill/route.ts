@@ -42,7 +42,7 @@ const SEMANTIC_TOP_K = 6;
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!id || !SAFE_ID.test(id)) {
-    return apiError(req, "无效的项目ID", "Invalid project ID");
+    return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
   }
 
   let body: Record<string, unknown> = {};
@@ -72,12 +72,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // Get the selected script (fall back to the most recent one if none is selected)
   const rows = await db.select().from(scriptsTable).where(eq(scriptsTable.projectId, id));
   if (rows.length === 0) {
-    return apiError(req, "该项目还没有脚本，请先生成脚本", "This project has no script yet; please generate a script first", 404);
+    return apiError(req, "该项目还没有脚本，请先生成脚本", "This project has no script yet; please generate a script first", 404, "โปรเจกต์นี้ยังไม่มีสคริปต์ กรุณาสร้างสคริปต์ก่อน");
   }
   const script = rows.find((r) => r.selected) ?? rows[rows.length - 1];
   const shots = (script.shots ?? []) as Shot[];
   if (shots.length === 0) {
-    return apiError(req, "脚本没有分镜", "The script has no shots");
+    return apiError(req, "脚本没有分镜", "The script has no shots", "สคริปต์ไม่มีช็อต");
   }
 
   // Preserve selected ready assets and pending generation. Failed attempts and inactive

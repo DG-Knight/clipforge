@@ -21,7 +21,7 @@ export async function POST(
   try {
     const { id } = await params;
     if (!/^[a-zA-Z0-9-]+$/.test(id)) {
-      return apiError(req, "无效的项目ID", "Invalid project ID");
+      return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
     }
     let body: Record<string, unknown> = {};
     try {
@@ -34,17 +34,17 @@ export async function POST(
     }
     const platform = typeof body.platform === "string" ? body.platform : "";
     if (body.compositionId !== undefined && (typeof body.compositionId !== "string" || !/^[a-zA-Z0-9-]+$/.test(body.compositionId))) {
-      return apiError(req, "无效的成片版本", "Invalid composition ID");
+      return apiError(req, "无效的成片版本", "Invalid composition ID", "เวอร์ชันวิดีโอเสร็จไม่ถูกต้อง");
     }
     const compositionId = body.compositionId as string | undefined;
     const target = Object.hasOwn(PLATFORM_SPECS, platform) ? PLATFORM_SPECS[platform] : undefined;
-    if (!target) return apiError(req, "不支持的平台", "Unsupported platform");
+    if (!target) return apiError(req, "不支持的平台", "Unsupported platform", "ไม่รองรับแพลตฟอร์มนี้");
     let framing;
     try { framing = parseVideoFraming(body.framing); }
-    catch { return apiError(req, "构图参数无效，位置应在 0 到 1 之间", "Invalid framing; positions must be between 0 and 1"); }
-    if (body.preview !== undefined && typeof body.preview !== "boolean") return apiError(req, "预览参数无效", "Invalid preview option");
+    catch { return apiError(req, "构图参数无效，位置应在 0 到 1 之间", "Invalid framing; positions must be between 0 and 1", "พารามิเตอร์จัดองค์ประกอบไม่ถูกต้อง ตำแหน่งต้องอยู่ระหว่าง 0 ถึง 1"); }
+    if (body.preview !== undefined && typeof body.preview !== "boolean") return apiError(req, "预览参数无效", "Invalid preview option", "ตัวเลือกพรีวิวไม่ถูกต้อง");
     if (body.previewTime !== undefined && (typeof body.previewTime !== "number" || !Number.isFinite(body.previewTime) || body.previewTime < 0)) {
-      return apiError(req, "预览时间无效", "Invalid preview time");
+      return apiError(req, "预览时间无效", "Invalid preview time", "เวลาพรีวิวไม่ถูกต้อง");
     }
 
     // Fetch the most recent *successful* composition — a failed retry on top must not hide a good take
@@ -63,8 +63,8 @@ export async function POST(
     const src = selectedComposition?.outputPath;
     if (!src || !existsSync(src)) {
       return compositionId
-        ? apiError(req, "所选成片不可用，请选择其他已完成版本", "Selected composition is unavailable; choose another completed version")
-        : apiError(req, "还没有成片，请先合成视频", "No composed video yet; please compose the video first");
+        ? apiError(req, "所选成片不可用，请选择其他已完成版本", "Selected composition is unavailable; choose another completed version", "เวอร์ชันที่เลือกใช้ไม่ได้ กรุณาเลือกเวอร์ชันที่เสร็จแล้วอื่น")
+        : apiError(req, "还没有成片，请先合成视频", "No composed video yet; please compose the video first", "ยังไม่มีวิดีโอเสร็จ กรุณารวมวิดีโอก่อน");
     }
 
     const { w, h } = target;
@@ -92,10 +92,10 @@ export async function POST(
       report,
     });
   } catch (error) {
-    if (req.signal.aborted) return apiError(req, "导出已取消", "Export cancelled", 499);
+    if (req.signal.aborted) return apiError(req, "导出已取消", "Export cancelled", 499, "ยกเลิกการส่งออกแล้ว");
     console.error("多平台导出失败:", error);
     return NextResponse.json(
-      { error: errText(req, "导出失败，请检查素材和磁盘空间后重试", "Export failed; check the source and available disk space, then retry") },
+      { error: errText(req, "导出失败，请检查素材和磁盘空间后重试", "Export failed; check the source and available disk space, then retry", "ส่งออกไม่สำเร็จ กรุณาตรวจสื่อและพื้นที่ดิสก์แล้วลองใหม่") },
       { status: 500 }
     );
   }

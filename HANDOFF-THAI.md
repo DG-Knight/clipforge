@@ -1,7 +1,7 @@
 # แฮนด์โอเวอร์: งานรองรับภาษาไทยทั้งระบบ (ClipForge)
 
-> อัปเดตล่าสุด: 29 กันยายน 2026
-> สถานะ: **งานตามขอบเขต P0–P3 เสร็จสมบูรณ์** — typecheck ผ่าน, tests ที่เกี่ยวข้องผ่านทั้งหมด
+> อัปเดตล่าสุด: 30 กันยายน 2026 (รอบสอง — ปิดงานเก็บกวาด §5 แล้วเกือบทั้งหมด)
+> สถานะ: **งานตามขอบเขต P0–P3 เสร็จสมบูรณ์ + API errors ทุกเส้นทางมี th ครบ 100%** — typecheck ผ่าน, tests ผ่านทั้งหมด
 > เอกสารนี้สำหรับกลับมาทำต่อ: ทบทวนงานที่ทำไป, งานเก็บกวาดที่เหลือ, และแนวทางไปต่อ
 
 ---
@@ -56,16 +56,17 @@ Routes ที่เติม th ครบแล้ว: upload, products/upload, 
 ## 4. สถานะการตรวจสอบ
 
 - `pnpm exec tsc --noEmit` → **ผ่านสะอาด**
-- Tests ที่เกี่ยวกับงานนี้ **103/103 ผ่าน**: ad-templates (24), i18n-parity (21), api-error (8), llm-error, release-gate (15)
+- Tests ที่เกี่ยวกับงานนี้ **115/115 ผ่าน** (รอบสอง): ad-templates (25 — มีเคส parity th ใหม่), i18n-parity (21), api-error (8), llm-error (35), platform-specs (11), release-gate (15)
 - eslint บนไฟล์ที่แก้ → ผ่าน
 - ⚠️ Test suite เต็มมีชุด DB/media ~42 ตัวที่ **fail มาก่อนงานนี้อยู่แล้ว** (ปัญหา environment เครื่อง — better-sqlite3/media pipeline) ไม่เกี่ยวกับงาน i18n
 
-## 5. งานที่ยังเหลือ (เรียงตามความคุ้ม)
+## 5. งานที่ยังเหลือ (สถานะหลังรอบสอง 30 ก.ย. 2026)
 
-1. **API errors ระลอกสอง** — routes นอก flow หลักที่ยังจีนล้วน วิธีหา: `grep -rn "apiError\|errText" src/app/api | grep -v th` แล้วเติม th ตาม pattern ใน §2 (~1 ชม.)
-2. **คำแปล ad-templates รีวิวโดยคน** — แปลด้วย agent ทั้ง 391 แบบ แนะให้อ่านสกัดใน UI จริงหน้า new-project locale=th แก้คำที่แปลดง (~30 นาที)
-3. **scriptHint ยังจีนล้วน** — 391 hints ใน ad-templates.ts เป็นคำสั่งเนรมิตสคริปต์ ถ้าจะให้ LLM เขียนสคริปต์ไทยดีขึ้น อาจแปลเป็นไทย หรือปล่อยจีน (LLM เข้าใจอยู่แล้ว) — ตัดสินใจเอง
-4. **optionals**: ทดสอบ e2e ไทย (สร้างโปรเจกต์ภาษาไทยเต็ม flow → render), README ภาษาไทยส่วนใช้งานภาษาไทย
+1. ~~**API errors ระลอกสอง**~~ — ✅ **เสร็จแล้วรอบนี้**: สแกนครบด้วย parser (balanced-paren) เจอ 243 call ที่ยังไม่มี th ใน 40 ไฟล์ → เติมครบหมด (สคริปต์/พจนานุกรมที่ใช้เก็บไว้ที่ `.freebuff/` — ignored) พร้อมแก้มือ 17 จุดที่เป็น template literal, เพิ่ม `th` ให้ `OffSiteQrPolicy.reason` ครบทุก policy ([platform-specs.ts](src/lib/platform-specs.ts)), และ `SHARE_ERRORS` ใน [ad-template/mine](src/app/api/ad-template/mine/route.ts) ยืนยันด้วย analyzer ซ้ำ: **missing-th = 0**
+2. **คำแปล ad-templates รีวิวโดยคน** — ยังเหลือ: แปลด้วย agent ทั้ง 391 แบบ แนะให้อ่านสกัดใน UI จริงหน้า new-project locale=th แก้คำที่แปลดง (~30 นาที)
+3. ~~**scriptHint ยังจีนล้วน**~~ — ✅ **ตัดสินใจแล้ว: ปล่อยจีนต่อไป** เหตุผล: (1) มันถูกฉีดเข้า prompt ผ่าน `adTemplateScriptDirective()` ซึ่งเป็น **model-facing directive จีนล้วนทั้งก้อน** (name.zh + look.zh + camera preset prompts) — แปลเฉพาะ hint จะได้ prompt ภาษาผสมโดยไม่จำเป็น (2) route สร้างเทมเพลต AI ก็สั่ง LLM ให้เขียน hint เป็นจีน (3) ผู้ใช้ทั่วไปไม่เห็น hint — เห็นเฉพาะใน textarea ของ template editor ขั้นสูงซึ่งแก้ข้อมูลต้นทางจริง ถ้าวันหนึ่งจะให้ directive เป็นไทยต้องแปลทั้ง directive พร้อมกัน ไม่ใช่แค่ scriptHint
+4. **optionals**: ทดสอบ e2e ไทย (สร้างโปรเจกต์ภาษาไทยเต็ม flow → render) — **README ไทยไม่ต้องทำแล้ว** (README.md หลักเป็นไทยอยู่แล้ว มี README.en/zh ย่อย)
+5. **เพิ่มใหม่รอบนี้**: test บังคับ th ใน AD_TEMPLATES (name/tagline ทุก template + ทุกกลุ่ม ห้ามซ้ำกับ zh/en) อยู่ใน [ad-templates.test.ts](src/lib/__tests__/ad-templates.test.ts) — ตอนนี้เพิ่มเทมเพลตใหม่แล้วลืม th จะ fail test ทันที
 
 ## 6. วิธีกลับมาทำต่อ
 
@@ -79,7 +80,7 @@ pnpm vitest run src/lib/__tests__/i18n-parity.test.ts src/lib/__tests__/ad-templ
 
 - ภาษาของแอปสลับได้ที่ language toggle มุมขวาบน / `?lang=th`
 - ถ้าเพิ่ม key ใหม่ใน messages: ใส่ครบ `{ zh, en, th }` ไม่งั้น i18n-parity test จะ fail (ตั้งใจให้เป็นด่านกันพลาด)
-- ถ้าเพิ่ม ad template ใหม่: ใส่ `th` ใน name/tagline ด้วย (ยังไม่มี test บังคับ — ดูข้อเสนอใน §5.1 เดิม)
+- ถ้าเพิ่ม ad template ใหม่: ใส่ `th` ใน name/tagline ด้วย — **มี test บังคับแล้ว** (ad-templates.test.ts parity เคส "每个模板与分组的名称/卖点都有泰语")
 
 ## 7. หมายเหตุ
 

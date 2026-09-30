@@ -16,7 +16,7 @@ const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
 
   let body: Record<string, unknown> = {};
   try {
@@ -29,11 +29,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const db = getDb();
   const rows = await db.select().from(scriptsTable).where(eq(scriptsTable.projectId, id)).orderBy(desc(scriptsTable.version));
-  if (!rows.length) return apiError(req, "该项目还没有脚本", "This project has no script yet", 404);
+  if (!rows.length) return apiError(req, "该项目还没有脚本", "This project has no script yet", 404, "โปรเจกต์นี้ยังไม่มีสคริปต์");
   const script = rows.find((r) => r.selected) ?? rows[0];
   const shots = (script.shots ?? []) as Shot[];
   if (!shots.some((s) => (s?.voiceover ?? "").trim())) {
-    return apiError(req, "脚本没有可生成卡片的旁白文案", "The script has no voiceover text to generate cards from", 422);
+    return apiError(req, "脚本没有可生成卡片的旁白文案", "The script has no voiceover text to generate cards from", 422, "สคริปต์ไม่มีบทพูดสำหรับสร้างการ์ด");
   }
 
   const prefix = `card-${Date.now()}`;
@@ -52,6 +52,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const cards = files.map((f) => `/api/files/${id}/carousel/${fileNameOf(f)}`);
     return NextResponse.json({ count: cards.length, cards });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : errText(req, "卡片生成失败", "Card generation failed") }, { status: 500 });
+    return NextResponse.json({ error: e instanceof Error ? e.message : errText(req, "卡片生成失败", "Card generation failed", "สร้างการ์ดไม่สำเร็จ") }, { status: 500 });
   }
 }

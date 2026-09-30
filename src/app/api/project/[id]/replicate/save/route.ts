@@ -20,26 +20,26 @@ const MAX_DOWNLOAD_SIZE = 200 * 1024 * 1024;
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", 400);
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", 400, "รหัสโปรเจกต์ไม่ถูกต้อง");
 
   const body = await req.json().catch(() => ({}));
   const videoUrl = typeof body.videoUrl === "string" ? body.videoUrl : "";
   if (!videoUrl.startsWith("http")) {
-    return apiError(req, "缺少有效的视频地址", "Missing a valid video URL", 400);
+    return apiError(req, "缺少有效的视频地址", "Missing a valid video URL", 400, "ยังไม่ได้ใส่ที่อยู่วิดีโอที่ใช้ได้");
   }
 
   try {
     const db = getDb();
     const proj = await db.select({ id: projects.id }).from(projects).where(eq(projects.id, id));
-    if (proj.length === 0) return apiError(req, "项目不存在", "Project not found", 404);
+    if (proj.length === 0) return apiError(req, "项目不存在", "Project not found", 404, "ไม่พบโปรเจกต์");
 
     const res = await fetch(videoUrl);
     if (!res.ok) {
-      return apiError(req, `视频下载失败（${res.status}）`, `Video download failed (${res.status})`, 502);
+      return apiError(req, `视频下载失败（${res.status}）`, `Video download failed (${res.status})`, `ดาวน์โหลดวิดีโอไม่สำเร็จ (${res.status})`, 502);
     }
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length === 0 || buf.length > MAX_DOWNLOAD_SIZE) {
-      return apiError(req, "视频内容为空或超出大小限制", "Video content is empty or exceeds the size limit", 502);
+      return apiError(req, "视频内容为空或超出大小限制", "Video content is empty or exceeds the size limit", 502, "เนื้อหาวิดีโอว่างเปล่าหรือใหญ่เกินขีดจำกัด");
     }
 
     const dir = join(getDataDir(), "output", id);
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   } catch (error) {
     console.error("Failed to save replicated clip:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "保存复刻成片失败", "Failed to save the replicated clip") },
+      { error: error instanceof Error ? error.message : errText(req, "保存复刻成片失败", "Failed to save the replicated clip", "บันทึกคลิปที่ทำซ้ำไม่สำเร็จ") },
       { status: 500 }
     );
   }

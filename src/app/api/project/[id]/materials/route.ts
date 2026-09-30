@@ -28,13 +28,13 @@ const publicItem = (id: string, item: LocalMaterial) => ({
 });
 async function checkProject(req: NextRequest, id: string) {
   if (!SAFE_ID.test(id))
-    return apiError(req, "无效的项目ID", "Invalid project ID", 400);
+    return apiError(req, "无效的项目ID", "Invalid project ID", 400, "รหัสโปรเจกต์ไม่ถูกต้อง");
   const [project] = await getDb()
     .select({ id: projects.id })
     .from(projects)
     .where(eq(projects.id, id))
     .limit(1);
-  return project ? null : apiError(req, "项目不存在", "Project not found", 404);
+  return project ? null : apiError(req, "项目不存在", "Project not found", 404, "ไม่พบโปรเจกต์");
 }
 function failure(req: NextRequest, error: unknown) {
   const message = error instanceof Error ? error.message : "";
@@ -44,6 +44,7 @@ function failure(req: NextRequest, error: unknown) {
       "文件不能为空或超过 80MB；旧版多文件请求合计也不能超过 80MB",
       "Files must be nonempty and at most 80 MB; legacy multipart requests also have an 80 MB total limit",
       413,
+      "ไฟล์ต้องไม่ว่างและไม่เกิน 80MB; คำขอแบบหลายไฟล์รวมกันต้องไม่เกิน 80MB เช่นกัน"
     );
   if (message === "UNSUPPORTED_MATERIAL")
     return apiError(
@@ -51,6 +52,7 @@ function failure(req: NextRequest, error: unknown) {
       "仅支持 MP4、WebM、MOV、M4V、JPG、PNG、WebP",
       "Only MP4, WebM, MOV, M4V, JPG, PNG and WebP are supported",
       415,
+      "รองรับเฉพาะ MP4, WebM, MOV, M4V, JPG, PNG และ WebP"
     );
   if (message === "INVALID_MATERIAL")
     return apiError(
@@ -58,6 +60,7 @@ function failure(req: NextRequest, error: unknown) {
       "文件无法读取，或真实格式与扩展名不一致",
       "The file cannot be read or its actual format does not match its extension",
       422,
+      "อ่านไฟล์ไม่ได้ หรือชนิดไฟล์จริงไม่ตรงกับนามสกุล"
     );
   if (message === "INCOMPLETE_MATERIAL")
     return apiError(
@@ -65,6 +68,7 @@ function failure(req: NextRequest, error: unknown) {
       "文件未传完，请重试",
       "The upload is incomplete; please retry",
       422,
+      "อัปโหลดไม่ครบ กรุณาลองใหม่"
     );
   if (message === "INVALID_TAGS")
     return apiError(
@@ -72,6 +76,7 @@ function failure(req: NextRequest, error: unknown) {
       "最多 12 个标签，每个不超过 32 个字符",
       "Use up to 12 tags, at most 32 characters each",
       400,
+      "ใส่ได้สูงสุด 12 แท็ก แท็กละไม่เกิน 32 ตัวอักษร"
     );
   if (message === "INVALID_NAME")
     return apiError(
@@ -79,16 +84,17 @@ function failure(req: NextRequest, error: unknown) {
       "请输入不含路径的素材名称，最长 240 个字符",
       "Enter a material name without a path, up to 240 characters",
       400,
+      "กรุณาตั้งชื่อสื่อโดยไม่รวมเส้นทาง ยาวไม่เกิน 240 ตัวอักษร"
     );
   if (message === "MATERIAL_NOT_FOUND")
-    return apiError(req, "素材不存在", "Material not found", 404);
+    return apiError(req, "素材不存在", "Material not found", 404, "ไม่พบสื่อ");
   if (error instanceof SyntaxError || error instanceof URIError)
-    return apiError(req, "请求格式无效", "Invalid request format", 400);
+    return apiError(req, "请求格式无效", "Invalid request format", 400, "รูปแบบคำขอไม่ถูกต้อง");
   if (
     req.signal.aborted ||
     (error instanceof Error && error.name === "AbortError")
   )
-    return apiError(req, "上传已取消", "Upload cancelled", 499);
+    return apiError(req, "上传已取消", "Upload cancelled", 499, "ยกเลิกการอัปโหลดแล้ว");
   console.error(
     "Local material operation failed:",
     error instanceof Error ? error.name : "unknown",
@@ -98,6 +104,7 @@ function failure(req: NextRequest, error: unknown) {
     "素材操作失败，请重试",
     "Material operation failed; please retry",
     500,
+    "จัดการสื่อไม่สำเร็จ กรุณาลองใหม่"
   );
 }
 export async function GET(
@@ -128,7 +135,7 @@ export async function POST(
     const invalid = await checkProject(req, id);
     if (invalid) return invalid;
     if (!req.body)
-      return apiError(req, "请选择素材文件", "Choose a material file", 400);
+      return apiError(req, "请选择素材文件", "Choose a material file", 400, "กรุณาเลือกไฟล์สื่อ");
     const declared = req.headers.get("content-length");
     const expectedBytes = declared === null ? undefined : Number(declared);
     if (
@@ -167,6 +174,7 @@ export async function POST(
           "每次请选择 1–12 个素材文件",
           "Choose 1–12 material files",
           400,
+          "เลือกไฟล์สื่อครั้งละ 1–12 ไฟล์"
         );
       const files = entries as File[];
       if (files.some((file) => !classifyMaterial(file.name)))

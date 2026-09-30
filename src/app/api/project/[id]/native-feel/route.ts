@@ -20,7 +20,7 @@ const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
 
   let body: Record<string, unknown> = {};
   try {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const db = getDb();
   const [proj] = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
-  if (!proj) return apiError(req, "项目不存在", "Project not found", 404);
+  if (!proj) return apiError(req, "项目不存在", "Project not found", 404, "ไม่พบโปรเจกต์");
 
   const compositionId = typeof body.compositionId === "string" && SAFE_ID.test(body.compositionId) ? body.compositionId : undefined;
   const [comp] = await db
@@ -42,10 +42,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .orderBy(desc(compositions.createdAt))
     .limit(1);
   if (!comp?.outputPath || comp.status !== "done") {
-    return apiError(req, "请先合成视频再做原生感处理", "Please compose the video before applying the native feel");
+    return apiError(req, "请先合成视频再做原生感处理", "Please compose the video before applying the native feel", "กรุณารวมวิดีโอก่อนทำ native feel");
   }
   const videoPath = existsSync(comp.outputPath) ? comp.outputPath : join(getDataDir(), comp.outputPath);
-  if (!existsSync(videoPath)) return apiError(req, "成片文件不存在", "The composed video file does not exist", 404);
+  if (!existsSync(videoPath)) return apiError(req, "成片文件不存在", "The composed video file does not exist", 404, "ไม่พบไฟล์วิดีโอเสร็จ");
 
   const strength: FeelStrength = body.strength === "medium" || body.strength === "strong" ? body.strength : "subtle";
   const seed = typeof body.seed === "number" && Number.isFinite(body.seed) ? body.seed : undefined;
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     await applyNativeFeel({ videoPath, outPath, strength, seed, grain, vignette, halation, phoneCompress });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : errText(req, "原生感处理失败", "Native-feel processing failed") },
+      { error: e instanceof Error ? e.message : errText(req, "原生感处理失败", "Native-feel processing failed", "ประมวลผล native feel ไม่สำเร็จ") },
       { status: 500 }
     );
   }

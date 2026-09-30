@@ -23,14 +23,15 @@ import {
 
 const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
 
-const SHARE_ERRORS: Record<AdTemplateShareError, { zh: string; en: string }> = {
-  invalid_json: { zh: "不是有效的 JSON 文本", en: "Not valid JSON" },
-  wrong_kind: { zh: "这不是 ClipForge 模板分享文件", en: "Not a ClipForge template share file" },
+const SHARE_ERRORS: Record<AdTemplateShareError, { zh: string; en: string; th: string }> = {
+  invalid_json: { zh: "不是有效的 JSON 文本", en: "Not valid JSON", th: "ข้อความนี้ไม่ใช่ JSON ที่ถูกต้อง" },
+  wrong_kind: { zh: "这不是 ClipForge 模板分享文件", en: "Not a ClipForge template share file", th: "ไฟล์นี้ไม่ใช่ไฟล์แชร์เทมเพลตของ ClipForge" },
   unsupported_version: {
     zh: "模板文件版本比当前应用新，请先升级 ClipForge",
     en: "Template file is newer than this app; please upgrade ClipForge",
+    th: "ไฟล์เทมเพลตสร้างจากแอปเวอร์ชันที่ใหม่กว่านี้ กรุณาอัปเดต ClipForge",
   },
-  invalid_template: { zh: "模板内容无法解析", en: "Could not parse the template content" },
+  invalid_template: { zh: "模板内容无法解析", en: "Could not parse the template content", th: "อ่านเนื้อหาเทมเพลตไม่ได้" },
 };
 
 /** GET /api/ad-template/mine —— list saved templates (newest first) */
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return apiError(req, "请求体不是有效 JSON", "Request body is not valid JSON");
+    return apiError(req, "请求体不是有效 JSON", "Request body is not valid JSON", "ตัวคำขอ (body) ไม่ใช่ JSON ที่ถูกต้อง");
   }
 
   const isImport = typeof body.share === "string";
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
   const result = parseAdTemplateShareAny(shareText);
   if (!result.templates) {
     const err = SHARE_ERRORS[result.error ?? "invalid_template"];
-    return apiError(req, err.zh, err.en, 422);
+    return apiError(req, err.zh, err.en, err.th, 422);
   }
 
   const source = body.source === "edit" ? "edit" : isImport ? "import" : "ai";
@@ -103,10 +104,10 @@ export async function PUT(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return apiError(req, "请求体不是有效 JSON", "Request body is not valid JSON");
+    return apiError(req, "请求体不是有效 JSON", "Request body is not valid JSON", "ตัวคำขอ (body) ไม่ใช่ JSON ที่ถูกต้อง");
   }
   const id = typeof body.id === "string" ? body.id : "";
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的模板ID", "Invalid template ID");
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的模板ID", "Invalid template ID", "รหัสเทมเพลตไม่ถูกต้อง");
 
   const result = parseAdTemplateShare(
     JSON.stringify({
@@ -117,7 +118,7 @@ export async function PUT(req: NextRequest) {
   );
   if (!result.template) {
     const err = SHARE_ERRORS[result.error ?? "invalid_template"];
-    return apiError(req, err.zh, err.en, 422);
+    return apiError(req, err.zh, err.en, err.th, 422);
   }
 
   const db = getDb();
@@ -126,7 +127,7 @@ export async function PUT(req: NextRequest) {
     .set({ recipe: result.template })
     .where(eq(adTemplateRecipes.id, id))
     .returning();
-  if (!row) return apiError(req, "模板不存在", "Template not found", 404);
+  if (!row) return apiError(req, "模板不存在", "Template not found", 404, "ไม่พบเทมเพลต");
 
   return NextResponse.json({
     template: { ...(row.recipe as AdTemplate), id: row.id, source: row.source },
@@ -137,7 +138,7 @@ export async function PUT(req: NextRequest) {
 /** DELETE /api/ad-template/mine?id=... —— remove one saved template */
 export async function DELETE(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id") ?? "";
-  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的模板ID", "Invalid template ID");
+  if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的模板ID", "Invalid template ID", "รหัสเทมเพลตไม่ถูกต้อง");
   const db = getDb();
   await db.delete(adTemplateRecipes).where(eq(adTemplateRecipes.id, id));
   return NextResponse.json({ ok: true });

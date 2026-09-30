@@ -16,7 +16,7 @@ const SAFE_ID = /^[a-zA-Z0-9\-]+$/;
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID");
+    if (!id || !SAFE_ID.test(id)) return apiError(req, "无效的项目ID", "Invalid project ID", "รหัสโปรเจกต์ไม่ถูกต้อง");
 
     const db = getDb();
     const rows = await db
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   } catch (error) {
     console.error("获取成片列表失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : errText(req, "获取成片列表失败", "Failed to list compositions") },
+      { error: error instanceof Error ? error.message : errText(req, "获取成片列表失败", "Failed to list compositions", "โหลดรายการเวอร์ชันวิดีโอเสร็จไม่สำเร็จ") },
       { status: 500 }
     );
   }
