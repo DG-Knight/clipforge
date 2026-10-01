@@ -6,7 +6,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { LuPlus, LuFolderOpen, LuLoader, LuTrash2, LuDownload, LuImage, LuPlay } from "react-icons/lu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { LuPlus, LuFolderOpen, LuLoader, LuTrash2, LuDownload, LuImage, LuPlay, LuTriangleAlert } from "react-icons/lu";
 import { useT, useLocale } from "@/lib/i18n";
 import { formatRelativeTime } from "@/lib/relative-time";
 
@@ -117,16 +125,32 @@ export default function ProjectsPage() {
     );
   }, [rows, query]);
 
-  // delete = destructive: text-level confirm first; the row disappears only after the API succeeds
-  const handleDelete = async (p: ProjectRow) => {
-    if (!window.confirm(t("deleteConfirm", { name: p.name || p.productName || t("untitled") }))) return;
+  // Custom delete confirmation modal state
+  const [deleteTarget, setDeleteTarget] = useState<ProjectRow | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const openDeleteDialog = (p: ProjectRow, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    setDeleteTarget(p);
+    setDeleteError(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setDeleteError(null);
     try {
-      const res = await fetch(`/api/project/${p.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/project/${deleteTarget.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(String(res.status));
-      setRows((prev) => prev.filter((r) => r.id !== p.id));
-      setWorks((prev) => prev.filter((w) => w.projectId !== p.id));
+      setRows((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+      setWorks((prev) => prev.filter((w) => w.projectId !== deleteTarget.id));
+      setDeleteTarget(null);
     } catch {
-      window.alert(t("deleteFailed"));
+      setDeleteError(t("deleteFailed"));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -297,7 +321,7 @@ export default function ProjectsPage() {
                     <div className="flex justify-end px-2 pb-2">
                       <button
                         type="button"
-                        onClick={() => handleDelete(p)}
+                        onClick={(e) => openDeleteDialog(p, e)}
                         title={t("deleteProject")}
                         className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/70 opacity-100 transition-colors hover:bg-red-500/15 hover:text-red-400 md:opacity-0 md:group-hover:opacity-100"
                       >
@@ -310,6 +334,101 @@ export default function ProjectsPage() {
             })}
           </div>
         )}
+
+        {/* Custom Confirmation Dialog for Project Deletion */}
+        <Dialog
+          open={deleteTarget !== null}
+          onOpenChange={(open) => {
+            if (!open && !isDeleting) {
+              setDeleteTarget(null);
+              setDeleteError(null);
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md border border-white/10 bg-zinc-950/95 p-6 backdrop-blur-xl shadow-2xl shadow-red-950/25">
+            <div className="flex flex-col items-center text-center">
+              {/* Warning Glow Icon */}
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 text-red-400 ring-1 ring-red-500/25 shadow-lg shadow-red-500/15">
+                <LuTrash2 className="h-6 w-6" />
+              </div>
+
+              <DialogHeader className="space-y-1.5 text-center">
+                <DialogTitle className="text-lg font-bold tracking-tight text-foreground">
+                  {t("deleteDialogTitle")}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+                  {t("deleteDialogDesc")}
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* Target Project Summary Card */}
+              {deleteTarget && (
+                <div className="mt-4 w-full rounded-xl border border-border/60 bg-muted/20 p-3.5 text-left flex items-center gap-3.5">
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted/40 border border-border/40 flex items-center justify-center">
+                    {deleteTarget.productImages?.[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={deleteTarget.productImages[0]}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <LuFolderOpen className="h-5 w-5 text-muted-foreground/60" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm truncate text-foreground">
+                      {deleteTarget.name || deleteTarget.productName || t("untitled")}
+                    </p>
+                    {deleteTarget.productName && (
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        {deleteTarget.productName}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message Display if API fails */}
+              {deleteError && (
+                <div className="mt-3 flex w-full items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-400">
+                  <LuTriangleAlert className="h-4 w-4 shrink-0" />
+                  <span>{deleteError}</span>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="-mx-6 -mb-6 mt-6 border-t border-border/40 bg-zinc-900/40 p-4 flex gap-2 sm:gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isDeleting}
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 border-border/70 bg-background/50 hover:bg-muted/40"
+              >
+                {t("deleteDialogCancel")}
+              </Button>
+              <Button
+                type="button"
+                disabled={isDeleting}
+                onClick={confirmDelete}
+                className="flex-1 bg-red-600 hover:bg-red-500 text-white font-medium shadow-lg shadow-red-600/30 transition-all border-0"
+              >
+                {isDeleting ? (
+                  <>
+                    <LuLoader className="h-4 w-4 animate-spin mr-1.5" />
+                    {t("deleteInProgress")}
+                  </>
+                ) : (
+                  <>
+                    <LuTrash2 className="h-4 w-4 mr-1.5" />
+                    {t("deleteDialogConfirm")}
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

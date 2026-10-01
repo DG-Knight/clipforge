@@ -95,5 +95,12 @@
   - [x] 14.6 พัฒนาชุดทดสอบอัตโนมัติ `src/lib/__tests__/thai-systematic-pipeline.test.ts` และรันการทดสอบทั้งหมดผ่าน 100%
   - [x] 14.7 แปลงข้อความคำสั่งกำกับมุมกล้อง (Camera Movement) เป็นภาษาไทยและสากล: ตัดคำนำหน้า `镜头:` ทิ้ง, แปลงชื่อมุมกล้องจีนเป็นภาษาไทยสำหรับ UI display (`formatCameraForDisplay`), ปรับปรุง `cameraPresetGuide` ให้ไกด์เป็นภาษาอังกฤษเมื่อเป็นภาษาไทย, เปลี่ยนไอคอนนาฬิกาเป็นไอคอนกล้องวิดีโอ (`<LuVideo>`) และเพิ่มชุดทดสอบ `camera-display.test.ts` ผ่าน 100%
 
+- [x] **15. ออกแบบ Custom Delete Confirmation Dialog แทนที่ Browser window.confirm**
+  - [x] 15.1 แทนที่กล่องยืนยันของเบราว์เซอร์ (`window.confirm`, `window.alert`) ด้วย Custom Dialog สไตล์ Modern Dark Glassmorphism ใน `src/app/projects/page.tsx`
+  - [x] 15.2 เพิ่มไอคอนคำเตือนเรืองแสง, การ์ดแสดงพรีวิวโปรเจกต์ที่กำลังจะถูกลบ (ภาพปก/ชื่อโปรเจกต์/ชื่อสินค้า), ปุ่มยกเลิกและปุ่มยืนยันสีแดงอันตราย พร้อมสถานะกำลังลบ (`isDeleting` spinner)
+  - [x] 15.3 เพิ่มคีย์คำแปลครบทั้ง 3 ภาษาใน `src/lib/i18n/messages/projectsPage.ts` (`deleteDialogTitle`, `deleteDialogDesc`, `deleteDialogCancel`, `deleteDialogConfirm`, `deleteInProgress`)
+  - [x] 15.4 ตรวจสอบความถูกต้องด้วย `tsc --noEmit` และรันชุดทดสอบ i18n ผ่าน 100%
+
+
 
 
