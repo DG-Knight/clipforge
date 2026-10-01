@@ -8,7 +8,7 @@
 
 <p align="center"><strong>🌐 เว็บไซต์ทางการ: <a href="https://xixihhhh.github.io/clipforge/en.html">xixihhhh.github.io/clipforge</a></strong> — ดูผลงานตัวอย่างใน 30 วินาที</p>
 
-<p align="center"><strong>🧑‍🎓 ใช้งานครั้งแรก? เริ่มต้นที่นี่ 👉 <a href="TUTORIAL.en.md">คู่มือเริ่มต้นสำหรับมือใหม่ (อธิบายละเอียดทุกขั้นตอน)</a></strong> · <a href="TUTORIAL.md">ฉบับภาษาจีน</a><br/><sub>วิธีติดตั้ง · ใส่คีย์ AI · ทำคลิปแรกฟรีใน 3 นาที · ตารางแก้ปัญหา · ข้อมูลถูกเก็บไว้ที่ไหน ทั้งหมดอยู่ในนี้</sub></p>
+<p align="center"><strong>🧑‍🎓 ใช้งานครั้งแรก? เริ่มต้นที่นี่ 👉 <a href="HOW_TO_RUN.md">คู่มือติดตั้งและเปิดใช้งานโปรแกรม (HOW_TO_RUN.md)</a></strong> · <a href="TUTORIAL.en.md">คู่มือเริ่มต้นสำหรับมือใหม่ (Tutorial)</a> · <a href="TUTORIAL.md">ฉบับภาษาจีน</a><br/><sub>วิธีติดตั้ง · คำสั่งรัน pnpm dev · ใส่คีย์ AI · ทำคลิปแรกฟรีใน 3 นาที · ตารางแก้ปัญหา</sub></p>
 
 <p align="right"><strong>ไทย</strong> · <a href="README.en.md">English</a> · <a href="README.zh.md">中文</a></p>
 

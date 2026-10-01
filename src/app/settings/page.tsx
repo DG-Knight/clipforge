@@ -278,12 +278,16 @@ export default function SettingsPage() {
   } = useSettingsStore();
 
   // one-click Atlas onboarding: a single Key auto-configures LLM/image-gen/video-gen/TTS
+  const currentAtlasKey = providers["atlas-cloud"]?.apiKey || (llm.provider === "Atlas Cloud" ? llm.apiKey : "");
+  const isAtlasConfigured = Boolean(currentAtlasKey && (providers["atlas-cloud"]?.enabled || llm.apiKey));
+  const [editingAtlasKey, setEditingAtlasKey] = useState(false);
   const [atlasOneKey, setAtlasOneKey] = useState("");
   const [atlasApplied, setAtlasApplied] = useState(false);
   const applyOneKey = () => {
     if (!atlasOneKey.trim()) return;
     applyAtlasOneKey(atlasOneKey.trim());
     setAtlasApplied(true);
+    setEditingAtlasKey(false);
   };
 
   // TTS preview playback state
@@ -425,11 +429,17 @@ export default function SettingsPage() {
     <div className="min-h-screen grid-bg">
       <main className="mx-auto max-w-4xl px-6 py-10">
         {/* page title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("pageSubtitle")}
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{t("pageTitle")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("pageSubtitle")}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 self-start sm:self-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-xs text-emerald-400 font-medium">
+            <LuCheck className="w-3.5 h-3.5" />
+            <span>{t("autoSaveHint")}</span>
+          </div>
         </div>
 
         {/* configuration status banner: surfaces missing setup right at the top (the footer summary is easy to miss) */}
@@ -453,10 +463,26 @@ export default function SettingsPage() {
             <h2 className="font-semibold text-sm">{t("oneKeyTitle")}</h2>
           </div>
           <p className="text-xs text-muted-foreground mb-3">{t("oneKeyDesc")}</p>
-          {atlasApplied ? (
-            <div className="flex items-center gap-2 text-sm text-emerald-400">
-              <LuCheck className="w-4 h-4 shrink-0" />
-              <span>{t("oneKeyDone")}</span>
+          {(isAtlasConfigured || atlasApplied) && !editingAtlasKey ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25">
+              <div className="flex items-center gap-2 text-sm text-emerald-400">
+                <LuCheck className="w-4 h-4 shrink-0" />
+                <span className="font-medium">{t("oneKeyDone")}</span>
+                <span className="font-mono text-xs opacity-80">
+                  ({(currentAtlasKey || atlasOneKey).length > 8 ? `${(currentAtlasKey || atlasOneKey).slice(0, 4)}••••${(currentAtlasKey || atlasOneKey).slice(-4)}` : "••••••••"})
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs border-emerald-500/30 hover:bg-emerald-500/15"
+                onClick={() => {
+                  setAtlasOneKey(currentAtlasKey || atlasOneKey);
+                  setEditingAtlasKey(true);
+                }}
+              >
+                {t("edit") || "เปลี่ยน / อัปเดต Key"}
+              </Button>
             </div>
           ) : (
             <div className="flex flex-col sm:flex-row gap-2">
@@ -471,6 +497,11 @@ export default function SettingsPage() {
                 <LuZap className="w-4 h-4 mr-1.5" />
                 {t("oneKeyCta")}
               </Button>
+              {editingAtlasKey && (
+                <Button variant="ghost" size="sm" onClick={() => setEditingAtlasKey(false)} className="text-xs">
+                  {t("cancel") || "ยกเลิก"}
+                </Button>
+              )}
             </div>
           )}
           <a href={ATLAS_KEYS_URL} target="_blank" rel="noreferrer" className="inline-block mt-2 text-xs text-primary hover:underline">
@@ -560,6 +591,7 @@ export default function SettingsPage() {
                             setProvider(platform.key, {
                               ...provider,
                               apiKey,
+                              enabled: apiKey.trim().length > 0 ? true : provider.enabled,
                             })
                           }
                           placeholder={t("apiKeyPlaceholder", { name: platform.name })}
@@ -841,7 +873,7 @@ export default function SettingsPage() {
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs text-muted-foreground">{t("apiKeyLabel")}</Label>
-                            <PasswordInput value={tts.apiKey} onChange={(apiKey) => setTTS({ ...tts, apiKey })} placeholder={t("ttsApiKeyPlaceholder")} />
+                            <PasswordInput value={tts.apiKey} onChange={(apiKey) => setTTS({ ...tts, apiKey, enabled: apiKey.trim().length > 0 ? true : tts.enabled })} placeholder={t("ttsApiKeyPlaceholder")} />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
@@ -860,7 +892,7 @@ export default function SettingsPage() {
                           {ttsMeta.keySource === "tts" ? (
                             <div className="space-y-1.5">
                               <Label className="text-xs text-muted-foreground">{t("apiKeyLabel")}</Label>
-                              <PasswordInput value={tts.apiKey} onChange={(apiKey) => setTTS({ ...tts, apiKey })} placeholder={t("ttsApiKeyPlaceholderShort")} />
+                              <PasswordInput value={tts.apiKey} onChange={(apiKey) => setTTS({ ...tts, apiKey, enabled: apiKey.trim().length > 0 ? true : tts.enabled })} placeholder={t("ttsApiKeyPlaceholderShort")} />
                             </div>
                           ) : (
                             <div className="text-xs rounded-md border border-border/60 bg-muted/20 px-3 py-2">

@@ -14,7 +14,7 @@ import { useSettingsStore } from "@/lib/stores/settings-store";
 import { ProductionProfilePicker } from "@/components/production-profile-picker";
 import { useProductLibraryStore } from "@/lib/stores/product-library-store";
 import { useCharacterStore } from "@/lib/stores/project-store";
-import { getExampleProducts, type ExampleProduct } from "@/lib/examples";
+import { getExampleProducts, currencySymbolForLocale, type ExampleProduct } from "@/lib/examples";
 import { useT, useLocale } from "@/lib/i18n";
 import { ATLAS_KEYS_URL } from "@/lib/atlas-onekey";
 import { formatRelativeTime } from "@/lib/relative-time";
@@ -957,7 +957,7 @@ export default function StartPage() {
           <div className="cf-examples">
             {t("examplesLabel")}
             {examples.slice(0, 3).map((ex) => (
-              <button key={ex.id} type="button" className="cf-chip" onClick={() => fillExample(ex)}>{ex.name} ¥{ex.price}</button>
+              <button key={ex.id} type="button" className="cf-chip" onClick={() => fillExample(ex)}>{ex.name} {currencySymbolForLocale(locale)}{ex.price}</button>
             ))}
           </div>
 

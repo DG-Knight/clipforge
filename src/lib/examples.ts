@@ -339,3 +339,11 @@ export function getExampleShowcase(locale: Locale): ExampleShowcase {
 export const exampleProducts = exampleProductsByLocale.zh;
 export const exampleTemplates = exampleTemplatesByLocale.zh;
 export const exampleShowcase = exampleShowcaseByLocale.zh;
+
+/** Return standard currency symbol for the given locale: THB ฿ for Thai, USD $ for English, CNY ¥ for Chinese */
+export function currencySymbolForLocale(locale: Locale): string {
+  if (locale === "th") return "฿";
+  if (locale === "en") return "$";
+  return "¥";
+}
+

@@ -48,6 +48,18 @@ describe("parseProductFromHtml", () => {
     expect(parseProductFromHtml(html, "https://s.com").priceText).toBe("$5.9");
   });
 
+  it("JSON-LD 支持泰铢 THB 币种解析为 ฿", () => {
+    const html = `<script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: "แก้วปั่นพกพา",
+      offers: { "@type": "Offer", price: "690", priceCurrency: "THB" },
+    })}</script>`;
+    const p = parseProductFromHtml(html, "https://shop.co.th/p/1");
+    expect(p.title).toBe("แก้วปั่นพกพา");
+    expect(p.priceText).toBe("฿690");
+  });
+
   it("无 JSON-LD → OpenGraph 兜底（含相对图片转绝对）", () => {
     const html = `<head>
       <meta property="og:title" content="精华液 30ml">

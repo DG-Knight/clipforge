@@ -17,7 +17,7 @@ export interface ProductIngest {
 }
 
 const CURRENCY_SYMBOL: Record<string, string> = {
-  USD: "$", CNY: "¥", RMB: "¥", EUR: "€", GBP: "£", JPY: "¥", HKD: "HK$", TWD: "NT$", KRW: "₩", AUD: "A$", CAD: "C$",
+  USD: "$", CNY: "¥", RMB: "¥", EUR: "€", GBP: "£", JPY: "¥", HKD: "HK$", TWD: "NT$", KRW: "₩", AUD: "A$", CAD: "C$", THB: "฿",
 };
 
 const NAMED_ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
@@ -121,7 +121,7 @@ function formatPrice(price: unknown, currency: string | undefined): string | und
   const numeric = parseFloat(raw.replace(/[^\d.]/g, ""));
   if (!Number.isFinite(numeric) || numeric <= 0) return undefined;
   // already contains a currency symbol or an alphabetic currency prefix like "USD " — return as-is without adding another
-  if (/[¥$€£₩]/.test(raw) || /^[A-Za-z]{2,3}[\s ]/.test(raw)) return raw;
+  if (/[฿¥$€£₩]/.test(raw) || /^[A-Za-z]{2,3}[\s ]/.test(raw)) return raw;
   const cur = (currency || "").toUpperCase();
   const sym = CURRENCY_SYMBOL[cur] ?? (cur ? `${cur} ` : "");
   return `${sym}${raw}`;

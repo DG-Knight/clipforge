@@ -110,4 +110,11 @@ describe("การตรวจสอบการรองรับภาษา�
     expect(niwat).toBeDefined();
     expect(niwat?.gender).toBe("male");
   });
+
+  it("currencySymbolForLocale คืนค่าสกุลเงินบาท (฿) สำหรับภาษาไทย", async () => {
+    const { currencySymbolForLocale } = await import("@/lib/examples");
+    expect(currencySymbolForLocale("th")).toBe("฿");
+    expect(currencySymbolForLocale("en")).toBe("$");
+    expect(currencySymbolForLocale("zh")).toBe("¥");
+  });
 });

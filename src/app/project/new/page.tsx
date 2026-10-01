@@ -6,7 +6,7 @@ import { LuUpload, LuX, LuCircleAlert, LuZap, LuUser, LuUserX, LuBox, LuLayoutGr
 import { useCharacterStore } from "@/lib/stores/project-store";
 import { useTemplateStore } from "@/lib/stores/template-store";
 import { useProductLibraryStore, type ProductItem } from "@/lib/stores/product-library-store";
-import { getExampleProducts, type ExampleProduct } from "@/lib/examples";
+import { getExampleProducts, currencySymbolForLocale, type ExampleProduct } from "@/lib/examples";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { AD_TEMPLATE_GROUPS, listAdTemplates, getAdTemplate, adTemplateScriptDirective, adTemplateStorageKey, recommendAdTemplates, encodeStoredAdTemplate, exportAdTemplateShare, exportAdTemplatePack, AD_TEMPLATE_EDIT_VOCAB, CUSTOM_AD_TEMPLATE_ID, type AdTemplate, type AdTemplateGroupId, type AdTemplateCategory } from "@/lib/ad-templates";
 import { CAMERA_PRESETS } from "@/lib/camera-presets";
@@ -787,7 +787,7 @@ export default function NewProjectPage() {
                     onClick={() => fillExample(ex)}
                     className="px-2.5 py-1 rounded-full text-xs border border-border/50 bg-muted/20 text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all"
                   >
-                    {ex.name} ¥{ex.price}
+                    {ex.name} {currencySymbolForLocale(locale)}{ex.price}
                   </button>
                 ))}
               </div>

@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useProductLibraryStore } from "@/lib/stores/product-library-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
-import { getExampleProducts } from "@/lib/examples";
+import { getExampleProducts, currencySymbolForLocale } from "@/lib/examples";
 import { buildVariationPlan, describeSlot } from "@/lib/variation-plan";
 import { useT, useLocale } from "@/lib/i18n";
 import { pickLocaleText } from "@/lib/i18n/config";
@@ -135,7 +135,7 @@ export default function BatchPage() {
         category: ex.category,
         description: ex.sellingPoints,
         images: [ex.image],
-        price: ex.price,
+        price: `${currencySymbolForLocale(locale)}${ex.price}`,
         targetAudience: "",
         videoCount: 0,
         createdAt: new Date(),
