@@ -230,10 +230,27 @@ ClipForge ได้รับการอัปเกรดเพื่อรอ�
      - **คลังผู้ประกาศ / จัดการตัวละคร (`/presenters` & `PresenterManager`)**: ปุ่มถังขยะเดิมเคยกดแล้วลบตัวละครทันที → ได้ออกแบบ Custom Confirmation Dialog ให้แสดงภาพใบหน้าตัวละครและชื่อตัวละคร เพื่อความปลอดภัยสูงสุด
    - ทั้งหมดใช้โทนสีและสไตล์ Dark Glassmorphism เดียวกันกับหน้าโปรเจกต์ สร้างความสม่ำเสมอและเอกภาพในการใช้งานทั้งโปรแกรม
 
+
+---
+
+## 12. การปรับแต่งดีไซน์ Scrollbar ทั้งระบบให้เป็นหนึ่งเดียวกับโปรแกรม (Custom Studio Dark Scrollbar)
+
+1. **ปัญหาเดิม:**
+   - ในระบบปฏิบัติการ Windows เมื่อมีกล่องข้อความหรือคอนเทนเนอร์ที่มีการเลื่อนหน้าจอ (Scroll) เช่น รายชื่อโมเดล AI ในหน้าตั้งค่า, ไซด์บาร์, รายการสคริปต์, กล่องพรีวิว และหน้าต่างป๊อปอัป จะแสดง **แถบ Scrollbar สีขาวของ Windows แบบดั้งเดิม** (หนา 17px มีปุ่มลูกศรขึ้นลงหัวท้าย) ซึ่งขัดแย้งกับธีม Dark Mode ของโปรแกรม ClipForge อย่างเห็นได้ชัด
+
+2. **การออกแบบและแก้ไข:**
+   - กำหนดสไตล์ Global Scrollbar ใหม่ทั้งหมดใน `src/app/globals.css`:
+     - **ดีไซน์เรียวบาง โมเดิร์น**: กำหนดขนาดความกว้างและความสูงเป็น 6px (บาง เรียบหรู ไม่เกะกะสายตา)
+     - **รางเลื่อนโปร่งใส (Transparent Track)**: ซ่อนรางสีขาวทึบ ทำให้ตัวเนื้อหาแสดงผลได้อย่างต่อเนื่องเป็นเนื้อเดียวกับพื้นหลัง
+     - **ตัวเลื่อนแคปซูลมน (Smooth Capsule Thumb)**: ตัวเลื่อนสีขาวโปร่งแสง (`rgba(255, 255, 255, 0.18)`) พร้อมขอบมนแบบแคปซูล (`border-radius: 9999px`) สบายตา
+     - **เอฟเฟกต์สีม่วงเรืองแสง (Brand Purple Glow)**: เมื่อนำเมาส์ไปชี้ (Hover) หรือคลิกลาก (Active) ตัวเลื่อนจะเปลี่ยนเป็นสีม่วงสดใสของแบรนด์ ClipForge (`rgba(139, 92, 246, 0.7 - 0.95)`)
+     - **กำจัดปุ่มลูกศรของ Windows**: ซ่อนปุ่มลูกศรหัวท้ายของ Windows Scrollbar ทิ้งอย่างถาวร
+     - **รองรับทุกเบราว์เซอร์และระบบปฏิบัติการ**: ใช้งานได้สมบูรณ์ทั้งบน WebKit / Chromium / Electron และ W3C Standard Scrollbar
+   - ปรับแต่งระยะขอบ (Padding) ในคอมโพเนนต์เลือกโมเดล AI (`model-picker.tsx`) ให้มีระยะห่างกับ Scrollbar อย่างลงตัว ไม่ชิดขอบ
+
 3. **หลักฐานการทดสอบยืนยันผล (Proof of Work):**
    - `pnpm exec tsc --noEmit` ผ่านสมบูรณ์ (0 errors)
-   - `pnpm vitest run src/lib/__tests__/backend.test.ts src/lib/__tests__/thai-systematic-pipeline.test.ts src/lib/__tests__/camera-display.test.ts` ผ่าน 108/108 tests (100%)
-   - `pnpm vitest run src/lib/__tests__/i18n-thai.test.ts src/lib/__tests__/i18n-parity.test.ts` ผ่าน 28/28 tests (100%)
+   - `pnpm vitest run src/lib/__tests__/backend.test.ts src/lib/__tests__/i18n-thai.test.ts src/lib/__tests__/i18n-parity.test.ts` ผ่าน 124/124 tests (100%)
 
 
 

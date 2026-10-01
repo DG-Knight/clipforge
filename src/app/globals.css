@@ -245,3 +245,107 @@
     0 0 0 1px rgba(94, 234, 212, 0.22);
   border-color: rgba(94, 234, 212, 0.4);
 }
+
+/* ==================== แถบเลื่อนหน้าจอระดับพรีเมียม (Custom Studio Scrollbar) ==================== */
+/* กำหนดค่าเริ่มต้นสำหรับ W3C Standard (Firefox & Next-Gen Browsers) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+:root {
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.dark,
+:root.dark,
+html.dark {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+/* สำหรับ WebKit / Chromium / Electron (Windows, macOS, Linux) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ค่าเริ่มต้น (Light Mode) */
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.18);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(99, 102, 241, 0.6);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: rgba(99, 102, 241, 0.9);
+  background-clip: padding-box;
+}
+
+/* สำหรับ Dark Mode (ธีมหลักของ ClipForge ทั้งหมด) */
+.dark ::-webkit-scrollbar-thumb,
+:root.dark ::-webkit-scrollbar-thumb,
+html.dark ::-webkit-scrollbar-thumb,
+html.dark::-webkit-scrollbar-thumb,
+body.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+:root.dark ::-webkit-scrollbar-thumb:hover,
+html.dark ::-webkit-scrollbar-thumb:hover,
+html.dark::-webkit-scrollbar-thumb:hover,
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(139, 92, 246, 0.7); /* Brand Purple Glow */
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:active,
+:root.dark ::-webkit-scrollbar-thumb:active,
+html.dark ::-webkit-scrollbar-thumb:active,
+html.dark::-webkit-scrollbar-thumb:active,
+body.dark ::-webkit-scrollbar-thumb:active {
+  background-color: rgba(139, 92, 246, 0.95);
+  background-clip: padding-box;
+}
+
+/* ซ่อนปุ่มลูกศรหัวท้ายของ Windows Scrollbar ทั้งหมด */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* มุมเชื่อมต่อแนวตั้งและแนวนอน */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* คลาสเสริมสำหรับ Scrollbar ขนาดบางพิเศษในกล่องย่อย */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -81,7 +81,7 @@ function EndpointModelPicker({ baseUrl, apiKey, onPick }: ModelPickerProps) {
               className="w-full rounded border border-border/50 bg-background px-2 py-1 text-[11px] font-mono outline-none focus:border-primary/40"
             />
           )}
-          <div className="flex max-h-28 flex-wrap gap-1 overflow-y-auto">
+          <div className="flex max-h-28 flex-wrap gap-1 overflow-y-auto pr-1.5">
             {shown.map((m) => (
               <button
                 key={m}

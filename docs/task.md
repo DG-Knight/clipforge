@@ -107,6 +107,13 @@
   - [x] 16.3 เพิ่ม Custom Confirmation Dialog สไตล์ Dark Glassmorphism สำหรับ **การลบตัวละครในคลังผู้ประกาศ** (`/presenters` & `PresenterManager`) พร้อมการ์ดแสดงรูปและชื่อผู้ประกาศ
   - [x] 16.4 เพิ่มคีย์ภาษา i18n ครบ 3 ภาษาใน `products.ts` และ `settings.ts` พร้อมผ่าน Automated Tests และ Type Checking 100%
 
+- [x] **17. ปรับดีไซน์ Scrollbar ทั้งระบบให้เป็นหนึ่งเดียวกับโปรแกรม (Custom Studio Dark Scrollbar)**
+  - [x] 17.1 กำจัด Scrollbar สีขาวของ Windows แบบดั้งเดิมในทุกหน้าและทุกคอนเทนเนอร์ (รวมถึงกล่องเลือกโมเดลในหน้าตั้งค่า, ไซด์บาร์, หน้าต่างป๊อปอัป และเนื้อหาหลัก)
+  - [x] 17.2 ออกแบบสไตล์ Dark Glassmorphism: แถบเลื่อนบาง 6px ขอบมนแคปซูล รางโปร่งใส ตัวเลื่อนสีขาวโปร่งแสง และเปลี่ยนเป็นสีม่วงสดใสของแบรนด์เมื่อนำเมาส์ไปชี้ (Hover) หรือคลิกลาก (Active)
+  - [x] 17.3 ซ่อนปุ่มลูกศรหัวท้ายของ Windows Scrollbar ทิ้งอย่างเด็ดขาด
+  - [x] 17.4 รองรับทั้ง WebKit/Chromium/Electron และ W3C Standard Scrollbar
+
+
 
 
 
