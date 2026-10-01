@@ -881,8 +881,8 @@ The target audience is Thailand (TikTok Shop TH, Shopee TH, Facebook Reels TH).
 1. Content Language: Write every "title", "voiceover", and "seo" field in natural Thai (natural spoken Thai) for Thai shoppers, never Chinese or English. If the product information is in English or Chinese (e.g. imported goods), translate and adapt all selling points into engaging Thai for Thai consumers.
 2. Thai Hook & CTA:
    - Design an authentic Thai hook (เช่น "ใครกำลังเจอปัญหานี้...", "หยุดดูคลิปนี้ก่อน...", "บอกเลยว่าตัวนี้เด็ดมาก...")
-   - Design a clear Thai Call-to-Action (CTA) at the end (เช่น "กดสั่งซื้อที่ตะกร้าเหลืองด้านล่างได้เลยครับ/ค่ะ", "มีบริการเก็บเงินปลายทาง", "รีบกดก่อนหมดโปร").
-   - Include natural polite particles (ครับ/ค่ะ) where appropriate.
+   - Design a clear Thai Call-to-Action (CTA) at the end (เช่น "กดสั่งซื้อที่ตะกร้าเหลืองด้านล่างได้เลยค่ะ", "มีบริการเก็บเงินปลายทาง", "รีบกดก่อนหมดโปร").
+   - Voiceover Gender & Polite Particles: The default Thai voice narrator is female (เปรมวดี). ALWAYS use feminine polite particles (ค่ะ / นะคะ / ค่า / ไหมคะ), NEVER use male particles (ครับ / นะครับ) unless a male character is explicitly specified.
 3. Thai Voiceover Pacing:
    - Thai speech pacing is approximately 3–4 words per second, or about 10-14 Thai characters per second of shot duration.
    - Ensure the voiceover text length in each shot matches its duration.
@@ -1105,7 +1105,7 @@ export function buildTopicPrompt(input: TopicScriptInput): string {
   if (targetLang === "th" || detectedLang === "th") {
     parts.push(
       `\n【LANGUAGE & AUDIENCE — CRITICAL REQUIREMENT, OVERRIDES ANY "中文" / "English" WORDING ABOVE】
-1. Target Audience: Thai viewers. Write every "title", "voiceover", and descriptive field in natural Thai, never Chinese or English.
+1. Target Audience: Thai viewers. Write every "title", "voiceover", and descriptive field in natural Thai, never Chinese or English. The default narrator is female (เปรมวดี); use feminine polite ending particles (ค่ะ / นะคะ), never male particles (ครับ).
 2. Pacing: Pacing is approximately 3-4 words per second (10-14 Thai characters per second of shot duration).
 3. Camera & Search Terms:
    - "camera": Write as standard English motion direction (e.g. "slow orbit", "push-in", "pull-out") or concise Thai. NEVER use Chinese. NEVER prefix with "镜头:".

@@ -40,8 +40,8 @@ const USER_AGENT =
  */
 // Voice catalogue lives in the client-safe tts-voices module (this file imports fs via tts-cache,
 // which would break browser bundles that only need the list); re-exported here for server callers.
-import { DEFAULT_FREE_VOICE, langOfVoice, defaultVoiceForLang, defaultVoiceForText } from "./tts-voices";
-export { FREE_TTS_VOICES, DEFAULT_FREE_VOICE, langOfVoice, defaultVoiceForLang, defaultVoiceForText } from "./tts-voices";
+import { DEFAULT_FREE_VOICE, langOfVoice, defaultVoiceForLang, defaultVoiceForText, genderOfVoice } from "./tts-voices";
+export { FREE_TTS_VOICES, DEFAULT_FREE_VOICE, langOfVoice, defaultVoiceForLang, defaultVoiceForText, genderOfVoice } from "./tts-voices";
 
 export interface FreeTTSOptions {
   /** Voice short name, defaults to zh-CN-XiaoxiaoNeural */

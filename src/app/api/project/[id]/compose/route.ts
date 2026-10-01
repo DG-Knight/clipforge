@@ -7,7 +7,8 @@ import { mkdir, writeFile } from "fs/promises";
 import { generateSpeech, estimateSpeechSeconds, type TTSConfig } from "@/lib/tts";
 import { stripPauseMarks } from "@/lib/voice-markup";
 import { shotEmotion, EMOTION_TTS } from "@/lib/emotion-acting";
-import { generateSpeechFreeDetailed, DEFAULT_FREE_VOICE, defaultVoiceForText, defaultVoiceForLang, type TTSWord } from "@/lib/edge-tts";
+import { generateSpeechFreeDetailed, DEFAULT_FREE_VOICE, defaultVoiceForText, defaultVoiceForLang, genderOfVoice, type TTSWord } from "@/lib/edge-tts";
+import { alignThaiPoliteParticles } from "@/lib/thai-gender";
 import { resolveRenderProfile, isRenderPreset } from "@/lib/compose-presets";
 import { isCaptionPreset, captionPresetOverrides, CAPTION_PRESETS } from "@/lib/caption-presets";
 import { getDb } from "@/lib/db";
@@ -264,33 +265,42 @@ export async function POST(
       // silently ignore these fields inside generateSpeech
       const emo = shotType ? shotEmotion(shotType) : undefined;
       const expressive = emo ? { emotion: EMOTION_TTS[emo].minimax, instruction: EMOTION_TTS[emo].instruction } : {};
-      try {
-        // 付费 TTS 优先；否则走免费 Edge keyless TTS（速度映射：speed 倍率 → SSML 带符号百分比）
-        let audio: Buffer;
-        let words: TTSWord[] | undefined;
-        if (ttsConfig) {
-          try {
-            audio = await generateSpeech(text, { ...ttsConfig, ...expressive });
-          } catch (e) {
-            console.warn(`分镜 ${shotId} 付费配音失败，回退免费 Edge 配音:`, e);
-            composeWarnings.push({ code: "tts_fallback_free", shotId });
+
+      const maxAttempts = 3;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          // 付费 TTS 优先；否则走免费 Edge keyless TTS（速度映射：speed 倍率 → SSML 带符号百分比）
+          let audio: Buffer;
+          let words: TTSWord[] | undefined;
+          if (ttsConfig) {
+            try {
+              audio = await generateSpeech(text, { ...ttsConfig, ...expressive });
+            } catch (e) {
+              console.warn(`分镜 ${shotId} 付费配音失败，回退免费 Edge 配音 (attempt ${attempt}):`, e);
+              composeWarnings.push({ code: "tts_fallback_free", shotId });
+              const d = await generateSpeechFreeDetailed(text, freeOpts);
+              audio = d.audio;
+              words = d.words.length > 0 ? d.words : undefined;
+            }
+          } else {
             const d = await generateSpeechFreeDetailed(text, freeOpts);
             audio = d.audio;
             words = d.words.length > 0 ? d.words : undefined;
           }
-        } else {
-          const d = await generateSpeechFreeDetailed(text, freeOpts);
-          audio = d.audio;
-          words = d.words.length > 0 ? d.words : undefined;
+          const file = join(ttsDir, `shot-${shotId}.mp3`);
+          await writeFile(file, audio);
+          return { file, words };
+        } catch (e) {
+          console.warn(`分镜 ${shotId} 配音生成失败 (attempt ${attempt}/${maxAttempts}):`, e);
+          if (attempt === maxAttempts) {
+            composeWarnings.push({ code: "tts_failed", shotId });
+            return undefined;
+          }
+          // รอสั้นๆ ก่อนลองใหม่ ป้องกันเน็ตสะดุดชั่วคราว
+          await new Promise((resolve) => setTimeout(resolve, attempt * 600));
         }
-        const file = join(ttsDir, `shot-${shotId}.mp3`);
-        await writeFile(file, audio);
-        return { file, words };
-      } catch (e) {
-        console.warn(`分镜 ${shotId} 配音生成失败（已跳过）:`, e);
-        composeWarnings.push({ code: "tts_failed", shotId });
-        return undefined;
       }
+      return undefined;
     }
 
     // 廉价预检：至少一个分镜有可用素材（避免返回 202 后才发现没素材）
@@ -371,10 +381,18 @@ export async function POST(
           continue;
         }
       }
+      // ปรับคำลงท้ายภาษาไทยให้ตรงกับเพศของเสียงพากย์ประจำช็อต
+      const targetVoice = shot.characterId ? characterVoices.get(shot.characterId) : freeVoice;
+      const voiceGender = targetVoice ? genderOfVoice(targetVoice) : undefined;
+      const rawVo = shot.voiceover?.trim();
+      const normalizedVo = rawVo ? alignThaiPoliteParticles(rawVo, voiceGender) : undefined;
+
       const nativeAudio = isVideo ? await videoHasAudio(local) : false;
+      // หากมีบทพากย์ (normalizedVo) ให้สร้างเสียงพากย์ TTS เสมอ
+      // คลิปวิดีโอสต็อก (B-roll) มักมีเสียงลมหรือ ambient noise ซึ่งไม่ควรนำมาบล็อกการพากย์เสียง TTS ของ AI
       const vo =
-        shot.voiceover && !nativeAudio
-          ? await buildVoiceover(shot.shotId, shot.voiceover, shot.characterId ? characterVoices.get(shot.characterId) : undefined, shot.type)
+        normalizedVo
+          ? await buildVoiceover(shot.shotId, normalizedVo, targetVoice, shot.type)
           : undefined;
       const audioPath = vo?.file;
 
@@ -391,7 +409,7 @@ export async function POST(
       let sourceDuration: number | undefined;
       if (audioPath) {
         const probed = await probeDuration(audioPath);
-        voiceSec = probed > 0 ? probed : estimateSpeechSeconds(stripPauseMarks(shot.voiceover ?? ""));
+        voiceSec = probed > 0 ? probed : estimateSpeechSeconds(stripPauseMarks(normalizedVo ?? ""));
         duration = Math.min(Math.max(voiceSec + VOICE_GAP, 1.5), 20);
         if (isVideo) {
           const mediaDur = await probeDuration(local);
@@ -410,11 +428,13 @@ export async function POST(
         filePath: local,
         duration,
         transition: shot.transition || "ai_start_end",
-        ...(isVideo ? { hasAudio: nativeAudio } : { motion: defaultMotion(shot) }),
+        // หากมีเสียงพากย์ AI (audioPath) ให้ปิดเสียง nativeAudio ของสต็อกเพื่อไม่ให้เสียงลมสต็อกกลบเสียงพากย์
+        ...(isVideo ? { hasAudio: audioPath ? false : nativeAudio } : { motion: defaultMotion(shot) }),
         ...(sourceDuration && { sourceDuration }),
         ...(audioPath && { audioPath }),
       };
-      rendered.push({ shot, clip, duration, voiceSec, ...(vo?.words ? { words: vo.words } : {}) });
+      const effectiveShot: Shot = normalizedVo ? { ...shot, voiceover: normalizedVo } : shot;
+      rendered.push({ shot: effectiveShot, clip, duration, voiceSec, ...(vo?.words ? { words: vo.words } : {}) });
     }
 
     if (rendered.length === 0) throw new Error("No usable assets");

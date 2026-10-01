@@ -68,3 +68,17 @@ export function langOfVoice(voice: string): string {
   return hit ? hit.lang : "zh-CN";
 }
 
+/**
+ * ระบุเพศของเสียงพากย์ ("female" | "male" | undefined) เพื่อใช้ปรับแต่งคำลงท้ายและสไตล์บทพากย์
+ */
+export function genderOfVoice(voiceName?: string): "female" | "male" | undefined {
+  if (!voiceName) return undefined;
+  const clean = voiceName.trim();
+  const hit = FREE_TTS_VOICES.find((v) => v.value.toLowerCase() === clean.toLowerCase());
+  if (hit) return hit.gender;
+  if (/niwat|guy|yunxi|yunyang|yunjian|male/i.test(clean)) return "male";
+  if (/premwadee|achara|xiaoxiao|xiaoyi|aria|sonia|jenny|nanami|sunhi|elvira|female/i.test(clean)) return "female";
+  return undefined;
+}
+
+
