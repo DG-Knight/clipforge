@@ -2,7 +2,14 @@
  
 ## [v0.9.16] - 2026-10-01
 
-### Fixed (แก้ไขเสียงพากย์ขาดหาย, ปรับคำลงท้ายเสียงหญิงใช้ "ค่ะ", และแก้บัค UI ป้ายช็อตล้นตกขอบ)
+### Fixed (แก้ไขปัญหา build error จาก ABI Mismatch และแก้ไขเสียงพากย์/UI)
+- **แก้ไขข้อผิดพลาดในคำสั่ง `pnpm build && pnpm bundle:standalone` (Node.js vs Electron ABI Mismatch Fix)**:
+  - แก้ไขปัญหา Error สีแดงจำนวนมากตอนรัน `pnpm build` (`Error: The module better_sqlite3.node was compiled against a different Node.js version using NODE_MODULE_VERSION 146. This version of Node.js requires NODE_MODULE_VERSION 147.`):
+    - ค้นพบต้นตอ: สคริปต์ `scripts/bundle-standalone.mjs` เดิมทำการค้นหาโฟลเดอร์ `.next/standalone/.next/node_modules/better-sqlite3-*` ซึ่งบนระบบ Windows นั้น Next.js สร้างเป็น Directory Junction ชี้กลับไปยังโฟลเดอร์หลัก `node_modules/better-sqlite3` ทำให้คำสั่งสับเปลี่ยนไบนารีไปเขียนทับไฟล์ใน root workspace ให้กลายเป็น Electron ABI 146
+    - ปรับปรุงตรรกะใน `scripts/bundle-standalone.mjs`: ตรวจสอบหากเป็น Junction / Symlink หรือชี้ไปยัง root `node_modules` ให้ทำการตัดการเชื่อมต่อ (`unlink / rmSync`) แล้วคัดลอกโฟลเดอร์ไบนารีสำหรับ Electron ABI แยกเป็นอิสระ 100% ภายใน standalone ทำให้ไม่ส่งผลกระทบต่อ root `node_modules` สำหรับการ build ของ Node.js อีกต่อไป
+    - รัน Rebuild `better-sqlite3` ใน root workspace ให้กลับมาเป็น Node ABI (147)
+  - เพิ่มคอนฟิก `metadataBase: new URL(...)` ใน `src/app/layout.tsx` กำจัดคำเตือน metadata base ของ Next.js ตอน production build
+
 - **แก้ไขปัญหาซับไตเติลขึ้นแต่ไม่มีเสียงพากย์ (Subtitle without Voiceover Fix)**:
   - ค้นพบสาเหตุหลัก: วิดีโอสต็อกฟรี (Stock Video Footage B-roll จาก Pexels/Pixabay) มักมีแทร็กเสียงบันทึกมาด้วย (เช่น เสียงลมหรือเสียงบรรยากาศ) ทำให้เงื่อนไขเดิม `shot.voiceover && !nativeAudio` ใน `compose/route.ts` มองว่าวิดีโอมีเสียงอยู่แล้ว จึงตัดการพากย์เสียง TTS ทิ้งไป เหลือไว้เพียงตัวหนังสือซับไตเติล
   - แก้ไขให้ระบบสร้างเสียงพากย์ AI เสมอเมื่อมีบทพูด (`shot.voiceover`) ไม่ว่าวิดีโอสต็อกจะมีแทร็กเสียงเดิมหรือไม่

@@ -11,6 +11,7 @@ const geistSans = GeistSans;
 const geistMono = GeistMono;
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   // Title/description รองรับภาษาไทยและภาษาอังกฤษเป็นหลัก
   title: "ClipForge — เครื่องมือสร้างวิดีโอสั้นขายของด้วย AI | AI Short Video Creator",
   description:

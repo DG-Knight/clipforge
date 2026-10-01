@@ -304,9 +304,38 @@ ClipForge ได้รับการอัปเกรดเพื่อรอ�
    - **ปรับปรุงคำแปลให้กระชับและสวยงาม**:
      - ปรับคำว่า `"ความน่าเชื่อถือ (Proof)"` ที่ยาวเกินจำเป็น ให้เป็น **`"การันตี (Proof)"`** เพื่อความสวยงาม สั้น กระชับ และสื่อความหมายของการขายของออนไลน์ได้ชัดเจนยิ่งขึ้น
 
+---
+
+## 15. การแก้ไขปัญหา Build Error ในคำสั่ง `pnpm build && pnpm bundle:standalone` (Node.js vs Electron ABI Mismatch)
+
+1. **ปัญหาที่เกิดขึ้นในการคอมไพล์ (Build Error):**
+   - เมื่อรันคำสั่ง `pnpm build && pnpm bundle:standalone` จะพบ Error สีแดงเถือกแสดงขึ้นมาเต็มหน้าจอ:
+     ```
+     数据库初始化失败（所有依赖数据库的接口都将不可用）: Error: The module '...better_sqlite3.node'
+     was compiled against a different Node.js version using NODE_MODULE_VERSION 146.
+     This version of Node.js requires NODE_MODULE_VERSION 147.
+     ```
+   - **สาเหตุที่แท้จริง:**
+     - Next.js เวอร์ชัน standalone บนระบบ Windows จะสร้างโฟลเดอร์ `.next/standalone/.next/node_modules/better-sqlite3-*` ในลักษณะ **Directory Junction** ซึ่งชี้ (link) ย้อนกลับไปยังโฟลเดอร์หลักในโปรเจกต์ `node_modules/better-sqlite3`
+     - สคริปต์ `scripts/bundle-standalone.mjs` เดิมทำการสแกนหาไฟล์ `better_sqlite3.node` แล้วสั่งลบและเขียนทับไฟล์ด้วยไบนารี Electron ABI (146) สำหรับแอปเดสก์ท็อป
+     - ส่งผลให้ไฟล์ในโฟลเดอร์หลักของโปรเจกต์ (`root node_modules`) ถูกเขียนทับกลายเป็นเวอร์ชัน Electron ไปด้วยโดยไม่รู้ตัว
+     - เมื่อรัน `pnpm build` ในครั้งต่อมา Next.js Turbopack build ซึ่งทำงานอยู่บน Node.js ปกติ (ABI 147) จึงไม่สามารถโหลดโมดูล SQLite ได้ และพ่น Error สีแดงออกมาเต็มหน้าจอทุกครั้งที่เรนเดอร์หน้าเว็บแบบ static
+
+2. **การแก้ไขและการแยกสัดส่วนสภาพแวดล้อม (Isolation):**
+   - **แก้ไขสคริปต์ `scripts/bundle-standalone.mjs`**:
+     - เพิ่มการตรวจสอบ Junction/Symlink บน Windows ด้วย `lstatSync`
+     - หากตรวจพบว่าโฟลเดอร์ใน standalone เป็น Junction หรือเชื่อมโยงกลับไปยังโฟลเดอร์หลัก ให้สั่ง **ตัดการเชื่อมต่อ (unlink junction)** ทันที
+     - จากนั้นคัดลอกโฟลเดอร์ Electron ABI สำหรับ SQLite ไปวางเป็นโฟลเดอร์อิสระ 100% ภายใน standalone
+     - ทำให้โฟลเดอร์หลักของโปรเจกต์ (`node_modules`) ปลอดภัย ไม่ถูกแตะต้องหรือถูกเขียนทับอีกต่อไป
+   - **Rebuild `better-sqlite3` ในโปรเจกต์หลัก**:
+     - รัน `pnpm rebuild better-sqlite3` กู้คืนโมดูลของโปรเจกต์ให้กลับมาเป็น Node ABI (147)
+   - **เพิ่มการตั้งค่า `metadataBase` ใน `src/app/layout.tsx`**:
+     - เพิ่ม `metadataBase: new URL(...)` เพื่อกำจัดคำเตือน metadata base ของ Next.js ตอนคอมไพล์
+
 3. **หลักฐานการทดสอบยืนยันผล (Proof of Work):**
-   - ตรวจสอบ Type ด้วย `pnpm exec tsc --noEmit` ผ่าน 0 errors
-   - รันชุดทดสอบ i18n ครบ 28/28 tests ผ่าน 100%
+   - รันคำสั่ง `pnpm build && pnpm bundle:standalone` ผ่านฉลุย 100% (Exit code: 0)
+   - เรนเดอร์หน้า Static Pages ทั้งหมด 50/50 หน้าสมบูรณ์ ไร้ข้อความ Error สีแดงแม้แต่บรรทัดเดียว
+
 
 
 

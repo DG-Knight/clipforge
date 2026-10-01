@@ -1,6 +1,6 @@
 // After build, fill in the standalone self-contained assets (next build's standalone omits static/public by default),
 // copy migration SQL, and replace the better-sqlite3 copy inside standalone with the Electron ABI prebuilt binary.
-import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "fs";
+import { copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "fs";
 import { execSync } from "child_process";
 import { createRequire } from "module";
 import { join } from "path";
@@ -94,29 +94,63 @@ async function rebuildBetterSqlite3ForElectron() {
   if (!existsSync(node)) throw new Error("解包后未见 better_sqlite3.node，Electron ABI 重建失败");
 
   // 关键：Next 构建会把 serverExternalPackages 的原生包再拷一份到 standalone/.next/node_modules/<包名>-<hash>/，
-  // 运行时优先加载的是这一份而不是顶层 node_modules 那份——只换顶层会导致打包 App 里
-  // 所有 DB 路由 NODE_MODULE_VERSION 不匹配（ERR_DLOPEN_FAILED）→ 500（issue #12）。
-  // 注意平台差异：mac 上这份副本是硬链接的真实目录；Windows 上 standalone/.next/node_modules 是
-  // junction（目录符号链接），泛化的"跳过符号链接"式扫描会漏掉它，而 electron-builder 的 robocopy
-  // 会跟随 junction 把 Node ABI 的旧二进制实体化进安装包。所以这里显式进入该目录（readdirSync 天然
-  // 穿透 junction），对每个 better-sqlite3* 副本先解析真实路径、删旧文件再拷入 Electron ABI 二进制，
-  // 避免经由硬链接把项目根 node_modules 的 Node ABI 版本也改掉（后续本机 next build 还要用）。
+  // 运行时优先加载的是这一份而不是顶层 node_modules 那份。
+  // 注意平台差异：mac 上这份副本是符号链接；Windows 上 standalone/.next/node_modules/<包名> 是
+  // junction（目录连接），直接解析 target 往往指向项目根 node_modules。
+  // 绝对不能去改写 real (根 node_modules)，否则后续本机 next build / pnpm build 会因 ABI 不匹配直接崩盘！
+  // 正确做法：若为 junction / symlink 或指向根 node_modules，直接斩断连接 (unlink)，
+  // 将 standalone/node_modules/better-sqlite3 (已是 Electron ABI) 完整克隆为该目录的实体文件夹。
   const replaced = [];
   const dotNextNM = join(standalone, ".next", "node_modules");
   if (existsSync(dotNextNM)) {
+    const rootBetterSqlite3 = join(root, "node_modules", "better-sqlite3");
+    let rootReal = "";
+    try {
+      rootReal = realpathSync(rootBetterSqlite3);
+    } catch {}
+
     for (const name of readdirSync(dotNextNM)) {
       if (!name.startsWith("better-sqlite3")) continue;
-      const target = join(dotNextNM, name, "build", "Release", "better_sqlite3.node");
-      if (!existsSync(target)) continue;
-      const real = realpathSync(target);
-      if (real === realpathSync(node)) {
-        // mac：副本目录是指回顶层 node_modules/better-sqlite3 的符号链接，顶层刚换过 = 这份已是 Electron ABI
-        replaced.push(`${target}（链接指向顶层，已随顶层替换）`);
+      const targetDir = join(dotNextNM, name);
+
+      let isSymlinkOrJunction = false;
+      try {
+        const stat = lstatSync(targetDir);
+        if (stat.isSymbolicLink()) isSymlinkOrJunction = true;
+      } catch {}
+
+      let targetReal = "";
+      try {
+        targetReal = realpathSync(targetDir);
+      } catch {}
+
+      // 如果是连接、或者解析后指向了项目根目录下的 better-sqlite3：
+      // 斩断连接，替换为独立的实体目录，完全隔离 standalone 与本地开发环境！
+      if (isSymlinkOrJunction || (rootReal && targetReal === rootReal)) {
+        rmSync(targetDir, { recursive: true, force: true });
+        cpSync(bsDir, targetDir, { recursive: true });
+        replaced.push(`${targetDir}（已解绑 Windows Junction 并置换为独立 Electron ABI 副本）`);
         continue;
       }
-      rmSync(real);
-      copyFileSync(node, real);
-      replaced.push(`${target}${real !== target ? ` → ${real}` : ""}`);
+
+      // 如果本身就是独立的实体目录：
+      const targetNode = join(targetDir, "build", "Release", "better_sqlite3.node");
+      if (existsSync(targetNode)) {
+        const real = realpathSync(targetNode);
+        if (real === realpathSync(node)) {
+          replaced.push(`${targetNode}（已指向顶层 Electron ABI）`);
+          continue;
+        }
+        if (rootReal && real.startsWith(rootReal)) {
+          rmSync(targetDir, { recursive: true, force: true });
+          cpSync(bsDir, targetDir, { recursive: true });
+          replaced.push(`${targetDir}（解绑指向根 node_modules 的文件链接）`);
+          continue;
+        }
+        rmSync(real);
+        copyFileSync(node, real);
+        replaced.push(`${targetNode}`);
+      }
     }
   }
   if (replaced.length === 0) {

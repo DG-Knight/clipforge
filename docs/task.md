@@ -130,8 +130,11 @@
   - [x] 19.4 ปรับข้อความป้าย `shotTypeSocialProof` ในไฟล์ i18n (`script.ts`, `assets.ts`, `video.ts`, `showcase.ts`) ให้กระชับเป็น `"การันตี (Proof)"` พอดีกับขนาด Badge
   - [x] 19.5 ตรวจสอบด้วย `tsc --noEmit` และรันชุดทดสอบ i18n ผ่าน 100%
 
-
-
-
+- [x] **20. แก้ไขปัญหา Build Error และข้อผิดพลาดในคำสั่ง `pnpm build && pnpm bundle:standalone`**
+  - [x] 20.1 ตรวจสอบและค้นหาสาเหตุที่แท้จริง: สคริปต์ `bundle-standalone.mjs` เดิมทำการค้นหาโฟลเดอร์ `.next/standalone/.next/node_modules/better-sqlite3-*` ซึ่งบนระบบ Windows นั้น Next.js สร้างเป็น Directory Junction ชี้กลับไปยัง `root node_modules/better-sqlite3` ทำให้คำสั่งแทนที่ไฟล์ไปลบและเขียนทับ `better_sqlite3.node` ใน root workspace ให้กลายเป็น Electron ABI (146) ส่งผลให้การรัน `pnpm build` ถัดมาเกิดข้อผิดพลาด `The module was compiled against a different Node.js version using NODE_MODULE_VERSION 146. This version of Node.js requires NODE_MODULE_VERSION 147.` เต็มหน้าจอ
+  - [x] 20.2 ปรับปรุงสคริปต์ `scripts/bundle-standalone.mjs` ให้ตรวจสอบสถานะ Directory Junction/Symlink บน Windows: ทำการตัดการเชื่อมต่อ (unlink junction) ทิ้ง แล้วคัดลอกโฟลเดอร์ไบนารี Electron ABI แยกออกมาเป็นโฟลเดอร์อิสระใน standalone โดยไม่แตะต้อง root `node_modules` อีกต่อไป
+  - [x] 20.3 ทำการ Rebuild `better-sqlite3` ใน root workspace ให้กลับมาเป็น Node ABI (147) เพื่อรองรับการทำงานของ Next.js Turbopack build
+  - [x] 20.4 เพิ่มคอนฟิก `metadataBase` ใน `src/app/layout.tsx` เพื่อกำจัดคำเตือน metadata base ของ Next.js ตอน build
+  - [x] 20.5 ตรวจสอบและรันคำสั่ง `pnpm build && pnpm bundle:standalone` ยืนยันว่าการ build ทั้ง 50 หน้าผ่านฉลุย ไร้ Error สีแดง 100%
 
 
