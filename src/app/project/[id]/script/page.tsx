@@ -1368,9 +1368,11 @@ export default function ScriptPage() {
                         <CardContent className="p-0">
                           <div className="flex">
                             {/* left-side index and type */}
-                            <div className="flex flex-col items-center justify-center w-16 py-4 border-r border-border/50 shrink-0">
+                            <div className="flex flex-col items-center justify-center w-28 py-4 px-1.5 border-r border-border/50 shrink-0 text-center">
                               <span className="text-lg font-bold text-muted-foreground/50">{String(index + 1).padStart(2, "0")}</span>
-                              <Badge className={`${typeInfo.color} border-0 text-[10px] mt-1`}>{t(typeInfo.labelKey)}</Badge>
+                              <Badge className={`${typeInfo.color} border-0 text-[10px] mt-1 px-2 py-0.5 max-w-full text-center truncate font-medium`} title={t(typeInfo.labelKey)}>
+                                {t(typeInfo.labelKey)}
+                              </Badge>
                               <span className="text-[10px] text-muted-foreground mt-1">{shot.duration}s</span>
                             </div>
                             {/* right-side content */}

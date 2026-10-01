@@ -1450,17 +1450,17 @@ export default function AssetsPage() {
                     <CardContent className="p-0">
                       <div className="flex">
                         {/* left-side index */}
-                        <div className="flex flex-col items-center justify-center w-16 py-4 border-r border-border/50 shrink-0">
+                        <div className="flex flex-col items-center justify-center w-28 py-4 px-1.5 border-r border-border/50 shrink-0 text-center">
                           <span className="text-lg font-bold text-muted-foreground/50">
                             {String(asset.shotId).padStart(2, "0")}
                           </span>
-                          <Badge className={`${typeInfo.color} border-0 text-[10px] mt-1`}>
+                          <Badge className={`${typeInfo.color} border-0 text-[10px] mt-1 px-2 py-0.5 max-w-full text-center truncate font-medium`} title={t(typeInfo.key)}>
                             {t(typeInfo.key)}
                           </Badge>
                           <span className="text-[10px] text-muted-foreground mt-1">{asset.duration}s</span>
                           {reality && (
                             <span
-                              className={`text-[9px] mt-1 px-1 rounded ${
+                              className={`text-[9px] mt-1 px-1.5 py-0.5 rounded text-center max-w-full truncate ${
                                 reality === "real"
                                   ? "bg-emerald-500/15 text-emerald-600"
                                   : "bg-violet-500/15 text-violet-600"

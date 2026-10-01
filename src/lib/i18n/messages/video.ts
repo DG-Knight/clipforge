@@ -255,7 +255,7 @@ export const video: NamespaceMessages = {
     shotPainPoint: "ปัญหา (Pain Point)",
     shotProductReveal: "สินค้า (Product)",
     shotDemo: "สาธิต (Demo)",
-    shotSocialProof: "ความน่าเชื่อถือ (Proof)",
+    shotSocialProof: "การันตี (Proof)",
     shotCta: "ปิดการขาย (CTA)",
     freeVoiceXiaoxiao: "เสี่ยวเสี่ยว · หญิงนุ่มนวล",
     freeVoiceXiaoyi: "เสี่ยวอี · หญิงสดใส",

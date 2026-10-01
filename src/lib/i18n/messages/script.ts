@@ -292,7 +292,7 @@ export const script: NamespaceMessages = {
     shotTypePainPoint: "ปัญหา (Pain Point)",
     shotTypeProductReveal: "สินค้า (Product)",
     shotTypeDemo: "สาธิต (Demo)",
-    shotTypeSocialProof: "ความน่าเชื่อถือ (Proof)",
+    shotTypeSocialProof: "การันตี (Proof)",
     shotTypeCta: "ปิดการขาย (CTA)",
     // สไตล์สคริปต์
     stylePainPoint: "แก้ปัญหาตรงจุด (Pain Point)",

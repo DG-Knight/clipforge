@@ -359,7 +359,7 @@ export const assets: NamespaceMessages = {
     shotTypePainPoint: "ปัญหา (Pain Point)",
     shotTypeProductReveal: "สินค้า (Product)",
     shotTypeDemo: "สาธิต (Demo)",
-    shotTypeSocialProof: "ความน่าเชื่อถือ (Proof)",
+    shotTypeSocialProof: "การันตี (Proof)",
     shotTypeCta: "ปิดการขาย (CTA)",
     untitledProject: "โปรเจกต์ขายสินค้า",
     stepScript: "สคริปต์",
