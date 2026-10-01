@@ -2,13 +2,21 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { LuPlus, LuTrash2, LuPencil, LuPackage, LuImage, LuX, LuVideo, LuCircleAlert, LuLink, LuLoader } from "react-icons/lu";
+import { LuPlus, LuTrash2, LuPencil, LuPackage, LuImage, LuX, LuVideo, LuCircleAlert, LuLink, LuLoader, LuTriangleAlert } from "react-icons/lu";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -304,11 +312,14 @@ export default function ProductsPage() {
     }
   };
 
-  // Delete product
-  const handleDelete = (id: string) => {
-    removeProduct(id);
-    // If the deleted product is currently being edited, close the form
-    if (editingId === id) resetForm();
+  // Custom delete confirmation modal state
+  const [productToDelete, setProductToDelete] = useState<ProductItem | null>(null);
+
+  const confirmDeleteProduct = () => {
+    if (!productToDelete) return;
+    removeProduct(productToDelete.id);
+    if (editingId === productToDelete.id) resetForm();
+    setProductToDelete(null);
   };
 
   return (
@@ -730,9 +741,10 @@ export default function ProductsPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDelete(product.id);
+                              setProductToDelete(product);
                             }}
                             className="flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-red-500 transition-colors"
+                            title={t("deleteProduct")}
                           >
                             <LuTrash2 className="w-3.5 h-3.5" />
                           </button>
@@ -768,6 +780,78 @@ export default function ProductsPage() {
             </div>
           )
         )}
+
+        {/* Custom Confirmation Dialog for Deleting Product */}
+        <Dialog
+          open={productToDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) setProductToDelete(null);
+          }}
+        >
+          <DialogContent className="max-w-md border-white/10 bg-zinc-950/95 backdrop-blur-xl text-zinc-100 shadow-2xl shadow-red-950/25">
+            <DialogHeader className="gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-400 ring-1 ring-red-500/20 shadow-inner">
+                  <LuTrash2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-base font-semibold text-zinc-100 flex items-center gap-1.5">
+                    {t("deleteDialogTitle")}
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-zinc-400 mt-0.5">
+                    {t("deleteDialogDesc")}
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {productToDelete && (
+              <div className="my-2 flex items-center gap-3 rounded-lg border border-white/5 bg-white/[0.03] p-3">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-zinc-900 border border-white/10 flex items-center justify-center">
+                  {productToDelete.images?.[0] ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={productToDelete.images[0]}
+                      alt={productToDelete.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <LuPackage className="h-5 w-5 text-zinc-500" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-sm text-zinc-200 truncate">
+                    {productToDelete.name}
+                  </div>
+                  {productToDelete.price && (
+                    <div className="text-xs text-primary font-medium mt-0.5">
+                      {productToDelete.price}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2 sm:gap-2 mt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-white/10 bg-white/5 hover:bg-white/10 text-zinc-200 text-xs h-9"
+                onClick={() => setProductToDelete(null)}
+              >
+                {t("deleteDialogCancel")}
+              </Button>
+              <Button
+                type="button"
+                className="bg-red-600 hover:bg-red-500 text-white font-medium text-xs h-9 shadow-lg shadow-red-600/30 border-0"
+                onClick={confirmDeleteProduct}
+              >
+                <LuTrash2 className="h-3.5 w-3.5 mr-1.5" />
+                {t("deleteDialogConfirm")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

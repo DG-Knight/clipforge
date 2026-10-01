@@ -878,7 +878,7 @@ export function buildUserPrompt(input: ScriptGenerationInput): string {
     parts.push(
       `\n【LANGUAGE — IMPORTANT, overrides any "中文" / "English" wording above】
 The target audience is Thailand (TikTok Shop TH, Shopee TH, Facebook Reels TH).
-1. Content Language: Write every "title", "voiceover", and "seo" field in natural spoken Thai for Thai shoppers, never Chinese or English. If the product information is in English or Chinese (e.g. imported goods), translate and adapt all selling points into engaging Thai for Thai consumers.
+1. Content Language: Write every "title", "voiceover", and "seo" field in natural Thai (natural spoken Thai) for Thai shoppers, never Chinese or English. If the product information is in English or Chinese (e.g. imported goods), translate and adapt all selling points into engaging Thai for Thai consumers.
 2. Thai Hook & CTA:
    - Design an authentic Thai hook (เช่น "ใครกำลังเจอปัญหานี้...", "หยุดดูคลิปนี้ก่อน...", "บอกเลยว่าตัวนี้เด็ดมาก...")
    - Design a clear Thai Call-to-Action (CTA) at the end (เช่น "กดสั่งซื้อที่ตะกร้าเหลืองด้านล่างได้เลยครับ/ค่ะ", "มีบริการเก็บเงินปลายทาง", "รีบกดก่อนหมดโปร").

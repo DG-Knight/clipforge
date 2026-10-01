@@ -6,7 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { LuPlus, LuTrash2, LuUser, LuStar } from "react-icons/lu";
 import { useT } from "@/lib/i18n";
 import { useSettingsStore } from "@/lib/stores/settings-store";
@@ -39,6 +46,15 @@ export function PresenterManager() {
   const [sheetNotice, setSheetNotice] = useState<string | null>(null);
   // full-size sheet preview dialog (null = closed)
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null);
+  // delete confirmation state
+  const [charToDelete, setCharToDelete] = useState<Character | null>(null);
+
+  const confirmDeleteChar = () => {
+    if (!charToDelete) return;
+    removeCharacter(charToDelete.id);
+    if (editingId === charToDelete.id) resetForm();
+    setCharToDelete(null);
+  };
 
   // generate the 2x2 turnaround sheet: same person from four angles in ONE generation,
   // then every downstream pass (grid / film / keyframes) can pin the identity to it
@@ -200,7 +216,13 @@ export function PresenterManager() {
                       </Button>
                     )}
                     <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => startEdit(char)}>{t("characterEdit")}</Button>
-                    <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-destructive hover:text-destructive" onClick={() => removeCharacter(char.id)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-7 px-2 text-destructive hover:text-destructive"
+                      onClick={() => setCharToDelete(char)}
+                      title={t("characterDeleteDialogTitle")}
+                    >
                       <LuTrash2 className="w-3 h-3" />
                     </Button>
                   </div>
@@ -256,6 +278,72 @@ export function PresenterManager() {
           {preview && (
             <img src={preview.url} alt={t("characterSheetAlt", { name: preview.name })} className="w-full rounded-lg" />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* delete character confirmation dialog */}
+      <Dialog open={charToDelete !== null} onOpenChange={(open) => !open && setCharToDelete(null)}>
+        <DialogContent className="max-w-md border-white/10 bg-zinc-950/95 backdrop-blur-xl text-zinc-100 shadow-2xl shadow-red-950/25">
+          <DialogHeader className="gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-400 ring-1 ring-red-500/20 shadow-inner">
+                <LuTrash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-semibold text-zinc-100 flex items-center gap-1.5">
+                  {t("characterDeleteDialogTitle")}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-zinc-400 mt-0.5">
+                  {t("characterDeleteDialogDesc")}
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {charToDelete && (
+            <div className="my-2 flex items-center gap-3 rounded-lg border border-white/5 bg-white/[0.03] p-3">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-zinc-900 border border-white/10 flex items-center justify-center">
+                {charToDelete.referenceImages?.[0] ? (
+                  <img
+                    src={charToDelete.referenceImages[0]}
+                    alt={charToDelete.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <LuUser className="h-5 w-5 text-zinc-500" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-sm text-zinc-200 truncate">
+                  {charToDelete.name}
+                </div>
+                {charToDelete.description && (
+                  <div className="text-xs text-muted-foreground truncate mt-0.5">
+                    {charToDelete.description}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-2 mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-white/10 bg-white/5 hover:bg-white/10 text-zinc-200 text-xs h-9"
+              onClick={() => setCharToDelete(null)}
+            >
+              {t("characterCancel")}
+            </Button>
+            <Button
+              type="button"
+              className="bg-red-600 hover:bg-red-500 text-white font-medium text-xs h-9 shadow-lg shadow-red-600/30 border-0"
+              onClick={confirmDeleteChar}
+            >
+              <LuTrash2 className="h-3.5 w-3.5 mr-1.5" />
+              {t("characterDeleteDialogConfirm")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

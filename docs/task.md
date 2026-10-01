@@ -101,6 +101,13 @@
   - [x] 15.3 เพิ่มคีย์คำแปลครบทั้ง 3 ภาษาใน `src/lib/i18n/messages/projectsPage.ts` (`deleteDialogTitle`, `deleteDialogDesc`, `deleteDialogCancel`, `deleteDialogConfirm`, `deleteInProgress`)
   - [x] 15.4 ตรวจสอบความถูกต้องด้วย `tsc --noEmit` และรันชุดทดสอบ i18n ผ่าน 100%
 
+- [x] **16. สแกนตรวจสอบกล่องข้อความ Windows ทั่วทั้งระบบ และเพิ่ม Custom Dialog ในส่วนที่เหลือ**
+  - [x] 16.1 สแกนหาคำสั่ง `window.confirm`, `window.alert`, `window.prompt`, `confirm(`, `alert(` ทั่วทั้ง codebase ยืนยันว่าไม่มีจุดใดใน UI ที่ยังเรียกใช้ Dialog ระบบปฏิบัติการ Windows อีกแล้ว
+  - [x] 16.2 ยกระดับระบบความปลอดภัยและความสวยงาม: เพิ่ม Custom Confirmation Dialog สไตล์ Dark Glassmorphism สำหรับ **การลบสินค้าในคลังสินค้า** (`/products`) พร้อมการ์ดภาพสินค้าและชื่อสินค้า
+  - [x] 16.3 เพิ่ม Custom Confirmation Dialog สไตล์ Dark Glassmorphism สำหรับ **การลบตัวละครในคลังผู้ประกาศ** (`/presenters` & `PresenterManager`) พร้อมการ์ดแสดงรูปและชื่อผู้ประกาศ
+  - [x] 16.4 เพิ่มคีย์ภาษา i18n ครบ 3 ภาษาใน `products.ts` และ `settings.ts` พร้อมผ่าน Automated Tests และ Type Checking 100%
+
+
 
 
 

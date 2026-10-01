@@ -176,6 +176,9 @@ export const settings: NamespaceMessages = {
     characterSaveEdit: "保存修改",
     characterAddSubmit: "添加人物",
     characterAddButton: "添加出镜人物",
+    characterDeleteDialogTitle: "确认删除该人物？",
+    characterDeleteDialogDesc: "删除后该人物将从人物库中移除，已生成的项目素材不受影响。此操作无法撤销。",
+    characterDeleteDialogConfirm: "确认删除",
 
     // 品牌设置
     brandPositionTopLeft: "左上",
@@ -373,6 +376,9 @@ export const settings: NamespaceMessages = {
     characterSaveEdit: "Save changes",
     characterAddSubmit: "Add character",
     characterAddButton: "Add a character",
+    characterDeleteDialogTitle: "Delete this character?",
+    characterDeleteDialogDesc: "This character will be removed from your library. Assets generated in existing projects won't be affected. This cannot be undone.",
+    characterDeleteDialogConfirm: "Delete character",
 
     // Branding
     brandPositionTopLeft: "Top left",
@@ -570,6 +576,9 @@ export const settings: NamespaceMessages = {
     characterSaveEdit: "บันทึกการแก้ไข",
     characterAddSubmit: "เพิ่มตัวละคร",
     characterAddButton: "เพิ่มตัวละครใหม่",
+    characterDeleteDialogTitle: "ยืนยันการลบตัวละครนี้?",
+    characterDeleteDialogDesc: "เมื่อลบแล้ว ตัวละครนี้จะถูกนำออกจากคลังผู้ประกาศ มีเดียในโปรเจกต์เดิมจะไม่ได้รับผลกระทบ การดำเนินการนี้ไม่สามารถกู้คืนได้",
+    characterDeleteDialogConfirm: "ลบตัวละครถาวร",
 
     // การตั้งค่าแบรนด์
     brandPositionTopLeft: "บนซ้าย",
