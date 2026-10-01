@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { mergeCustomModels, buildVideoOptions } from "@/lib/gen-params";
 import { referenceModelFor, buildReplicatePrompt, REPLICATE_MAX_REF_SEC, type ReplicateShot } from "@/lib/replicate-plan";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 
 /** storyboard card data */
 interface StoryboardCard {
@@ -48,6 +48,7 @@ interface VideoModelTarget {
 
 export default function ClonePage() {
   const t = useT("clone");
+  const locale = useLocale();
   const router = useRouter();
   const { llm, providers, defaultVideoModel, customModels, videoParams } = useSettingsStore();
 
@@ -291,6 +292,7 @@ export default function ClonePage() {
           styleType: "auto",
           videoMode: "product_closeup",
           productImages: paths,
+          locale,
           ...(refAnalysis?.referenceStructure && { referenceStructure: refAnalysis.referenceStructure }),
           llmConfig: {
             baseUrl: llm.baseUrl,
@@ -310,7 +312,7 @@ export default function ClonePage() {
       setGenError(err instanceof Error ? err.message : t("errorCloneFailed"));
       setIsGenerating(false);
     }
-  }, [isGenerating, llm, productName, productFeatures, refAnalysis, createCloneProject, router, t]);
+  }, [isGenerating, llm, productName, productFeatures, refAnalysis, createCloneProject, router, t, locale]);
 
   /** handle file selection / upload */
   const handleFiles = useCallback(

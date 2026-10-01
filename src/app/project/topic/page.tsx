@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LuSparkles, LuCircleAlert, LuLoaderCircle, LuWandSparkles } from "react-icons/lu";
 import { useSettingsStore } from "@/lib/stores/settings-store";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,7 @@ const exampleTopicKeys = ["exampleTopic1", "exampleTopic2", "exampleTopic3", "ex
 
 export default function TopicProjectPage() {
   const t = useT("topic");
+  const locale = useLocale();
   const router = useRouter();
   const { llm } = useSettingsStore();
   const isLLMConfigured = llm.apiKey.length > 0;
@@ -63,6 +64,7 @@ export default function TopicProjectPage() {
           topic: topic.trim(),
           narrationStyle,
           targetDuration: Number(duration),
+          locale,
           llmConfig: {
             baseUrl: llm.baseUrl,
             apiKey: llm.apiKey,

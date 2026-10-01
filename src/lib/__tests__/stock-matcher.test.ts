@@ -211,6 +211,17 @@ describe("broadenQuery 主题锚定 + fallbackLevelOf 兜底级别", () => {
     expect(r.filter((q) => q === "coffee")).toHaveLength(1);
   });
 
+  it("broadenQuery 支持泰语/中文中提取英文品牌关键词（避免直接掉入 universal）", async () => {
+    const { broadenQuery } = await import("@/lib/stock-matcher");
+    const r = broadenQuery("รีวิว Dyson Supersonic ไดร์เป่าผมทรงพลัง");
+    expect(r).toContain("Dyson Supersonic");
+    expect(r).toContain("Supersonic");
+    const dysonIdx = r.indexOf("Dyson Supersonic");
+    const universalIdx = r.indexOf("abstract background");
+    expect(dysonIdx).toBeGreaterThan(-1);
+    expect(dysonIdx).toBeLessThan(universalIdx);
+  });
+
   it("fallbackLevelOf：原词=original，窄化/主题=narrowed，万能词=universal", async () => {
     const { fallbackLevelOf } = await import("@/lib/stock-matcher");
     expect(fallbackLevelOf("pour over brewing", "pour over brewing")).toBe("original");

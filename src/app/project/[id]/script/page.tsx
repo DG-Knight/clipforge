@@ -153,6 +153,7 @@ export default function ScriptPage() {
             projectId: id,
             topic: projectMeta.topic || projectName,
             targetDuration: 25,
+            locale,
             llmConfig: { baseUrl: llm.baseUrl, apiKey: llm.apiKey, model: llm.model },
           }
         : {
@@ -164,6 +165,7 @@ export default function ScriptPage() {
             styleType: "auto",
             videoMode: projectMeta.videoMode,
             productImages: projectMeta.productImages,
+            locale,
             llmConfig: {
               baseUrl: llm.baseUrl,
               apiKey: llm.apiKey,

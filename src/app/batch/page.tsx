@@ -346,6 +346,7 @@ export default function BatchPage() {
           ...(slot?.hookId ? { preferredHookId: slot.hookId } : {}),
           videoMode: ctx.videoMode,
           productImages: product.images ?? [],
+          locale,
           llmConfig: {
             baseUrl: llm.baseUrl,
             apiKey: llm.apiKey,

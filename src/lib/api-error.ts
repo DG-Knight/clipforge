@@ -25,10 +25,19 @@ interface HasHeaders {
  * machine-translatable, instead of Chinese). Pure-ish, unit-testable.
  */
 export function pickLocale(req: HasHeaders): ApiLocale {
+  const custom = req.headers.get("x-clipforge-locale") || req.headers.get("x-locale");
+  if (custom) {
+    const c = custom.toLowerCase().trim();
+    if (c === "th" || c.startsWith("th-")) return "th";
+    if (c === "en" || c.startsWith("en-")) return "en";
+    if (c === "zh" || c.startsWith("zh-")) return "zh";
+  }
   const header = req.headers.get("accept-language") || "";
   const first = header.split(",")[0]?.trim().toLowerCase() || "";
   if (first.startsWith("th")) return "th";
-  return first.startsWith("en") ? "en" : "zh";
+  if (first.startsWith("en")) return "en";
+  if (first.startsWith("zh")) return "zh";
+  return "th";
 }
 
 /** Localized error string for the request (zh by default, en for English clients, th when passed). */

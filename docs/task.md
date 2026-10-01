@@ -86,4 +86,13 @@
   - [x] 13.1 จัดทำไฟล์ `HOW_TO_RUN.md` รวบรวมวิธีติดตั้ง, การเปิดโหมด Dev (`pnpm dev`), โหมด Desktop (`pnpm electron`), การบิลด์ `.exe` (`pnpm dist`) และวิธีแก้ปัญหาเบื้องต้น
   - [x] 13.2 เชื่อมโยงคู่มือ `HOW_TO_RUN.md` เข้ากับส่วนบนสุดของ `README.md`
 
+- [x] **14. แก้ไขบัคหลบซ่อนและปรับปรุงการสร้างวิดีโอขายสินค้าสำหรับตลาดไทย (Systematic Thai E-Commerce Pipeline Fixes)**
+  - [x] 14.1 แก้ไขปัญหา Script Engine หลุดเป็นภาษาอังกฤษ/จีนเมื่อระบุชื่อสินค้าภาษาอังกฤษ (เช่น แบรนด์ Dyson, Sony, Apple) หรือภาษาจีน (สินค้า 1688) โดยเพิ่ม `locale` ใน `ScriptGenerationInput`, `TopicScriptInput` และปรับแต่ง `buildUserPrompt` กับ `buildTopicPrompt` บังคับภาษาไทยตามบริบท TikTok Shop TH / Shopee TH / Reels TH
+  - [x] 14.2 กำหนดอัตราความเร็วการพูดภาษาไทย (10-14 ตัวอักษร/วินาที หรือ 3-4 คำ/วินาที) คำลงท้ายสุภาพ (ครับ/ค่ะ) และการเปิด Hook/ปิดการขายสไตล์ไทย (กดตะกร้าเหลือง, มีเก็บเงินปลายทาง)
+  - [x] 14.3 ปรับปรุง API `/api/llm/script`, `/api/topic/script`, `/api/tts/free` และฟังก์ชัน `pickLocale` ใน `src/lib/api-error.ts` ให้รับรู้ locale `th` และส่งคืนเสียงพากย์ดีฟอลต์ไทย `th-TH-PremwadeeNeural`
+  - [x] 14.4 เชื่อมต่อส่งต่อ `locale` จากทุกหน้าของ Frontend (`/start`, `/project/[id]/script`, `/project/new`, `/project/clone`, `/project/topic`, `/batch`)
+  - [x] 14.5 เพิ่มระบบ Smart Latin Token Extraction ใน `broadenQuery` ของ `src/lib/stock-matcher.ts` ให้สามารถดึงชื่อแบรนด์/รุ่นภาษาอังกฤษจากชื่อสินค้าภาษาไทยไปค้นหาฟุตเทจ Pexels/Pixabay ได้อย่างแม่นยำ ไม่หลุดไป universal fallback
+  - [x] 14.6 พัฒนาชุดทดสอบอัตโนมัติ `src/lib/__tests__/thai-systematic-pipeline.test.ts` และรันการทดสอบทั้งหมดผ่าน 100%
+
+
 

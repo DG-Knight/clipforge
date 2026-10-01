@@ -717,6 +717,8 @@ export interface ScriptGenerationInput {
   performanceHint?: string;
   /** pin the opening hook mechanism (HOOK_PATTERNS id) — anti-homogenization batch rotation assigns a different one per video */
   preferredHookId?: string;
+  /** target UI/content locale ("th" | "en" | "zh") */
+  locale?: "zh" | "en" | "th";
 }
 
 /**
@@ -869,12 +871,24 @@ export function buildUserPrompt(input: ScriptGenerationInput): string {
   // Placed last for maximum prominence, overrides any "中文" wording in the spec above.
   // Same technique used in the topic path (buildTopicPrompt).
   const productText = `${productName || ""} ${productDescription || ""} ${usageAdvantage || ""}`;
-  const productLang = detectScriptLanguage(productText);
-  if (productText.trim() && productLang === "th") {
+  const detectedLang = detectScriptLanguage(productText);
+  const targetLang = input.locale === "th" ? "th" : input.locale === "en" ? "en" : (input.locale === "zh" ? "zh" : detectedLang);
+
+  if (targetLang === "th" || detectedLang === "th") {
     parts.push(
-      `\n【LANGUAGE — IMPORTANT, overrides any "中文" wording above】The product info is in Thai. Write every "title" and "voiceover" field in natural Thai for a Thai TikTok Shop audience, never Chinese or English. Keep "searchTerms" in English as usual; "description"/"camera" may be concise Thai.`
+      `\n【LANGUAGE — IMPORTANT, overrides any "中文" / "English" wording above】
+The target audience is Thailand (TikTok Shop TH, Shopee TH, Facebook Reels TH).
+1. Content Language: Write every "title", "voiceover", and "seo" field in natural spoken Thai for Thai shoppers, never Chinese or English. If the product information is in English or Chinese (e.g. imported goods), translate and adapt all selling points into engaging Thai for Thai consumers.
+2. Thai Hook & CTA:
+   - Design an authentic Thai hook (เช่น "ใครกำลังเจอปัญหานี้...", "หยุดดูคลิปนี้ก่อน...", "บอกเลยว่าตัวนี้เด็ดมาก...")
+   - Design a clear Thai Call-to-Action (CTA) at the end (เช่น "กดสั่งซื้อที่ตะกร้าเหลืองด้านล่างได้เลยครับ/ค่ะ", "มีบริการเก็บเงินปลายทาง", "รีบกดก่อนหมดโปร").
+   - Include natural polite particles (ครับ/ค่ะ) where appropriate.
+3. Thai Voiceover Pacing:
+   - Thai speech pacing is approximately 3–4 words per second, or about 10-14 Thai characters per second of shot duration.
+   - Ensure the voiceover text length in each shot matches its duration.
+4. Visual Search: Keep "searchTerms" in English as usual (1-3 English keywords per shot); "description"/"camera" may be concise Thai.`
     );
-  } else if (productText.trim() && productLang === "en") {
+  } else if (targetLang === "en" || (productText.trim() && detectedLang === "en")) {
     parts.push(
       `\n【LANGUAGE — IMPORTANT, overrides any "中文" wording above】The product info is NOT in Chinese. Write every "title" and "voiceover" field in the SAME language as the product (e.g. natural English for an overseas TikTok Shop audience), never Chinese. Keep "searchTerms" in English as usual; "description"/"camera" may be concise English.`
     );
@@ -1037,6 +1051,8 @@ export interface TopicScriptInput {
   platforms?: string;
   /** additional user requirements (optional) */
   customRequirements?: string;
+  /** target UI/content locale ("th" | "en" | "zh") */
+  locale?: "zh" | "en" | "th";
 }
 
 /** Assembles the user prompt for topic video generation */
@@ -1079,16 +1095,18 @@ export function buildTopicPrompt(input: TopicScriptInput): string {
 
   parts.push(`\n${TOPIC_OUTPUT_FORMAT_PROMPT}`);
 
-  // Language follows the topic language: Thai topics produce Thai voiceovers/titles,
-  // English topics English ones (otherwise the "Chinese voiceover" wording in the JSON spec above
-  // would cause non-Chinese topics to produce Chinese narration — wrong video body).
-  // Placed last for maximum prominence, overrides any "中文" wording in the spec.
-  const topicLang = detectScriptLanguage(topic);
-  if (topicLang === "th") {
+  // Language follows the target locale / topic language
+  const detectedLang = detectScriptLanguage(topic);
+  const targetLang = input.locale === "th" ? "th" : input.locale === "en" ? "en" : (input.locale === "zh" ? "zh" : detectedLang);
+
+  if (targetLang === "th" || detectedLang === "th") {
     parts.push(
-      `\n【LANGUAGE — IMPORTANT, overrides any "中文" wording above】The topic is in Thai. Write every "title" and "voiceover" field in natural Thai, never Chinese or English. Keep "searchTerms" in English as usual; "description"/"camera" may be concise Thai.`
+      `\n【LANGUAGE & AUDIENCE — CRITICAL REQUIREMENT, OVERRIDES ANY "中文" / "English" WORDING ABOVE】
+1. Target Audience: Thai viewers. Write every "title", "voiceover", and descriptive field in natural Thai, never Chinese or English.
+2. Pacing: Pacing is approximately 3-4 words per second (10-14 Thai characters per second of shot duration).
+3. Search Terms: Keep "searchTerms" in English as usual (1-3 English keywords per shot to match free stock footage); "description"/"camera" may be concise Thai.`
     );
-  } else if (topicLang === "en") {
+  } else if (targetLang === "en" || (topic.trim() && detectedLang === "en")) {
     parts.push(
       `\n【LANGUAGE — IMPORTANT, overrides any "中文" wording above】The topic is NOT in Chinese. Write every "title" and "voiceover" field in the SAME language as the topic (e.g. natural English), never Chinese. Keep "searchTerms" in English as usual; "description"/"camera" may be concise English.`
     );

@@ -4,7 +4,7 @@ import type { TopicNarrationStyle } from "@/lib/script-engine/prompts";
 import { getDb } from "@/lib/db";
 import { scripts as scriptsTable, projects } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { apiError, errText } from "@/lib/api-error";
+import { apiError, errText, pickLocale } from "@/lib/api-error";
 import { llmErrorPair } from "@/lib/llm-error";
 
 const VALID_NARRATION = new Set<TopicNarrationStyle>([
@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
       targetDuration,
       count,
       platforms,
+      locale: (body.locale as "zh" | "en" | "th") ?? pickLocale(req),
       llmConfig: llmConfig as { baseUrl: string; apiKey: string; model: string },
     });
   } catch (error) {

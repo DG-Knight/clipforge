@@ -9,7 +9,7 @@ import type { ProductCategory } from "@/lib/script-engine/templates";
 import { getDb } from "@/lib/db";
 import { scripts as scriptsTable, projects, publishMetrics } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { apiError, errText } from "@/lib/api-error";
+import { apiError, errText, pickLocale } from "@/lib/api-error";
 import { llmErrorPair } from "@/lib/llm-error";
 import { topConvertingStyle, topConvertingHook, buildPerformanceHint, type MetricInput } from "@/lib/performance-insights";
 
@@ -202,6 +202,7 @@ export async function POST(req: NextRequest) {
         typeof body.preferredHookId === "string" && HOOK_PATTERNS.some((p) => p.id === body.preferredHookId)
           ? body.preferredHookId
           : undefined,
+      locale: (body.locale as "zh" | "en" | "th") ?? pickLocale(req),
       llmConfig,
     });
 

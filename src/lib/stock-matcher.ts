@@ -25,6 +25,19 @@ export function broadenQuery(query: string, subjectEn?: string): string[] {
 
   if (words.length > 2) out.push(words.slice(-2).join(" ")); // last two words
   if (words.length > 1) out.push(words[words.length - 1]); // last word (typically the main noun)
+
+  // Extract English/Latin tokens when the query contains non-Latin text (e.g. Thai/Chinese with English brand)
+  const latinTokens = q.match(/[A-Za-z][A-Za-z0-9_-]*/g);
+  if (latinTokens && latinTokens.length > 0) {
+    const latinQuery = latinTokens.join(" ");
+    if (latinQuery.toLowerCase() !== q.toLowerCase()) {
+      out.push(latinQuery);
+      if (latinTokens.length > 1) {
+        out.push(latinTokens[latinTokens.length - 1]);
+      }
+    }
+  }
+
   const subject = (subjectEn || "").trim();
   if (subject) out.push(subject); // topic anchor: still on-subject, broader than the shot's own terms
   out.push(...UNIVERSAL_FALLBACKS);

@@ -366,7 +366,7 @@ export default function StartPage() {
     const res = await fetch("/api/topic/script", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic: topic.trim(), narrationStyle: "knowledge", targetDuration: 25, llmConfig: llmConfig() }),
+      body: JSON.stringify({ topic: topic.trim(), narrationStyle: "knowledge", targetDuration: 25, locale, llmConfig: llmConfig() }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok && !data.projectId) throw new Error(data.error || t("errTopicScript"));
@@ -415,6 +415,7 @@ export default function StartPage() {
         styleType: creationPreset().styleType,
         videoMode: creationPreset().videoMode,
         productImages: paths,
+        locale,
         llmConfig: llmConfig(),
         ...(creationCharacter() && { character: creationCharacter() }),
       }),
@@ -453,6 +454,7 @@ export default function StartPage() {
         styleType: creationPreset().styleType,
         videoMode: creationPreset().videoMode,
         productImages: data.productImages || [],
+        locale,
         llmConfig: llmConfig(),
         ...(creationCharacter() && { character: creationCharacter() }),
       }),

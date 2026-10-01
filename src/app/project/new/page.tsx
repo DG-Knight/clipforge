@@ -598,6 +598,7 @@ export default function NewProjectPage() {
           styleType: scriptStyle,
           videoMode,
           productImages: paths,
+          locale,
           llmConfig: {
             baseUrl: llm.baseUrl,
             apiKey: llm.apiKey,
