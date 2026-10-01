@@ -886,7 +886,10 @@ The target audience is Thailand (TikTok Shop TH, Shopee TH, Facebook Reels TH).
 3. Thai Voiceover Pacing:
    - Thai speech pacing is approximately 3–4 words per second, or about 10-14 Thai characters per second of shot duration.
    - Ensure the voiceover text length in each shot matches its duration.
-4. Visual Search: Keep "searchTerms" in English as usual (1-3 English keywords per shot); "description"/"camera" may be concise Thai.`
+4. Camera & Visuals:
+   - "camera": Write as standard English motion direction (e.g. "crash push-in on subject", "slow 180 orbit around product", "low-angle hero shot") or concise Thai. NEVER use Chinese for "camera". NEVER prefix with "镜头:" or "camera:".
+   - "description": Concise Thai describing what is visibly happening in this shot.
+   - "searchTerms": Keep in English as usual (1-3 English keywords per shot to match stock footage).`
     );
   } else if (targetLang === "en" || (productText.trim() && detectedLang === "en")) {
     parts.push(
@@ -1104,7 +1107,9 @@ export function buildTopicPrompt(input: TopicScriptInput): string {
       `\n【LANGUAGE & AUDIENCE — CRITICAL REQUIREMENT, OVERRIDES ANY "中文" / "English" WORDING ABOVE】
 1. Target Audience: Thai viewers. Write every "title", "voiceover", and descriptive field in natural Thai, never Chinese or English.
 2. Pacing: Pacing is approximately 3-4 words per second (10-14 Thai characters per second of shot duration).
-3. Search Terms: Keep "searchTerms" in English as usual (1-3 English keywords per shot to match free stock footage); "description"/"camera" may be concise Thai.`
+3. Camera & Search Terms:
+   - "camera": Write as standard English motion direction (e.g. "slow orbit", "push-in", "pull-out") or concise Thai. NEVER use Chinese. NEVER prefix with "镜头:".
+   - "searchTerms": Keep in English as usual (1-3 English keywords per shot to match free stock footage); "description" in concise Thai.`
     );
   } else if (targetLang === "en" || (topic.trim() && detectedLang === "en")) {
     parts.push(

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { LuWand, LuClock, LuImage, LuArrowRight, LuBookmarkPlus, LuLoaderCircle, LuTriangleAlert, LuCircleCheck, LuCircleX, LuPencil } from "react-icons/lu";
+import { LuWand, LuClock, LuImage, LuArrowRight, LuBookmarkPlus, LuLoaderCircle, LuTriangleAlert, LuCircleCheck, LuCircleX, LuPencil, LuVideo } from "react-icons/lu";
 import { checkScriptCompliance } from "@/lib/ad-compliance";
 import { checkPublishReadiness } from "@/lib/publish-readiness";
 import Link from "next/link";
@@ -18,6 +18,7 @@ import { useTemplateStore } from "@/lib/stores/template-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { useCharacterStore } from "@/lib/stores/project-store";
 import { resolveDefaultModelTarget, buildImageOptions, buildVideoOptions, toEditVariant } from "@/lib/gen-params";
+import { formatCameraForDisplay } from "@/lib/camera-presets";
 import { useT, useLocale } from "@/lib/i18n";
 import { pickLocaleText } from "@/lib/i18n/config";
 import { STAGE_LABEL_KEYS } from "@/lib/pipeline-stages";
@@ -1378,9 +1379,9 @@ export default function ScriptPage() {
                                 <div className="flex-1">
                                   <p className="text-sm leading-relaxed mb-2">{shot.description}</p>
                                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                    <span className="flex items-center gap-1">
-                                      <LuClock className="w-3 h-3" />
-                                      {shot.camera}
+                                    <span className="flex items-center gap-1" title={t("cameraMovement")}>
+                                      <LuVideo className="w-3 h-3 text-muted-foreground/80" />
+                                      <span>{formatCameraForDisplay(shot.camera, locale)}</span>
                                     </span>
                                     <span className="flex items-center gap-1">
                                       {shot.visualSource === "product_image" ? t("visualProductImage") : shot.visualSource === "ai_generate" ? t("visualAiGenerate") : t("visualUserUpload")}

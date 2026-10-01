@@ -93,6 +93,7 @@
   - [x] 14.4 เชื่อมต่อส่งต่อ `locale` จากทุกหน้าของ Frontend (`/start`, `/project/[id]/script`, `/project/new`, `/project/clone`, `/project/topic`, `/batch`)
   - [x] 14.5 เพิ่มระบบ Smart Latin Token Extraction ใน `broadenQuery` ของ `src/lib/stock-matcher.ts` ให้สามารถดึงชื่อแบรนด์/รุ่นภาษาอังกฤษจากชื่อสินค้าภาษาไทยไปค้นหาฟุตเทจ Pexels/Pixabay ได้อย่างแม่นยำ ไม่หลุดไป universal fallback
   - [x] 14.6 พัฒนาชุดทดสอบอัตโนมัติ `src/lib/__tests__/thai-systematic-pipeline.test.ts` และรันการทดสอบทั้งหมดผ่าน 100%
+  - [x] 14.7 แปลงข้อความคำสั่งกำกับมุมกล้อง (Camera Movement) เป็นภาษาไทยและสากล: ตัดคำนำหน้า `镜头:` ทิ้ง, แปลงชื่อมุมกล้องจีนเป็นภาษาไทยสำหรับ UI display (`formatCameraForDisplay`), ปรับปรุง `cameraPresetGuide` ให้ไกด์เป็นภาษาอังกฤษเมื่อเป็นภาษาไทย, เปลี่ยนไอคอนนาฬิกาเป็นไอคอนกล้องวิดีโอ (`<LuVideo>`) และเพิ่มชุดทดสอบ `camera-display.test.ts` ผ่าน 100%
 
 
 

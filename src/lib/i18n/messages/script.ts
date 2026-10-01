@@ -18,6 +18,7 @@ export const script: NamespaceMessages = {
     // 通用
     defaultProjectName: "带货项目",
     untitledScript: "未命名脚本",
+    cameraMovement: "运镜",
     // 生成相关错误
     errorNoLlm: "尚未配置 LLM，请先到「设置」填写 API Key",
     errorGenFailedCheckLlm: "脚本生成失败，请检查 LLM 设置",
@@ -159,6 +160,7 @@ export const script: NamespaceMessages = {
     // 通用
     defaultProjectName: "Commerce project",
     untitledScript: "Untitled script",
+    cameraMovement: "Camera",
     // 生成相关错误
     errorNoLlm: "No LLM configured — add your API key in Settings first",
     errorGenFailedCheckLlm: "Script generation failed — check your LLM settings",
@@ -300,6 +302,7 @@ export const script: NamespaceMessages = {
     // ทั่วไป
     defaultProjectName: "โปรเจกต์ขายสินค้า",
     untitledScript: "สคริปต์ไม่มีชื่อ",
+    cameraMovement: "มุมกล้อง",
     // ข้อผิดพลาดในการสร้าง
     errorNoLlm: "ยังไม่ได้ตั้งค่า LLM โปรดกรอก API Key ในหน้าตั้งค่าก่อน",
     errorGenFailedCheckLlm: "สร้างสคริปต์ไม่สำเร็จ โปรดตรวจสอบการตั้งค่า LLM",

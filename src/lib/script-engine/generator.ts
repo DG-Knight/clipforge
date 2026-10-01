@@ -213,12 +213,15 @@ function validateShot(shot: Partial<Shot>, index: number): Shot {
     ? rawTerms.filter((t): t is string => typeof t === "string" && t.trim().length > 0).map((t) => t.trim()).slice(0, 3)
     : undefined;
 
+  const rawCamera = typeof shot.camera === "string" ? shot.camera.trim() : "";
+  const cleanedCamera = rawCamera.replace(/^(?:镜头|camera|Camera)\s*[:：]\s*/i, "").trim();
+
   return {
     shotId: shot.shotId || index + 1,
     type: validTypes.includes(shot.type as Shot["type"]) ? (shot.type as Shot["type"]) : "demo",
     duration: typeof shot.duration === "number" && shot.duration > 0 ? shot.duration : 3,
     description: shot.description || "",
-    camera: shot.camera || "固定镜头",
+    camera: cleanedCamera || shot.camera || "固定镜头",
     visualSource: validSources.includes(shot.visualSource as Shot["visualSource"]) ? (shot.visualSource as Shot["visualSource"]) : "ai_generate",
     // Default transition matches the schema (videoClips.transitionType) and UI default (ai_start_end)
     transition: validTransitions.includes(shot.transition as Shot["transition"]) ? (shot.transition as Shot["transition"]) : "ai_start_end",

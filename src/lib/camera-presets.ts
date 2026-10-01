@@ -355,7 +355,21 @@ const GUIDE_MAX_PER_TYPE = 3;
  * quality: the LLM picks from known-good, conflict-free commerce moves instead of
  * improvising, while staying free to fine-tune wording per scene.
  */
-export function cameraPresetGuide(): string {
+export function cameraPresetGuide(locale?: "zh" | "en" | "th"): string {
+  if (locale === "th" || locale === "en") {
+    const lines = GUIDE_INTENT_LABELS.map(({ type }) => {
+      const examples = recommendedPresets(type)
+        .slice(0, GUIDE_MAX_PER_TYPE)
+        .map((p) => p.prompt.en)
+        .join(" | ");
+      return `  - ${type}: ${examples}`;
+    });
+    return [
+      'Camera movement description in English (or concise Thai). Pick the best matching motion prompt from below (or tune slightly), keep a single clear movement direction per shot (never prefix with "镜头:" or "camera:"):',
+      ...lines,
+    ].join("\n");
+  }
+
   const lines = GUIDE_INTENT_LABELS.map(({ type, label, framing, mood }) => {
     const examples = recommendedPresets(type)
       .slice(0, GUIDE_MAX_PER_TYPE)
@@ -367,4 +381,71 @@ export function cameraPresetGuide(): string {
     "中文镜头运动描述。优先从下列电商运镜词表中挑选最贴合分镜情绪的一条（可按画面微调用词），每镜保持单一明确的运动方向；不要把「固定镜头」与「环绕/推拉」写进同一句，除非用「先…随后…」表达先后顺序：",
     ...lines,
   ].join("\n");
+}
+
+/**
+ * Common camera movement translation dictionary (Chinese to Thai)
+ * Translates Chinese camera direction terms to natural Thai for UI display.
+ */
+const CAMERA_ZH_TRANSLATIONS: Array<[RegExp, string]> = [
+  // Compound movement descriptions
+  [/急速推近主体|快速推运动向主体|快速推近|快推/g, "ดอลลี่เข้าเร็วหาสินค้า"],
+  [/围绕主体旋转半圈|围绕主体缓慢环绕半圈/g, "หมุนวนรอบสินค้าครึ่งรอบ"],
+  [/低角度俯视推进主体|低角度俯视/g, "มุมมองกดลงระดับต่ำ"],
+  [/高光沿表面流动/g, "แสงเงาสะท้อนพื้นผิว"],
+  [/动感强烈/g, "เร้าใจ"],
+  [/节奏极强/g, "จังหวะกระชับ"],
+  [/立体感强/g, "มิติชัดเจน"],
+  [/强调画面细节/g, "เน้นรายละเอียด"],
+  [/微距特写/g, "โคลสอัพมาโคร"],
+  [/极致特写/g, "โคลสอัพขั้นสุด"],
+  [/特写/g, "โคลสอัพ"],
+  [/低角度仰拍|仰拍/g, "มุมช้อนขึ้น"],
+  [/俯视推进/g, "มุมก้มเคลื่อนเข้า"],
+  [/俯视|俯拍/g, "มุมก้ม"],
+  [/推近|推进|推向/g, "เคลื่อนกล้องเข้า"],
+  [/拉远|后退/g, "เคลื่อนกล้องออก"],
+  [/平移/g, "แพนกล้อง"],
+  [/跟随|跟拍/g, "แทร็กตาม"],
+  [/环绕/g, "หมุนรอบ"],
+  [/固定镜头/g, "ตั้งกล้องนิ่ง"],
+  [/手持/g, "ถือถ่าย"],
+  [/自然微晃/g, "สั่นไหวเป็นธรรมชาติ"],
+  [/沉浸感强/g, "สมจริง"],
+  [/主体/g, "สินค้า"],
+  [/细节/g, "รายละเอียด"],
+];
+
+/**
+ * Format camera text for UI display:
+ * 1. Strips any "镜头:" or "camera:" prefix
+ * 2. If it matches a known preset, shows the localized preset name (e.g. "พุ่งเข้าอย่างเร็ว")
+ * 3. If locale is Thai and contains Chinese characters, translates movement keywords to Thai
+ */
+export function formatCameraForDisplay(cameraText: string | undefined, locale?: string): string {
+  if (!cameraText) return "";
+  let clean = cameraText.trim();
+  // Strip "镜头:" or "镜头：" or "camera:" prefixes
+  clean = clean.replace(/^(?:镜头|camera|Camera)\s*[:：]\s*/i, "").trim();
+
+  // 1. Check exact preset match
+  const preset = findPresetByPrompt(clean);
+  if (preset) {
+    if (locale === "th") return preset.name.th;
+    if (locale === "en") return preset.name.en;
+    return preset.name.zh;
+  }
+
+  // 2. If locale is Thai and contains Chinese characters, translate to readable Thai
+  if (locale === "th" && /[一-鿿]/.test(clean)) {
+    let thText = clean;
+    for (const [re, thWord] of CAMERA_ZH_TRANSLATIONS) {
+      thText = thText.replace(re, thWord);
+    }
+    // Clean up Chinese punctuation into readable spaces / commas
+    thText = thText.replace(/[、，]/g, " ").replace(/；/g, " | ").replace(/\s+/g, " ").trim();
+    return thText;
+  }
+
+  return clean;
 }
