@@ -303,3 +303,30 @@ describe("adTemplateScriptDirective 脚本注入块", () => {
     }
   });
 });
+
+describe("Ad templates ภาษาไทย (Thai translations & search)", () => {
+  it("全库 391 款模板全部具备非空的泰文名称 (name.th) 与标语 (tagline.th)", () => {
+    expect(AD_TEMPLATES.length).toBe(391);
+    for (const tpl of AD_TEMPLATES) {
+      expect(tpl.name.th, `Template ${tpl.id} must have non-empty name.th`).toBeTruthy();
+      expect(tpl.name.th!.trim().length).toBeGreaterThan(1);
+      expect(tpl.tagline.th, `Template ${tpl.id} must have non-empty tagline.th`).toBeTruthy();
+      expect(tpl.tagline.th!.trim().length).toBeGreaterThan(3);
+    }
+  });
+
+  it("listAdTemplates สามารถค้นหาด้วยคำสำคัญภาษาไทยได้ (name.th และ tagline.th)", () => {
+    // ค้นหาด้วยชื่อภาษาไทย
+    const flashSale = listAdTemplates({ query: "ฟ้าผ่า" });
+    expect(flashSale.some((t) => t.id === "flash_sale")).toBe(true);
+
+    // ค้นหาด้วยแท็กไลน์ภาษาไทย
+    const compare = listAdTemplates({ query: "สมอราคา" });
+    expect(compare.some((t) => t.id === "price_anchor")).toBe(true);
+
+    // ค้นหาคำศัพท์เฉพาะ เช่น สมบุกสมบัน
+    const torture = listAdTemplates({ query: "สมบุกสมบัน" });
+    expect(torture.some((t) => t.id === "extreme_test")).toBe(true);
+  });
+});
+
